@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Streak</string>
+    <string name="preference_file_key">streak_pref</string>
+</resources>
