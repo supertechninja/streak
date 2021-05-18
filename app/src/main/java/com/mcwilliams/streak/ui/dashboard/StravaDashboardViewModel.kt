@@ -52,6 +52,9 @@ class StravaDashboardViewModel @Inject constructor(
     var previousPreviousMonthActivities: LiveData<List<ActivitesItem>> =
         _previousPreviousMonthActivities
 
+    var _activityType: MutableLiveData<ActivityType> = MutableLiveData(ActivityType.Run)
+    var activityType: LiveData<ActivityType> = _activityType
+
 
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
@@ -109,7 +112,18 @@ class StravaDashboardViewModel @Inject constructor(
             _isLoggedIn.postValue(sessionRepository.isLoggedIn())
         }
     }
+
+    fun logout() {
+        sessionRepository.logOff()
+        _isLoggedIn.postValue(false)
+    }
+
+    fun updateSelectedActivity(activityType: ActivityType) {
+        _activityType.postValue(activityType)
+    }
 }
 
 fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
     atZone(zone)?.toInstant()?.toEpochMilli()?.toInt()
+
+enum class ActivityType { Run, Swim, Bike, All }

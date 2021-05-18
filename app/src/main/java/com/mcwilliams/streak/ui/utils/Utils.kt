@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToInt
 
 fun String.getDate(): LocalDate {
     val dtf = DateTimeFormatter.ISO_DATE_TIME
@@ -66,3 +67,17 @@ fun caloriesBurned(met: Float, weight: Int, minutesWorkedOut: Int): Int {
 fun Int.getTimeStringHoursAndMinutes(): String {
     return "${(this / 3600)}h ${(this % 60)}m"
 }
+
+fun Float.getElevationString(): String {
+    var elevation = (this * 3.281).toInt()
+    var elevationMeasurement = "ft"
+
+    if (elevation > 1500) {
+        elevation = (this * 1.094).toInt()
+        elevationMeasurement = "yd"
+    }
+
+    return "$elevation $elevationMeasurement"
+}
+
+fun Float.getDistanceString() = "${this.div(1609).roundToInt()} mi"
