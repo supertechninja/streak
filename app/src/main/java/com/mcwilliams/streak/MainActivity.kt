@@ -12,11 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -30,15 +26,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.KEY_ROUTE
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieAnimationSpec
-import com.airbnb.lottie.compose.rememberLottieAnimationState
+//import com.airbnb.lottie.compose.LottieAnimation
+//import com.airbnb.lottie.compose.LottieAnimationSpec
+//import com.airbnb.lottie.compose.rememberLottieAnimationState
 import com.mcwilliams.streak.ui.dashboard.StravaDashboard
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
@@ -65,6 +59,7 @@ class MainActivity : ComponentActivity() {
                 var showLoginDialog by remember { mutableStateOf(false) }
 
                 if (isLoggedIn!!) {
+//                    viewModel.fetchData()
 
                     Scaffold(
                         content = { paddingValues ->
@@ -89,18 +84,22 @@ class MainActivity : ComponentActivity() {
                         bottomBar = {
                             BottomNavigation {
                                 val navBackStackEntry by navController.currentBackStackEntryAsState()
-                                val currentRoute =
-                                    navBackStackEntry?.arguments?.getString(KEY_ROUTE)
+                                val currentRoute = navBackStackEntry?.destination?.route
                                 items.forEach { screen ->
                                     BottomNavigationItem(
                                         icon = {
-                                            val animationSpec =
-                                                remember { LottieAnimationSpec.RawRes(screen.resId!!) }
-
-                                            LottieAnimation(
-                                                animationSpec,
+                                            Icon(
+                                                painter = painterResource(id = screen.resId!!),
+                                                contentDescription = "",
                                                 modifier = Modifier.size(24.dp)
                                             )
+//                                            val animationSpec =
+//                                                remember { LottieAnimationSpec.RawRes(screen.resId!!) }
+//
+//                                            LottieAnimation(
+//                                                animationSpec,
+//                                                modifier = Modifier.size(24.dp)
+//                                            )
                                         },
                                         label = { Text(screen.label!!) },
                                         selected = currentRoute == screen.destination,
@@ -109,10 +108,13 @@ class MainActivity : ComponentActivity() {
                                                 // Pop up to the start destination of the graph to
                                                 // avoid building up a large stack of destinations
                                                 // on the back stack as users select items
-                                                popUpTo = navController.graph.startDestination
+                                                popUpTo(navController.graph.startDestinationRoute!!) {
+                                                    saveState = true
+                                                }
                                                 // Avoid multiple copies of the same destination when
                                                 // reselecting the same item
                                                 launchSingleTop = true
+                                                restoreState = true
                                             }
                                         }
                                     )
@@ -186,7 +188,8 @@ sealed class NavigationDestination(
     val resId: Int? = null,
 ) {
     object StravaDashboard :
-        NavigationDestination("stravaDashboard", "Dashboard", R.raw.ic_bar_chart)
+        NavigationDestination("stravaDashboard", "Dashboard", R.drawable.ic_dash)
 
-    object StreakSettings : NavigationDestination("streakSettings", "Settings", R.raw.ic_settings)
+    object StreakSettings :
+        NavigationDestination("streakSettings", "Settings", R.drawable.ic_settings)
 }

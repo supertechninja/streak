@@ -3,17 +3,18 @@ package com.mcwilliams.streak.ui.dashboard
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,10 +46,11 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
     val month = YearMonth.now()
     val firstDayOffset = month.atDay(1).dayOfWeek.ordinal
     val monthLength = month.lengthOfMonth()
+    val priorMonthLength = month.minusMonths(1).lengthOfMonth()
     val lastDayCount = (monthLength + firstDayOffset) % 7
     val weekCount = (firstDayOffset + monthLength) / 7
 
-    var fetchData by remember { mutableStateOf(0) }
+    var fetchData by rememberSaveable { mutableStateOf(0) }
 
     StreakTheme {
         if (fetchData == 0) {
@@ -58,6 +60,11 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         val monthlyActivities by viewModel.currentMonthActivites.observeAsState()
         val previousMonthActivities by viewModel.previousMonthActivities.observeAsState()
         val previousPreviousMonthActivities by viewModel.previousPreviousMonthActivities.observeAsState()
+
+        val currentYearActivities by viewModel.currentYearActivites.observeAsState()
+        val prevYearActivities by viewModel.prevYearActivites.observeAsState()
+        val prevPrevYearActivities by viewModel.prevPrevYearActivites.observeAsState()
+
         val selectedActivityType by viewModel.activityType.observeAsState()
         val activityLabel = selectedActivityType?.name
 
@@ -66,6 +73,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                 .fillMaxWidth()
                 .padding(paddingValues = paddingValues)
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 modifier = Modifier
@@ -79,12 +87,17 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                     style = MaterialTheme.typography.h4,
                     color = MaterialTheme.colors.onSurface,
                 )
+
+                IconButton(onClick = { fetchData = 0 }) {
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
+                }
             }
 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
+                shape = RoundedCornerShape(20.dp),
                 backgroundColor = Color(0xFF036e9a)
             ) {
                 BoxWithConstraints(
@@ -94,6 +107,9 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                     )
                 ) {
                     val width = this.maxWidth / 2
+
+                    val rightWidth = (this.maxWidth.times(.6f))
+                    val leftWidth = this.maxWidth - rightWidth
 
                     monthlyActivities?.let { monthlyWorkouts ->
 
@@ -130,7 +146,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                         Row() {
                             Column(
-                                modifier = Modifier.width(width = width),
+                                modifier = Modifier.width(width = leftWidth),
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Row() {
@@ -169,20 +185,19 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                                 DashboardStat(image = R.drawable.ic_hashtag, stat = "$count")
                             }
-                            Column(modifier = Modifier.width(width = width)) {
+                            Column(modifier = Modifier.width(width = rightWidth)) {
                                 monthlyActivities?.let {
                                     for (i in 0..weekCount) {
                                         CalendarView(
                                             startDayOffSet = firstDayOffset,
                                             endDayCount = lastDayCount,
                                             monthWeekNumber = i,
+                                            priorMonthLength = priorMonthLength,
                                             weekCount = weekCount,
-                                            width = width,
+                                            width = rightWidth,
                                             daysActivitiesLogged = listOfDaysLoggedActivity
                                         )
                                     }
-
-                                    Log.d("TAG", "StravaDashboard: $monthWeekMap")
                                 }
                             }
                         }
@@ -194,6 +209,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
+                shape = RoundedCornerShape(20.dp),
                 backgroundColor = Color(0xFF036e9a)
             ) {
 
@@ -231,12 +247,12 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                             date.dayOfMonth,
                                             newDistance
                                         )
+                                    } else {
+                                        dayOfWeekWithDistance.put(
+                                            date.dayOfMonth,
+                                            activitesItem.distance.toInt()
+                                        )
                                     }
-
-                                    dayOfWeekWithDistance.put(
-                                        date.dayOfMonth,
-                                        activitesItem.distance.toInt()
-                                    )
 
                                     count = count.inc()
                                 }
@@ -407,6 +423,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
+                    shape = RoundedCornerShape(20.dp),
                     backgroundColor = Color(0xFF036e9a)
                 ) {
 
@@ -632,6 +649,74 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     "$runCountPrevPrev",
                                     monthColumnWidth = monthColumnWidth
                                 )
+                            }
+                        }
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = Color(0xFF036e9a)
+                ) {
+
+                    BoxWithConstraints(
+                        modifier = Modifier.padding(
+                            vertical = 12.dp,
+                            horizontal = 10.dp
+                        )
+                    ) {
+                        val firstColumnWidth = maxWidth.times(.10f)
+                        val monthColumnWidth = (maxWidth - firstColumnWidth) / 5
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            //Header Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = activityLabel!!,
+                                    color = Color(0xFFFFA500),
+                                    modifier = Modifier.width(firstColumnWidth),
+                                    style = MaterialTheme.typography.caption,
+                                    textAlign = TextAlign.Start
+                                )
+
+                                MonthTextStat(
+                                    viewModel.currentMonth,
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                Spacer(modifier = Modifier.width(monthColumnWidth))
+
+                                MonthTextStat(
+                                    viewModel.previousMonth,
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                                Spacer(modifier = Modifier.width(monthColumnWidth))
+
+                                MonthTextStat(
+                                    viewModel.previousPreviousMonth,
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                            }
+
+                            Divider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp),
+                                thickness = 1.dp,
+                                color = MaterialTheme.colors.onSurface
+                            )
+
+                            if (currentYearActivities != null && prevYearActivities != null && prevPrevYearActivities != null) {
+                                Log.d("TAG", "StravaDashboard: ${currentYearActivities.size} ${prevYearActivities.size} ${prevPrevYearActivities.size}")
                             }
                         }
                     }

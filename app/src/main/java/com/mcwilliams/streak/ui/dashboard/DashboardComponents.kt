@@ -1,10 +1,13 @@
 package com.mcwilliams.streak.ui.dashboard
 
 import android.annotation.SuppressLint
+import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -23,14 +26,23 @@ fun CalendarView(
     startDayOffSet: Int,
     endDayCount: Int,
     monthWeekNumber: Int,
+    priorMonthLength: Int,
     weekCount: Int,
     width: Dp,
     daysActivitiesLogged: MutableList<Int>
 ) {
     val dateModifier = Modifier.width(width = width / 7)
     Row(modifier = Modifier.fillMaxWidth()) {
+
+        val listOfDatesInWeek: MutableList<Int> = mutableListOf()
+
         if (monthWeekNumber == 0) {
             for (i in 0 until startDayOffSet) {
+                val priorDay = (priorMonthLength - (startDayOffSet - i - 1))
+                Log.d("TAG", "CalendarView: $priorDay")
+
+                listOfDatesInWeek.add(priorDay)
+
                 Text(
                     " ",
                     color = MaterialTheme.colors.onSurface,
@@ -40,8 +52,6 @@ fun CalendarView(
             }
         }
 
-
-        val listOfDatesInWeek: MutableList<Int> = mutableListOf()
 
         val endDay = when (monthWeekNumber) {
             0 -> 7 - startDayOffSet
@@ -61,13 +71,22 @@ fun CalendarView(
                 }
 
             Row() {
-                Text(
-                    "$day",
-                    textAlign = TextAlign.Center,
-                    modifier = dateModifier,
-                    fontWeight = if (day == today) FontWeight.ExtraBold else FontWeight.Medium,
-                    color = dayColor
-                )
+                Surface(
+                    color = Color.Transparent,
+                    shape = CircleShape,
+                    border = if (day == today) BorderStroke(
+                        1.dp,
+                        color = MaterialTheme.colors.onSurface
+                    ) else null
+                ) {
+                    Text(
+                        "$day",
+                        textAlign = TextAlign.Center,
+                        modifier = dateModifier.padding(2.dp),
+                        fontWeight = FontWeight.Medium,
+                        color = dayColor,
+                    )
+                }
             }
 
             listOfDatesInWeek.add(day)
@@ -78,6 +97,7 @@ fun CalendarView(
         }
 
         monthWeekMap.put(monthWeekNumber, listOfDatesInWeek)
+        Log.d("TAG", "CalendarView: $monthWeekMap")
     }
 }
 
@@ -108,7 +128,7 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
         surfaceColor = Color(0xFF990000)
     } else {
         percent = (1.0 - percent) * 100
-        percentString = "${percent.toInt()}%"
+        percentString = "${Math.abs(percent.toInt())}%"
         surfaceColor = Color(0xFF008000)
     }
 

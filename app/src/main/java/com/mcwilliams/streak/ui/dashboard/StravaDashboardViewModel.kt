@@ -44,13 +44,33 @@ class StravaDashboardViewModel @Inject constructor(
     var previousMonthActivities: LiveData<List<ActivitesItem>> =
         _previousMonthActivities
 
-
     var previousPreviousMonthEpoch = 0
     var previousPreviousMonth = ""
     var _previousPreviousMonthActivities: MutableLiveData<List<ActivitesItem>> =
         MutableLiveData()
     var previousPreviousMonthActivities: LiveData<List<ActivitesItem>> =
         _previousPreviousMonthActivities
+
+    var currentYearEpoch = 0
+    var currentYear = ""
+    var _currentYearActivites: MutableLiveData<List<ActivitesItem>> =
+        MutableLiveData()
+    var currentYearActivites: LiveData<List<ActivitesItem>> =
+        _currentYearActivites
+
+    var prevYearEpoch = 0
+    var prevYear = ""
+    var _prevYearActivites: MutableLiveData<List<ActivitesItem>> =
+        MutableLiveData()
+    var prevYearActivites: LiveData<List<ActivitesItem>> =
+        _prevYearActivites
+
+    var prevPrevYearEpoch = 0
+    var prevPrevYear = ""
+    var _prevPrevYearActivites: MutableLiveData<List<ActivitesItem>> =
+        MutableLiveData()
+    var prevPrevYearActivites: LiveData<List<ActivitesItem>> =
+        _prevPrevYearActivites
 
     var _activityType: MutableLiveData<ActivityType> = MutableLiveData(ActivityType.Run)
     var activityType: LiveData<ActivityType> = _activityType
@@ -60,29 +80,19 @@ class StravaDashboardViewModel @Inject constructor(
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
 
         val currentMonthInt = LocalDate.now().monthValue
-        val currentMonthCalendar: Calendar = Calendar.getInstance()
-        currentMonthCalendar.set(2021, currentMonthInt - 1, 1)
-        currentMonthEpoch = currentMonthCalendar.toInstant().epochSecond.toInt()
-        currentMonth =
-            currentMonthCalendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault())
-        Log.d("TAG", "Current: $currentMonthEpoch")
 
-        val previousMonthCalendar: Calendar = Calendar.getInstance()
-        previousMonthCalendar.set(2021, currentMonthInt - 2, 1)
-        previousMonthEpoch = previousMonthCalendar.toInstant().epochSecond.toInt()
-        previousMonth =
-            previousMonthCalendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault())
-        Log.d("TAG", "Last Mon: $previousMonthEpoch")
+        currentMonthEpoch = getEpoch(2021, currentMonthInt - 1, 1).first
+        currentMonth = getEpoch(2021, currentMonthInt - 1, 1).second
 
-        val previousPreviousMonthCalendar: Calendar = Calendar.getInstance()
-        previousPreviousMonthCalendar.set(2021, currentMonthInt - 3, 1)
-        previousPreviousMonthEpoch = previousPreviousMonthCalendar.toInstant().epochSecond.toInt()
-        previousPreviousMonth = previousPreviousMonthCalendar.getDisplayName(
-            Calendar.MONTH,
-            Calendar.LONG,
-            Locale.getDefault()
-        )
-        Log.d("TAG", "Last 2 Mon: $previousPreviousMonthEpoch")
+        previousMonthEpoch = getEpoch(2021, currentMonthInt - 2, 1).first
+        previousMonth = getEpoch(2021, currentMonthInt - 2, 1).second
+
+        previousPreviousMonthEpoch = getEpoch(2021, currentMonthInt - 3, 1).first
+        previousPreviousMonth = getEpoch(2021, currentMonthInt - 3, 1).second
+
+        currentYearEpoch = getEpoch(2021, 0, 1).first
+        prevYearEpoch = getEpoch(2020, 0, 1).first
+        prevPrevYearEpoch = getEpoch(2019, 0, 1).first
 
     }
 
@@ -104,6 +114,19 @@ class StravaDashboardViewModel @Inject constructor(
                 before = previousMonthEpoch
             )
                 .toLiveData(rootDisposable) { it }
+
+        currentYearActivites = stravaDashboardRepository.getStravaActivitiesAfter(currentYearEpoch)
+            .toLiveData(rootDisposable) { it }
+
+        prevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
+            after = prevYearEpoch,
+            before = currentYearEpoch
+        ).toLiveData(rootDisposable) { it }
+
+        prevPrevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
+            after = prevYearEpoch,
+            before = prevPrevYearEpoch
+        ).toLiveData(rootDisposable) { it }
     }
 
     fun loginAthlete(code: String) {
@@ -127,3 +150,12 @@ fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
     atZone(zone)?.toInstant()?.toEpochMilli()?.toInt()
 
 enum class ActivityType { Run, Swim, Bike, All }
+
+fun getEpoch(year: Int, month: Int, day: Int): Pair<Int, String> {
+    val calendar: Calendar = Calendar.getInstance()
+    calendar.set(year, month, day)
+    return Pair(
+        calendar.toInstant().epochSecond.toInt(),
+        calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault())
+    )
+}
