@@ -1,6 +1,5 @@
 package com.mcwilliams.streak.ui.dashboard
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,10 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.mcwilliams.streak.inf.SessionRepository
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.settings.SettingsRepo
-import com.mcwilliams.streak.ui.settings.toLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -24,8 +24,6 @@ class StravaDashboardViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val settingsRepo: SettingsRepo,
 ) : ViewModel() {
-
-    val rootDisposable = CompositeDisposable()
 
     private var _isLoggedIn = MutableLiveData(false)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
@@ -75,6 +73,15 @@ class StravaDashboardViewModel @Inject constructor(
     var _activityType: MutableLiveData<ActivityType> = MutableLiveData(ActivityType.Run)
     var activityType: LiveData<ActivityType> = _activityType
 
+    var _error: MutableLiveData<String> =
+        MutableLiveData()
+    var error: LiveData<String> =
+        _error
+
+    var _lastTwoMonthsActivities: MutableLiveData<List<ActivitesItem>> =
+        MutableLiveData()
+    var lastTwoMonthsActivities: LiveData<List<ActivitesItem>> =
+        _lastTwoMonthsActivities
 
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
@@ -97,36 +104,73 @@ class StravaDashboardViewModel @Inject constructor(
     }
 
     fun fetchData() {
-        currentMonthActivites =
+        viewModelScope.launch {
             stravaDashboardRepository.getStravaActivitiesAfter(currentMonthEpoch)
-                .toLiveData(rootDisposable) { it }
+                .catch { exception ->
+                    val errorCode = (exception as HttpException).code()
+                    if (errorCode in 400..499) {
+                        _error.postValue("Error! Force Refresh")
+                    } else {
+                        _error.postValue("Have issues connecting to Strava")
+                    }
+                }
+                .collect {
+                    _currentMonthActivites.postValue(it)
+                    _error.postValue(null)
+                }
 
-        previousMonthActivities =
             stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
                 after = previousMonthEpoch,
                 before = currentMonthEpoch
-            )
-                .toLiveData(rootDisposable) { it }
+            ).collect {
+                _error.postValue(null)
+                _previousMonthActivities.postValue(it)
+            }
 
-        previousPreviousMonthActivities =
             stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
                 after = previousPreviousMonthEpoch,
                 before = previousMonthEpoch
-            )
-                .toLiveData(rootDisposable) { it }
+            ).collect {
+                _error.postValue(null)
+                _previousPreviousMonthActivities.postValue(it)
+            }
 
-        currentYearActivites = stravaDashboardRepository.getStravaActivitiesAfter(currentYearEpoch)
-            .toLiveData(rootDisposable) { it }
+            val combinedList = currentMonthActivites.value!!.toMutableList()
+            combinedList.plus(previousMonthActivities.value?.toMutableList())
+            _lastTwoMonthsActivities.postValue(combinedList)
+        }
 
-        prevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-            after = prevYearEpoch,
-            before = currentYearEpoch
-        ).toLiveData(rootDisposable) { it }
 
-        prevPrevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-            after = prevYearEpoch,
-            before = prevPrevYearEpoch
-        ).toLiveData(rootDisposable) { it }
+
+
+//        currentMonthActivites =
+//            stravaDashboardRepository.getStravaActivitiesAfter(currentMonthEpoch)
+//                .toLiveData(rootDisposable) { it }
+//
+//        previousMonthActivities =
+//            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
+//                after = previousMonthEpoch,
+//                before = currentMonthEpoch
+//            ).toLiveData(rootDisposable) { it }
+//
+//        previousPreviousMonthActivities =
+//            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
+//                after = previousPreviousMonthEpoch,
+//                before = previousMonthEpoch
+//            ).toLiveData(rootDisposable) { it }
+
+//        currentYearActivites = stravaDashboardRepository.getStravaActivitiesAfter(currentYearEpoch)
+//            .toLiveData(rootDisposable) { it }
+//
+//        prevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
+//            after = prevYearEpoch,
+//            before = currentYearEpoch
+//        ).toLiveData(rootDisposable) { it }
+//
+//        prevPrevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
+//            after = prevPrevYearEpoch,
+//            before = prevYearEpoch
+//        ).toLiveData(rootDisposable) { it }
     }
 
     fun loginAthlete(code: String) {

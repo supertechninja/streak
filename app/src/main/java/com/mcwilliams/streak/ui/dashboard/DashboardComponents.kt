@@ -29,7 +29,8 @@ fun CalendarView(
     priorMonthLength: Int,
     weekCount: Int,
     width: Dp,
-    daysActivitiesLogged: MutableList<Int>
+    daysActivitiesLogged: MutableList<Int>,
+    actualWeekCount: Int
 ) {
     val dateModifier = Modifier.width(width = width / 7)
     Row(modifier = Modifier.fillMaxWidth()) {
@@ -51,7 +52,6 @@ fun CalendarView(
                 )
             }
         }
-
 
         val endDay = when (monthWeekNumber) {
             0 -> 7 - startDayOffSet
@@ -85,12 +85,35 @@ fun CalendarView(
                         modifier = dateModifier.padding(2.dp),
                         fontWeight = FontWeight.Medium,
                         color = dayColor,
+                        style = MaterialTheme.typography.body2
                     )
                 }
             }
 
             listOfDatesInWeek.add(day)
         }
+
+
+//        val firstDayWeekZeroMonth = (priorMonthLength - (startDayOffSet - 1))
+//
+//        if (monthWeekNumber == 0 || monthWeekNumber == 1) {
+//            val listOfDatesInPreviousWeeks: MutableList<Int> = mutableListOf()
+//            for (i in 0 until (firstDayWeekZeroMonth - 7)) {
+//                val priorDay = (firstDayWeekZeroMonth - (i + 1))
+//                Log.d("TAG", "CalendarView: Prior Day $priorDay")
+//                Log.d("TAG", "CalendarView: Prior Day $i")
+//
+//                listOfDatesInPreviousWeeks.add(priorDay)
+//                if (i == 6) {
+//                    monthWeekMap.put(-1, listOfDatesInPreviousWeeks)
+//                    listOfDatesInPreviousWeeks.clear()
+//                } else if (i == 13) {
+//                    monthWeekMap.put(-2, listOfDatesInPreviousWeeks)
+//                    listOfDatesInPreviousWeeks.clear()
+//                }
+//                Log.d("TAG", "CalendarView: Prior Day $priorDay")
+//            }
+//        }
 
         if (listOfDatesInWeek.contains(today)) {
             currentWeek = listOfDatesInWeek

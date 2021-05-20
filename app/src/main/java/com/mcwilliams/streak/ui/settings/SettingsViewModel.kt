@@ -8,9 +8,6 @@ import com.mcwilliams.streak.inf.SessionRepository
 import com.mcwilliams.streak.strava.model.profile.AthleteStats
 import com.mcwilliams.streak.strava.model.profile.StravaAthlete
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,8 +19,6 @@ class SettingsViewModel @Inject constructor(
 
     private var _detailedAthlete = MutableLiveData<StravaAthlete>()
     var detailedAthlete: LiveData<StravaAthlete> = _detailedAthlete
-
-    var rootDisposable = CompositeDisposable()
 
     //    private var _workoutHistory = MutableLiveData<Int>()
     lateinit var workoutHistory: LiveData<Int>
@@ -59,18 +54,5 @@ class SettingsViewModel @Inject constructor(
     fun logOff() {
         sessionRepository.logOff()
         _isLoggedIn.postValue(false)
-    }
-}
-
-
-//Transforms an observable into a livedata
-fun <T, U> Observable<T>.toLiveData(
-    disposable: CompositeDisposable,
-    transform: (T) -> U
-): LiveData<U> {
-    return MutableLiveData<U>().also { liveData ->
-        disposable.add(this.subscribeOn(Schedulers.io()).subscribe { nextValue ->
-            liveData.postValue(transform(nextValue))
-        })
     }
 }

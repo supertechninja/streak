@@ -3,7 +3,8 @@ package com.mcwilliams.streak.ui.dashboard
 import android.content.Context
 import com.mcwilliams.streak.strava.api.ActivitiesApi
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,14 +17,17 @@ class StravaDashboardRepository @Inject constructor(
     //Cache in memory the strava workouts
     private lateinit var listOfStravaWorkouts: List<ActivitesItem>
 
-    fun getStravaActivitiesAfter(after: Int): Observable<List<ActivitesItem>> =
-        activitiesApi.getAthleteActivitiesAfter(after)
-//            .map { mapStravaWorkouts(it) }
+    fun getStravaActivitiesAfter(after: Int): Flow<List<ActivitesItem>> =
+        flow {
+            emit(activitiesApi.getAthleteActivitiesAfter(after))
+        }
 
     fun getStravaActivitiesBeforeAndAfter(
         before: Int,
         after: Int
-    ): Observable<List<ActivitesItem>> =
-        activitiesApi.getAthleteActivitiesBeforeAndAfter(before = before, after = after)
+    ): Flow<List<ActivitesItem>> = flow {
+        emit(activitiesApi.getAthleteActivitiesBeforeAndAfter(before = before, after = after))
+    }
+
 
 }

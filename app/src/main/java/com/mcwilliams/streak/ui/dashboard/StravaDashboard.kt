@@ -1,7 +1,7 @@
 package com.mcwilliams.streak.ui.dashboard
 
-import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -13,22 +13,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.ui.settings.StravaAuthWebView
+import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.theme.StreakTheme
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
@@ -49,6 +47,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
     val priorMonthLength = month.minusMonths(1).lengthOfMonth()
     val lastDayCount = (monthLength + firstDayOffset) % 7
     val weekCount = (firstDayOffset + monthLength) / 7
+    val actualWeekCount = weekCount - 2
 
     var fetchData by rememberSaveable { mutableStateOf(0) }
 
@@ -61,18 +60,25 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         val previousMonthActivities by viewModel.previousMonthActivities.observeAsState()
         val previousPreviousMonthActivities by viewModel.previousPreviousMonthActivities.observeAsState()
 
+        val last2MonthsActivities by viewModel.lastTwoMonthsActivities.observeAsState()
+
         val currentYearActivities by viewModel.currentYearActivites.observeAsState()
         val prevYearActivities by viewModel.prevYearActivites.observeAsState()
         val prevPrevYearActivities by viewModel.prevPrevYearActivites.observeAsState()
 
         val selectedActivityType by viewModel.activityType.observeAsState()
+
+        val error by viewModel.error.observeAsState()
+
         val activityLabel = selectedActivityType?.name
+
+        val context = LocalContext.current
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(paddingValues = paddingValues)
-                .padding(16.dp)
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             Row(
@@ -93,25 +99,27 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                 }
             }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF036e9a)
-            ) {
-                BoxWithConstraints(
-                    modifier = Modifier.padding(
-                        vertical = 12.dp,
-                        horizontal = 10.dp
-                    )
+            error?.let {
+                if (it.isNotEmpty()) {
+                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            monthlyActivities?.let { monthlyWorkouts ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = Color(0xFF036e9a)
                 ) {
-                    val width = this.maxWidth / 2
-
-                    val rightWidth = (this.maxWidth.times(.6f))
-                    val leftWidth = this.maxWidth - rightWidth
-
-                    monthlyActivities?.let { monthlyWorkouts ->
+                    BoxWithConstraints(
+                        modifier = Modifier.padding(
+                            vertical = 12.dp,
+                            horizontal = 10.dp
+                        )
+                    ) {
+                        val width = this.maxWidth / 2
 
                         var listOfDaysLoggedActivity = mutableListOf<Int>()
                         var totalDistance = 0f
@@ -137,7 +145,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                         listOfDaysLoggedActivity =
                             listOfDaysLoggedActivity.distinct().toMutableList()
 
-                        currentMonthMetrics = MonthMetrics(
+                        currentMonthMetrics = SummaryMetrics(
                             count = count,
                             totalDistance = totalDistance,
                             totalElevation = totalElevation,
@@ -146,7 +154,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                         Row() {
                             Column(
-                                modifier = Modifier.width(width = leftWidth),
+                                modifier = Modifier.width(width = width),
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Row() {
@@ -185,7 +193,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                                 DashboardStat(image = R.drawable.ic_hashtag, stat = "$count")
                             }
-                            Column(modifier = Modifier.width(width = rightWidth)) {
+                            Column(modifier = Modifier.width(width = width)) {
                                 monthlyActivities?.let {
                                     for (i in 0..weekCount) {
                                         CalendarView(
@@ -194,35 +202,338 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                             monthWeekNumber = i,
                                             priorMonthLength = priorMonthLength,
                                             weekCount = weekCount,
-                                            width = rightWidth,
-                                            daysActivitiesLogged = listOfDaysLoggedActivity
+                                            width = width,
+                                            daysActivitiesLogged = listOfDaysLoggedActivity,
+                                            actualWeekCount = actualWeekCount
                                         )
                                     }
+
+                                    //Add previous 2 weeks to week map
+                                    val firstDayWeekZeroMonth =
+                                        (priorMonthLength - (firstDayOffset - 1))
+
+                                    val listOfDatesInPreviousWeek: MutableList<Int> =
+                                        mutableListOf()
+
+                                    for (i in 0..6) {
+                                        val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                                        listOfDatesInPreviousWeek.add(priorDay)
+                                    }
+                                    monthWeekMap.put(-1, listOfDatesInPreviousWeek)
+
+                                    val listOfDatesInTwoWeeksAgo: MutableList<Int> =
+                                        mutableListOf()
+                                    val twoWeekAgo = firstDayWeekZeroMonth - 7
+                                    for (i in 0..6) {
+                                        val priorDay = (twoWeekAgo - (i + 1))
+                                        listOfDatesInTwoWeeksAgo.add(priorDay)
+                                    }
+                                    monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
                                 }
+                                Log.d("TAG", "StravaDashboard: $monthWeekMap")
                             }
                         }
                     }
                 }
             }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                shape = RoundedCornerShape(20.dp),
-                backgroundColor = Color(0xFF036e9a)
-            ) {
-
-                val dayOfWeekWithDistance: MutableMap<Int, Int> = mutableMapOf()
-                BoxWithConstraints(
-                    modifier = Modifier.padding(
-                        vertical = 12.dp,
-                        horizontal = 10.dp
-                    )
+            last2MonthsActivities?.let { activitesList ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = Color(0xFF036e9a)
                 ) {
-                    val width = this.maxWidth / 2
 
-                    monthlyActivities?.let { monthlyWorkouts ->
+                    BoxWithConstraints(
+                        modifier = Modifier.padding(
+                            vertical = 12.dp,
+                            horizontal = 10.dp
+                        )
+                    ) {
+                        val firstColumnWidth = maxWidth.times(.10f)
+                        val monthColumnWidth = (maxWidth - firstColumnWidth) / 5
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            //Header Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = activityLabel!!,
+                                    color = Color(0xFFFFA500),
+                                    modifier = Modifier.width(firstColumnWidth),
+                                    style = MaterialTheme.typography.caption,
+                                    textAlign = TextAlign.Start
+                                )
+
+                                MonthTextStat(
+                                    "This week",
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                Spacer(modifier = Modifier.width(monthColumnWidth))
+
+                                MonthTextStat(
+                                    "1w ago",
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                                Spacer(modifier = Modifier.width(monthColumnWidth))
+
+                                MonthTextStat(
+                                    "2w ago",
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                            }
+
+                            Divider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp),
+                                thickness = 1.dp,
+                                color = MaterialTheme.colors.onSurface
+                            )
+
+                            val weeklyDataMap: MutableList<SummaryMetrics> = mutableListOf()
+
+                            val weeklyActivitiesMap: MutableList<Pair<Int, MutableList<ActivitesItem>>> =
+                                mutableListOf()
+
+                            var startingWeekInMap: MutableList<Int> = mutableListOf()
+                            monthWeekMap.forEach loop@{ weekCount, datesInWeek ->
+                                if (datesInWeek.contains(today)) {
+                                    startingWeekInMap.add(weekCount)
+                                }
+                            }
+
+                            for (i in startingWeekInMap[0] downTo (startingWeekInMap[0] - 2)) {
+                                val weeklyActivitiesList = mutableListOf<ActivitesItem>()
+                                activitesList.forEach { activitiesItem ->
+                                    val datesInWeek = monthWeekMap.get(i)
+                                    if (datesInWeek!!.contains(activitiesItem.start_date_local.getDate().dayOfMonth)) {
+                                        weeklyActivitiesList.add(activitiesItem)
+                                    }
+                                }
+                                weeklyActivitiesMap.add(Pair(i, weeklyActivitiesList))
+                            }
+
+
+                            weeklyActivitiesMap.forEach { weeklyActivityMap ->
+                                var count = 0
+                                var distance = 0f
+                                var elevation = 0f
+                                var time = 0
+                                weeklyActivityMap.second.forEach { activitiesItem ->
+                                    if (activitiesItem.type == selectedActivityType!!.name) {
+                                        count = count.inc()
+                                        distance += activitiesItem.distance
+                                        elevation += activitiesItem.total_elevation_gain
+                                        time += activitiesItem.elapsed_time
+                                    }
+                                }
+
+                                weeklyDataMap.add(
+                                    SummaryMetrics(
+                                        count = count,
+                                        totalDistance = distance,
+                                        totalElevation = elevation,
+                                        totalTime = time
+                                    )
+                                )
+                                Log.d(
+                                    "TAG",
+                                    "StravaDashboard: $count, ${distance.getDistanceString()}, ${elevation.getElevationString()}, ${time.getTimeStringHoursAndMinutes()}"
+                                )
+                            }
+
+                            // Distance Row
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                DashboardStat(
+                                    image = R.drawable.ic_ruler,
+                                    modifier = Modifier.width(firstColumnWidth)
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[0].totalDistance.getDistanceString(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                PercentDelta(
+                                    now = weeklyDataMap[0].totalDistance.toInt(),
+                                    then = weeklyDataMap[1].totalDistance.toInt(),
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Distance
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[1].totalDistance.getDistanceString(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                PercentDelta(
+                                    now = weeklyDataMap[1].totalDistance.toInt(),
+                                    then = weeklyDataMap[2].totalDistance.toInt(),
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Distance
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[2].totalDistance.getDistanceString(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                            }
+                            //Time Row
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                DashboardStat(
+                                    image = R.drawable.ic_clock_time,
+                                    modifier = Modifier.width(firstColumnWidth)
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[0].totalTime.getTimeStringHoursAndMinutes(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                PercentDelta(
+                                    now = weeklyDataMap[0].totalTime,
+                                    then = weeklyDataMap[1].totalTime,
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Time
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[1].totalTime.getTimeStringHoursAndMinutes(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                PercentDelta(
+                                    now = weeklyDataMap[1].totalTime,
+                                    then = weeklyDataMap[2].totalTime,
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Time
+                                )
+                                MonthTextStat(
+                                    weeklyDataMap[2].totalTime.getTimeStringHoursAndMinutes(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                            }
+                            // Elevation Row
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                DashboardStat(
+                                    image = R.drawable.ic_up_right,
+                                    modifier = Modifier.width(firstColumnWidth)
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[0].totalElevation.getElevationString(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                PercentDelta(
+                                    now = weeklyDataMap[0].totalElevation.toInt(),
+                                    then = weeklyDataMap[1].totalElevation.toInt(),
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Count
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[1].totalElevation.getElevationString(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                PercentDelta(
+                                    now = weeklyDataMap[1].totalElevation.toInt(),
+                                    then = weeklyDataMap[2].totalElevation.toInt(),
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Count
+                                )
+
+                                MonthTextStat(
+                                    weeklyDataMap[2].totalElevation.getElevationString(),
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                            }
+                            //Count Row
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                DashboardStat(
+                                    image = R.drawable.ic_hashtag,
+                                    modifier = Modifier.width(firstColumnWidth)
+                                )
+
+                                MonthTextStat(
+                                    "${weeklyDataMap[0].count}",
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                                PercentDelta(
+                                    now = weeklyDataMap[0].count,
+                                    then = weeklyDataMap[1].count,
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Count
+                                )
+                                MonthTextStat(
+                                    "${weeklyDataMap[1].count}",
+                                    monthColumnWidth = monthColumnWidth
+                                )
+
+                                PercentDelta(
+                                    now = weeklyDataMap[1].count,
+                                    then = weeklyDataMap[2].count,
+                                    monthColumnWidth = monthColumnWidth,
+                                    type = StatType.Count
+                                )
+
+                                MonthTextStat(
+                                    "${weeklyDataMap[2].count}",
+                                    monthColumnWidth = monthColumnWidth
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            monthlyActivities?.let { monthlyWorkouts ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    backgroundColor = Color(0xFF036e9a)
+                ) {
+
+                    val dayOfWeekWithDistance: MutableMap<Int, Int> = mutableMapOf()
+                    BoxWithConstraints(
+                        modifier = Modifier.padding(
+                            vertical = 12.dp,
+                            horizontal = 10.dp
+                        )
+                    ) {
+                        val width = this.maxWidth / 2
 
                         var totalDistance = 0f
                         var totalElevation = 0f
@@ -654,74 +965,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                     }
                 }
 
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    backgroundColor = Color(0xFF036e9a)
-                ) {
-
-                    BoxWithConstraints(
-                        modifier = Modifier.padding(
-                            vertical = 12.dp,
-                            horizontal = 10.dp
-                        )
-                    ) {
-                        val firstColumnWidth = maxWidth.times(.10f)
-                        val monthColumnWidth = (maxWidth - firstColumnWidth) / 5
-
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            //Header Row
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = activityLabel!!,
-                                    color = Color(0xFFFFA500),
-                                    modifier = Modifier.width(firstColumnWidth),
-                                    style = MaterialTheme.typography.caption,
-                                    textAlign = TextAlign.Start
-                                )
-
-                                MonthTextStat(
-                                    viewModel.currentMonth,
-                                    monthColumnWidth = monthColumnWidth
-                                )
-
-                                Spacer(modifier = Modifier.width(monthColumnWidth))
-
-                                MonthTextStat(
-                                    viewModel.previousMonth,
-                                    monthColumnWidth = monthColumnWidth
-                                )
-                                Spacer(modifier = Modifier.width(monthColumnWidth))
-
-                                MonthTextStat(
-                                    viewModel.previousPreviousMonth,
-                                    monthColumnWidth = monthColumnWidth
-                                )
-                            }
-
-                            Divider(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp),
-                                thickness = 1.dp,
-                                color = MaterialTheme.colors.onSurface
-                            )
-
-                            if (currentYearActivities != null && prevYearActivities != null && prevPrevYearActivities != null) {
-                                Log.d("TAG", "StravaDashboard: ${currentYearActivities.size} ${prevYearActivities.size} ${prevPrevYearActivities.size}")
-                            }
-                        }
-                    }
-                }
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -773,9 +1016,9 @@ enum class StatType { Distance, Time, Elevation, Count }
 val monthWeekMap: MutableMap<Int, MutableList<Int>> = mutableMapOf()
 val today = SimpleDateFormat("dd").format(Calendar.getInstance().time).toInt()
 var currentWeek: MutableList<Int> = mutableListOf()
-var currentMonthMetrics = MonthMetrics(0, 0f, 0f, 0)
+var currentMonthMetrics = SummaryMetrics(0, 0f, 0f, 0)
 
-data class MonthMetrics(
+data class SummaryMetrics(
     val count: Int,
     val totalDistance: Float,
     val totalElevation: Float,
