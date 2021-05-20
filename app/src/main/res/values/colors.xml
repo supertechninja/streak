@@ -20,4 +20,6 @@
     <color name="color_on_background">#000000</color>
     <color name="color_on_surface">#000000</color>
     <color name="color_on_error">#ffffff</color>
+
+    <color name="primary_shade">#01374D</color>
 </resources>

@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val isLoggedInParam = intent.getBooleanExtra("isLoggedIn", false)
+
         setContent {
             val navController = rememberNavController()
             val items = listOf(
@@ -55,12 +59,10 @@ class MainActivity : ComponentActivity() {
             )
 
             StreakTheme {
-                val isLoggedIn by viewModel.isLoggedIn.observeAsState()
+                val isLoggedIn by viewModel.isLoggedIn.observeAsState(isLoggedInParam)
                 var showLoginDialog by remember { mutableStateOf(false) }
 
-                if (isLoggedIn!!) {
-//                    viewModel.fetchData()
-
+                if (isLoggedIn) {
                     Scaffold(
                         content = { paddingValues ->
                             NavHost(
@@ -82,7 +84,7 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         bottomBar = {
-                            BottomNavigation {
+                            BottomNavigation(elevation = 16.dp, backgroundColor = Color(0xFF00212E)) {
                                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                                 val currentRoute = navBackStackEntry?.destination?.route
                                 items.forEach { screen ->

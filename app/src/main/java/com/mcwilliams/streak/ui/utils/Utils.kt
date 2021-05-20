@@ -77,6 +77,11 @@ fun Float.getElevationString(): String {
         elevationMeasurement = "yd"
     }
 
+    if(elevation > 1000){
+        elevation = (this / 1609).toInt()
+        elevationMeasurement = "mi"
+    }
+
     return "$elevation $elevationMeasurement"
 }
 

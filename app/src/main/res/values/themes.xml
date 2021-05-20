@@ -18,8 +18,12 @@
         <item name="colorOnError">@color/color_on_error</item>
 
         <!-- Customize your theme here. -->
-        <item name="android:navigationBarColor">?colorSurface</item>
-        <item name="android:navigationBarDividerColor" tools:ignore="NewApi">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/primary_shade</item>
+        <item name="android:navigationBarDividerColor" tools:ignore="NewApi">
+            @android:color/transparent
+        </item>
+
+        <item name="android:statusBarColor">@color/primary_shade</item>
 
     </style>
 
@@ -31,4 +35,8 @@
     <style name="Theme.Streak.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.Streak.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="SplashTheme" parent="Theme.Streak.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash</item>
+    </style>
 </resources>

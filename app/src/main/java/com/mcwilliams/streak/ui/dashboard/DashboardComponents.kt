@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mcwilliams.streak.ui.utils.getDate
 
 @SuppressLint("SimpleDateFormat")
 @Composable
@@ -145,14 +146,17 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
 
     var surfaceColor: Color
     var percentString: String
+    var textColor : Color
     if (then > now) {
         percent = (1.0 - percent) * 100
         percentString = "- ${percent.toInt()}%"
         surfaceColor = Color(0xFF990000)
+        textColor = Color.White
     } else {
         percent = (1.0 - percent) * 100
         percentString = "${Math.abs(percent.toInt())}%"
         surfaceColor = Color(0xFF008000)
+        textColor = Color.Black
     }
 
     Surface(
@@ -166,8 +170,8 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
             text = percentString,
             style = MaterialTheme.typography.caption,
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = textColor
         )
     }
-
 }

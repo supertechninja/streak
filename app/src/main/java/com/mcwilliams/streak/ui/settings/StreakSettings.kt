@@ -81,7 +81,10 @@ fun StreakSettingsView(paddingValues: PaddingValues, viewModel: StravaDashboardV
                     onDismissRequest = { showDropDownMenu = !showDropDownMenu }) {
 
                     ActivityType.values().forEach { activityType ->
-                        DropdownMenuItem(onClick = { viewModel.updateSelectedActivity(activityType = activityType) }) {
+                        DropdownMenuItem(onClick = {
+                            viewModel.updateSelectedActivity(activityType = activityType)
+                            showDropDownMenu = !showDropDownMenu
+                        }) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth(),

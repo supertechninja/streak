@@ -13,7 +13,7 @@ private val Yellow600 = Color(0xFFF5CF1B)
 private val Yellow700 = Color(0xFFF3B711)
 private val Yellow800 = Color(0xFFF29F05)
 
-private val Blue200 = Color(0xFF059EDC)
+private val Blue200 = Color(0xFF036e9a)
 private val Blue400 = Color(0xFF4860F7)
 private val Blue500 = Color(0xFF0540F2)
 private val Blue800 = Color(0xFF001CCF)
@@ -31,14 +31,14 @@ private val StreakDarkPalette = darkColors(
 )
 
 private val StreakLightPalette = lightColors(
-    primary = Blue500,
-    primaryVariant = Blue800,
+    primary = Blue200,
+    primaryVariant = Blue400,
     onPrimary = Color.White,
     secondary = Yellow700,
     secondaryVariant = Yellow800,
     onSecondary = Color.Black,
-    onSurface = Color.Black,
-    onBackground = Color.Black,
+    onSurface = Color.White,
+    onBackground = Color.White,
     error = Red800,
     onError = Color.White
 )
