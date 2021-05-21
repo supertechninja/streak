@@ -39,6 +39,8 @@ import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
 import com.mcwilliams.streak.ui.theme.StreakTheme
+import com.mcwilliams.streak.ui.theme.primaryBlueShade2
+import com.mcwilliams.streak.ui.theme.primaryColorShade1
 import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalFoundationApi
@@ -49,8 +51,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val isLoggedInParam = intent.getBooleanExtra("isLoggedIn", false)
-
         setContent {
             val navController = rememberNavController()
             val items = listOf(
@@ -59,42 +59,46 @@ class MainActivity : ComponentActivity() {
             )
 
             StreakTheme {
-                val isLoggedIn by viewModel.isLoggedIn.observeAsState(isLoggedInParam)
+                val isLoggedIn by viewModel.isLoggedIn.observeAsState()
                 var showLoginDialog by remember { mutableStateOf(false) }
 
-                if (isLoggedIn) {
-                    Scaffold(
-                        content = { paddingValues ->
-                            NavHost(
-                                navController,
-                                startDestination = NavigationDestination.StravaDashboard.destination
-                            ) {
-                                composable(NavigationDestination.StravaDashboard.destination) {
-                                    StravaDashboard(
-                                        viewModel = viewModel,
-                                        paddingValues = paddingValues
-                                    )
+                isLoggedIn?.let {
+                    if (it) {
+                        Scaffold(
+                            content = { paddingValues ->
+                                NavHost(
+                                    navController,
+                                    startDestination = NavigationDestination.StravaDashboard.destination
+                                ) {
+                                    composable(NavigationDestination.StravaDashboard.destination) {
+                                        StravaDashboard(
+                                            viewModel = viewModel,
+                                            paddingValues = paddingValues
+                                        )
+                                    }
+                                    composable(NavigationDestination.StreakSettings.destination) {
+                                        StreakSettingsView(
+                                            viewModel = viewModel,
+                                            paddingValues = paddingValues
+                                        )
+                                    }
                                 }
-                                composable(NavigationDestination.StreakSettings.destination) {
-                                    StreakSettingsView(
-                                        viewModel = viewModel,
-                                        paddingValues = paddingValues
-                                    )
-                                }
-                            }
-                        },
-                        bottomBar = {
-                            BottomNavigation(elevation = 16.dp, backgroundColor = Color(0xFF00212E)) {
-                                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                                val currentRoute = navBackStackEntry?.destination?.route
-                                items.forEach { screen ->
-                                    BottomNavigationItem(
-                                        icon = {
-                                            Icon(
-                                                painter = painterResource(id = screen.resId!!),
-                                                contentDescription = "",
-                                                modifier = Modifier.size(24.dp)
-                                            )
+                            },
+                            bottomBar = {
+                                BottomNavigation(
+                                    elevation = 16.dp,
+                                    backgroundColor = primaryBlueShade2
+                                ) {
+                                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                                    val currentRoute = navBackStackEntry?.destination?.route
+                                    items.forEach { screen ->
+                                        BottomNavigationItem(
+                                            icon = {
+                                                Icon(
+                                                    painter = painterResource(id = screen.resId!!),
+                                                    contentDescription = "",
+                                                    modifier = Modifier.size(24.dp)
+                                                )
 //                                            val animationSpec =
 //                                                remember { LottieAnimationSpec.RawRes(screen.resId!!) }
 //
@@ -102,82 +106,91 @@ class MainActivity : ComponentActivity() {
 //                                                animationSpec,
 //                                                modifier = Modifier.size(24.dp)
 //                                            )
-                                        },
-                                        label = { Text(screen.label!!) },
-                                        selected = currentRoute == screen.destination,
-                                        onClick = {
-                                            navController.navigate(screen.destination) {
-                                                // Pop up to the start destination of the graph to
-                                                // avoid building up a large stack of destinations
-                                                // on the back stack as users select items
-                                                popUpTo(navController.graph.startDestinationRoute!!) {
-                                                    saveState = true
+                                            },
+                                            label = { Text(screen.label!!) },
+                                            selected = currentRoute == screen.destination,
+                                            onClick = {
+                                                navController.navigate(screen.destination) {
+                                                    // Pop up to the start destination of the graph to
+                                                    // avoid building up a large stack of destinations
+                                                    // on the back stack as users select items
+                                                    popUpTo(navController.graph.startDestinationRoute!!) {
+                                                        saveState = true
+                                                    }
+                                                    // Avoid multiple copies of the same destination when
+                                                    // reselecting the same item
+                                                    launchSingleTop = true
+                                                    restoreState = true
                                                 }
-                                                // Avoid multiple copies of the same destination when
-                                                // reselecting the same item
-                                                launchSingleTop = true
-                                                restoreState = true
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    )
-                } else {
-                    Scaffold(content = { paddingValues ->
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = "Welcome to Streak!",
-                                style = MaterialTheme.typography.h4,
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            )
-                            Text(
-                                text = "I have always wanted a way to analyze my athletic activity overtime.",
-                                style = MaterialTheme.typography.subtitle1,
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            )
-                            Text(
-                                text = "Streak provides snapshots of your Strava data organized by comparing your data week over week, month over month, and year over year",
-                                style = MaterialTheme.typography.subtitle1,
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            )
-                            Text(
-                                text = "Tap the \" Connect With Strava \" to login and get started",
-                                style = MaterialTheme.typography.subtitle1,
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp)
-                                    .padding(paddingValues = paddingValues),
-                                contentAlignment = Alignment.BottomCenter
-                            ) {
-                                val width = with(LocalDensity.current) { 772f.toDp() }
-                                val height = with(LocalDensity.current) { 192f.toDp() }
-                                Image(
-                                    painter = painterResource(id = R.drawable.connect_with_strava),
-                                    contentDescription = "Connect to strava",
+                        )
+                    } else {
+                        Scaffold(
+                            backgroundColor = primaryColorShade1,
+                            contentColor = MaterialTheme.colors.onSurface,
+                            content = { paddingValues ->
+                                Column(
                                     modifier = Modifier
-                                        .size(width = width, height = height)
-                                        .clickable {
-                                            showLoginDialog = !showLoginDialog
-                                        })
-                            }
-                        }
+                                        .fillMaxSize()
+                                        .padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = "Welcome to Streak!",
+                                        style = MaterialTheme.typography.h4,
+                                        modifier = Modifier.padding(vertical = 16.dp)
+                                    )
+                                    Text(
+                                        text = "I have always wanted a way to analyze my athletic activity overtime.",
+                                        style = MaterialTheme.typography.subtitle1,
+                                        modifier = Modifier.padding(vertical = 16.dp)
+                                    )
+                                    Text(
+                                        text = "Streak provides snapshots of your Strava data organized by comparing your data week over week, month over month, and year over year",
+                                        style = MaterialTheme.typography.subtitle1,
+                                        modifier = Modifier.padding(vertical = 16.dp)
+                                    )
+                                    Text(
+                                        text = "Tap the \" Connect With Strava \" to login and get started",
+                                        style = MaterialTheme.typography.subtitle1,
+                                        modifier = Modifier.padding(vertical = 16.dp)
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
+                                            .padding(paddingValues = paddingValues),
+                                        contentAlignment = Alignment.BottomCenter
+                                    ) {
+                                        val width = with(LocalDensity.current) { 772f.toDp() }
+                                        val height = with(LocalDensity.current) { 192f.toDp() }
+                                        Image(
+                                            painter = painterResource(id = R.drawable.connect_with_strava),
+                                            contentDescription = "Connect to strava",
+                                            modifier = Modifier
+                                                .size(width = width, height = height)
+                                                .clickable {
+                                                    showLoginDialog = !showLoginDialog
+                                                })
+                                    }
+                                }
 
-                        if (showLoginDialog) {
-                            val onFinish = { showLoginDialog = !showLoginDialog }
-                            Dialog(onDismissRequest = { showLoginDialog = !showLoginDialog }) {
-                                StravaAuthWebView(viewModel = viewModel, onFinish = onFinish)
-                            }
-                        }
-                    })
+                                if (showLoginDialog) {
+                                    val onFinish = { showLoginDialog = !showLoginDialog }
+                                    Dialog(onDismissRequest = {
+                                        showLoginDialog = !showLoginDialog
+                                    }) {
+                                        StravaAuthWebView(
+                                            viewModel = viewModel,
+                                            onFinish = onFinish
+                                        )
+                                    }
+                                }
+                            })
+                    }
                 }
             }
         }

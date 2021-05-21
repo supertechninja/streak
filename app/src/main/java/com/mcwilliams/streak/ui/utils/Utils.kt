@@ -1,10 +1,10 @@
 package com.mcwilliams.streak.ui.utils
 
+import com.mcwilliams.streak.ui.dashboard.UnitType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
 
 fun String.getDate(): LocalDate {
     val dtf = DateTimeFormatter.ISO_DATE_TIME
@@ -68,21 +68,47 @@ fun Int.getTimeStringHoursAndMinutes(): String {
     return "${(this / 3600)}h ${((this % 3600) / 60)}m"
 }
 
-fun Float.getElevationString(): String {
-    var elevation = (this * 3.281).toInt()
-    var elevationMeasurement = "ft"
+fun Float.getElevationString(selectedUnitType: UnitType): String {
+    when (selectedUnitType) {
+        UnitType.Imperial -> {
+            var elevation: Number = (this * 3.281).round(1)
+            var elevationMeasurement = "ft"
 
-    if (elevation > 1500) {
-        elevation = (this * 1.094).toInt()
-        elevationMeasurement = "yd"
+            if (elevation.toInt() > 1500) {
+                elevation = (this * 1.094).round(1)
+                elevationMeasurement = "yd"
+            }
+
+            if (elevation.toInt() > 1000) {
+                elevation = (this / 1609).toDouble().round(1)
+                elevationMeasurement = "mi"
+            }
+
+            return "${
+                elevation.toString().replace("0*$".toRegex(), "").replace("\\.$".toRegex(), "")
+            } $elevationMeasurement"
+        }
+        UnitType.Metric -> {
+            return "${
+                this.toDouble().round(1).toString().replace("0*$".toRegex(), "")
+                    .replace("\\.$".toRegex(), "")
+            } m"
+        }
     }
 
-    if(elevation > 1000){
-        elevation = (this / 1609).toInt()
-        elevationMeasurement = "mi"
-    }
-
-    return "$elevation $elevationMeasurement"
 }
 
-fun Float.getDistanceString() = "${this.div(1609).roundToInt()} mi"
+fun Float.getDistanceString(selectedUnitType: UnitType) : String {
+    return when (selectedUnitType) {
+        UnitType.Imperial -> {
+            "${
+                this.div(1609).toDouble().round(1).toString().replace("0*$".toRegex(), "")
+                    .replace("\\.$".toRegex(), "")
+            } mi"
+        }
+        UnitType.Metric -> {
+            var elevation: Number = (this / 1000).toDouble().round(1)
+            "${elevation.toString().replace("0*$".toRegex(), "").replace("\\.$".toRegex(), "")} km"
+        }
+    }
+}

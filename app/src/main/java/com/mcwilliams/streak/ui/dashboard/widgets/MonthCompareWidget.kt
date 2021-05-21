@@ -28,7 +28,8 @@ import com.mcwilliams.streak.ui.dashboard.PercentDelta
 import com.mcwilliams.streak.ui.dashboard.StatType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
-import com.mcwilliams.streak.ui.dashboard.currentMonthMetrics
+import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
@@ -38,7 +39,9 @@ fun MonthCompareWidget(
     viewModel: StravaDashboardViewModel,
     selectedActivityType: ActivityType?,
     prevMetrics: SummaryMetrics,
-    prevPrevMetrics: SummaryMetrics
+    prevPrevMetrics: SummaryMetrics,
+    currentMonthMetrics: SummaryMetrics,
+    selectedUnitType: UnitType?
 ) {
     Card(
         modifier = Modifier
@@ -46,7 +49,7 @@ fun MonthCompareWidget(
             .padding(8.dp)
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp),
-        backgroundColor = Color(0xFF036e9a)
+        backgroundColor = primaryColor
     ) {
 
         BoxWithConstraints(
@@ -124,7 +127,7 @@ fun MonthCompareWidget(
                     )
 
                     MonthTextStat(
-                        currentMonthMetrics.totalDistance.getDistanceString(),
+                        currentMonthMetrics.totalDistance.getDistanceString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -136,7 +139,7 @@ fun MonthCompareWidget(
                     )
 
                     MonthTextStat(
-                        prevMetrics.totalDistance.getDistanceString(),
+                        prevMetrics.totalDistance.getDistanceString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -148,7 +151,7 @@ fun MonthCompareWidget(
                     )
 
                     MonthTextStat(
-                        prevPrevMetrics.totalDistance.getDistanceString(),
+                        prevPrevMetrics.totalDistance.getDistanceString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
                 }
@@ -205,7 +208,7 @@ fun MonthCompareWidget(
                     )
 
                     MonthTextStat(
-                        currentMonthMetrics.totalElevation.getElevationString(),
+                        currentMonthMetrics.totalElevation.getElevationString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -217,7 +220,7 @@ fun MonthCompareWidget(
                     )
 
                     MonthTextStat(
-                        prevMetrics.totalElevation.getElevationString(),
+                        prevMetrics.totalElevation.getElevationString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -229,7 +232,7 @@ fun MonthCompareWidget(
                     )
 
                     MonthTextStat(
-                        prevPrevMetrics.totalElevation.getElevationString(),
+                        prevPrevMetrics.totalElevation.getElevationString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
                 }

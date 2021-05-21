@@ -17,9 +17,11 @@ class SplashActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         viewModel.isLoggedIn.observe(this, {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.putExtra("isLoggedIn", it)
-            startActivity(intent)
+            it?.let {
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("isLoggedIn", it)
+                startActivity(intent)
+            }
         })
 
 

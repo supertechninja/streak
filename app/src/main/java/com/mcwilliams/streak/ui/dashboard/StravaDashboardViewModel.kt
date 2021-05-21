@@ -25,7 +25,7 @@ class StravaDashboardViewModel @Inject constructor(
     private val settingsRepo: SettingsRepo,
 ) : ViewModel() {
 
-    private var _isLoggedIn = MutableLiveData(false)
+    private var _isLoggedIn: MutableLiveData<Boolean> = MutableLiveData(null)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
     var currentMonthEpoch = 0
@@ -70,8 +70,11 @@ class StravaDashboardViewModel @Inject constructor(
     var prevPrevYearActivites: LiveData<List<ActivitesItem>> =
         _prevPrevYearActivites
 
-    var _activityType: MutableLiveData<ActivityType> = MutableLiveData(ActivityType.Run)
+    var _activityType: MutableLiveData<ActivityType> = MutableLiveData()
     var activityType: LiveData<ActivityType> = _activityType
+
+    var _unitType: MutableLiveData<UnitType> = MutableLiveData()
+    var unitType: LiveData<UnitType> = _unitType
 
     var _error: MutableLiveData<String> =
         MutableLiveData()
@@ -104,6 +107,10 @@ class StravaDashboardViewModel @Inject constructor(
     }
 
     fun fetchData() {
+        _activityType.postValue(stravaDashboardRepository.getPreferredActivity())
+
+        _unitType.postValue(stravaDashboardRepository.getPreferredUnitType())
+
         viewModelScope.launch {
             stravaDashboardRepository.getStravaActivitiesAfter(currentMonthEpoch)
                 .catch { exception ->
@@ -200,7 +207,13 @@ class StravaDashboardViewModel @Inject constructor(
     }
 
     fun updateSelectedActivity(activityType: ActivityType) {
-        _activityType.postValue(activityType)
+        stravaDashboardRepository.savePreferredActivity(activityType)
+        _activityType.postValue(stravaDashboardRepository.getPreferredActivity()!!)
+    }
+
+    fun updateSelectedUnit(unitType: UnitType) {
+        stravaDashboardRepository.savePreferredUnits(unitType = unitType)
+        _unitType.postValue(stravaDashboardRepository.getPreferredUnitType()!!)
     }
 }
 
@@ -208,6 +221,7 @@ fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
     atZone(zone)?.toInstant()?.toEpochMilli()?.toInt()
 
 enum class ActivityType { Run, Swim, Bike, All }
+enum class UnitType { Imperial, Metric }
 
 fun getEpoch(year: Int, month: Int, day: Int): Pair<Int, String> {
     val calendar: Calendar = Calendar.getInstance()

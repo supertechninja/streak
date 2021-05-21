@@ -30,10 +30,12 @@ import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
-import com.mcwilliams.streak.ui.dashboard.currentMonthMetrics
+import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.dashboard.monthWeekMap
 import com.mcwilliams.streak.ui.dashboard.today
+import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
+import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 import java.time.YearMonth
@@ -43,12 +45,14 @@ import kotlin.math.roundToInt
 @Composable
 fun MonthWidget(
     monthlyWorkouts: List<ActivitesItem>,
+    updateMonthlyMetrics: (SummaryMetrics) -> Unit,
     selectedActivityType: ActivityType?,
     weekCount: Int,
     firstDayOffset: Int,
     lastDayCount: Int,
     priorMonthLength: Int,
     currentWeek: (MutableList<Int>) -> Unit,
+    selectedUnitType: UnitType?,
 ) {
     Card(
         modifier = Modifier
@@ -56,7 +60,7 @@ fun MonthWidget(
             .padding(8.dp)
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp),
-        backgroundColor = Color(0xFF036e9a)
+        backgroundColor = primaryColor
     ) {
         BoxWithConstraints(
             modifier = Modifier.padding(
@@ -101,11 +105,13 @@ fun MonthWidget(
             listOfDaysLoggedActivity =
                 listOfDaysLoggedActivity.distinct().toMutableList()
 
-            currentMonthMetrics = SummaryMetrics(
-                count = count,
-                totalDistance = totalDistance,
-                totalElevation = totalElevation,
-                totalTime = totalTime
+            updateMonthlyMetrics(
+                SummaryMetrics(
+                    count = count,
+                    totalDistance = totalDistance,
+                    totalElevation = totalElevation,
+                    totalTime = totalTime
+                )
             )
 
             Row() {
@@ -135,7 +141,7 @@ fun MonthWidget(
                     )
                     DashboardStat(
                         image = R.drawable.ic_ruler,
-                        stat = "${totalDistance.div(1609).roundToInt()} mi"
+                        stat = totalDistance.getDistanceString(selectedUnitType!!)
                     )
 
                     DashboardStat(
@@ -145,7 +151,7 @@ fun MonthWidget(
 
                     DashboardStat(
                         image = R.drawable.ic_up_right,
-                        stat = "${totalElevation.getElevationString()}"
+                        stat = totalElevation.getElevationString(selectedUnitType!!)
                     )
 
                     DashboardStat(
@@ -242,6 +248,7 @@ fun CalendarView(
                 when {
                     daysActivitiesLogged.contains(day) -> Color(0xFFFFA500)
                     day < today -> MaterialTheme.colors.onSurface
+                    day == today -> MaterialTheme.colors.onSurface
                     else -> Color.LightGray.copy(alpha = .8f)
                 }
 

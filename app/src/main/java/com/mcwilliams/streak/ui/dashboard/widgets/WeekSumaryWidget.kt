@@ -26,7 +26,10 @@ import com.mcwilliams.streak.R
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
+import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
+import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 import java.time.DayOfWeek
@@ -37,6 +40,7 @@ fun WeekSummaryWidget(
     monthlyWorkouts: List<ActivitesItem>,
     selectedActivityType: ActivityType?,
     currentWeek: MutableList<Int>,
+    selectedUnitType: UnitType?,
 ) {
     Card(
         modifier = Modifier
@@ -44,7 +48,7 @@ fun WeekSummaryWidget(
             .padding(8.dp)
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp),
-        backgroundColor = Color(0xFF036e9a)
+        backgroundColor = primaryColor
     ) {
 
         val dayOfWeekWithDistance: MutableMap<Int, Int> = mutableMapOf()
@@ -65,7 +69,29 @@ fun WeekSummaryWidget(
                 val date = activitesItem.start_date_local.getDate()
 
                 if (currentWeek.contains(date.dayOfMonth)) {
-                    if (activitesItem.type == selectedActivityType!!.name) {
+                    if (selectedActivityType!!.name == ActivityType.All.name) {
+                        totalElevation += activitesItem.total_elevation_gain
+
+                        totalTime += activitesItem.elapsed_time
+
+                        totalDistance += activitesItem.distance
+
+                        if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
+                            val newDistance =
+                                dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
+                            dayOfWeekWithDistance.replace(
+                                date.dayOfMonth,
+                                newDistance
+                            )
+                        } else {
+                            dayOfWeekWithDistance.put(
+                                date.dayOfMonth,
+                                activitesItem.distance.toInt()
+                            )
+                        }
+
+                        count = count.inc()
+                    } else if (activitesItem.type == selectedActivityType!!.name) {
                         totalElevation += activitesItem.total_elevation_gain
 
                         totalTime += activitesItem.elapsed_time
@@ -121,7 +147,7 @@ fun WeekSummaryWidget(
                     )
                     DashboardStat(
                         image = R.drawable.ic_ruler,
-                        stat = "${totalDistance.div(1609).roundToInt()} mi"
+                        stat = totalDistance.getDistanceString(selectedUnitType!!)
                     )
 
                     DashboardStat(
@@ -131,7 +157,7 @@ fun WeekSummaryWidget(
 
                     DashboardStat(
                         image = R.drawable.ic_up_right,
-                        stat = "${totalElevation.getElevationString()}"
+                        stat = "${totalElevation.getElevationString(selectedUnitType!!)}"
                     )
                 }
                 Column(

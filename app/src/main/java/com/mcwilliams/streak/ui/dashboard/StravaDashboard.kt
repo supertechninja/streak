@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,9 +60,18 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
         val selectedActivityType by viewModel.activityType.observeAsState()
 
+        val selectedUnitType by viewModel.unitType.observeAsState()
+
         var currentWeek: MutableList<Int> by rememberSaveable { mutableStateOf(mutableListOf()) }
         val updateCurrentWeek = { updatedWeek: MutableList<Int> ->
             currentWeek = updatedWeek
+        }
+
+        var currentMonthMetrics by remember {
+            mutableStateOf(SummaryMetrics(0, 0f, 0f, 0))
+        }
+        val updateMonthlyMetrics = { summaryMetrics : SummaryMetrics ->
+            currentMonthMetrics = summaryMetrics
         }
 
         val error by viewModel.error.observeAsState()
@@ -129,24 +139,28 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                             WeekSummaryWidget(
                                 monthlyWorkouts = monthlyWorkouts,
                                 selectedActivityType = selectedActivityType,
-                                currentWeek = currentWeek
+                                currentWeek = currentWeek,
+                                selectedUnitType = selectedUnitType
                             )
                         }
 
                         MonthWidget(
                             monthlyWorkouts = monthlyWorkouts,
+                            updateMonthlyMetrics,
                             selectedActivityType,
                             weekCount,
                             firstDayOffset,
                             lastDayCount,
                             priorMonthLength,
-                            updateCurrentWeek
+                            updateCurrentWeek,
+                            selectedUnitType = selectedUnitType
                         )
 
                         last2MonthsActivities?.let { activitesList ->
                             WeekCompareWidget(
                                 activitesList = activitesList,
-                                selectedActivityType = selectedActivityType
+                                selectedActivityType = selectedActivityType,
+                                selectedUnitType = selectedUnitType
                             )
                         }
 
@@ -157,19 +171,28 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                             var prevElevation = 0f
                             var prevTime = 0
                             previousMonthActivities?.forEach {
-                                if (it.type == selectedActivityType!!.name) {
+                                if (selectedActivityType!!.name == ActivityType.All.name) {
+                                    runCountPrev = runCountPrev.inc()
+                                    prevDistance += it.distance
+                                    prevElevation += it.total_elevation_gain
+                                    prevTime += it.elapsed_time
+                                } else if (it.type == selectedActivityType!!.name) {
                                     runCountPrev = runCountPrev.inc()
                                     prevDistance += it.distance
                                     prevElevation += it.total_elevation_gain
                                     prevTime += it.elapsed_time
                                 }
                             }
-                            val prevMetrics = SummaryMetrics(
-                                runCountPrev,
-                                prevDistance,
-                                prevElevation,
-                                prevTime
-                            )
+                            val prevMetrics by remember {
+                                mutableStateOf(
+                                    SummaryMetrics(
+                                        runCountPrev,
+                                        prevDistance,
+                                        prevElevation,
+                                        prevTime
+                                    )
+                                )
+                            }
 
 
                             var runCountPrevPrev = 0
@@ -177,7 +200,12 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                             var prevPrevElevation = 0f
                             var prevPrevTime = 0
                             previousPreviousMonthActivities?.forEach {
-                                if (it.type == selectedActivityType!!.name) {
+                                if (selectedActivityType!!.name == ActivityType.All.name) {
+                                    runCountPrevPrev = runCountPrevPrev.inc()
+                                    prevPrevDistance += it.distance
+                                    prevPrevElevation += it.total_elevation_gain
+                                    prevPrevTime += it.elapsed_time
+                                } else if (it.type == selectedActivityType!!.name) {
                                     runCountPrevPrev = runCountPrevPrev.inc()
                                     prevPrevDistance += it.distance
                                     prevPrevElevation += it.total_elevation_gain
@@ -185,18 +213,24 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 }
                             }
 
-                            val prevPrevMetrics = SummaryMetrics(
-                                runCountPrevPrev,
-                                prevPrevDistance,
-                                prevPrevElevation,
-                                prevPrevTime
-                            )
+                            val prevPrevMetrics by remember {
+                                mutableStateOf(
+                                    SummaryMetrics(
+                                        runCountPrevPrev,
+                                        prevPrevDistance,
+                                        prevPrevElevation,
+                                        prevPrevTime
+                                    )
+                                )
+                            }
 
                             MonthCompareWidget(
                                 viewModel = viewModel,
                                 selectedActivityType = selectedActivityType,
+                                currentMonthMetrics = currentMonthMetrics,
                                 prevMetrics = prevMetrics,
-                                prevPrevMetrics = prevPrevMetrics
+                                prevPrevMetrics = prevPrevMetrics,
+                                selectedUnitType = selectedUnitType
                             )
 
                             Row(
@@ -221,7 +255,6 @@ enum class StatType { Distance, Time, Elevation, Count }
 
 val monthWeekMap: MutableMap<Int, MutableList<Int>> = mutableMapOf()
 val today = SimpleDateFormat("dd").format(Calendar.getInstance().time).toInt()
-var currentMonthMetrics = SummaryMetrics(0, 0f, 0f, 0)
 
 data class SummaryMetrics(
     val count: Int,

@@ -27,22 +27,28 @@ import com.mcwilliams.streak.ui.dashboard.MonthTextStat
 import com.mcwilliams.streak.ui.dashboard.PercentDelta
 import com.mcwilliams.streak.ui.dashboard.StatType
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
+import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.dashboard.monthWeekMap
 import com.mcwilliams.streak.ui.dashboard.today
+import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 
 @Composable
-fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: ActivityType?) {
+fun WeekCompareWidget(
+    activitesList: List<ActivitesItem>,
+    selectedActivityType: ActivityType?,
+    selectedUnitType: UnitType?
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(20.dp),
-        backgroundColor = Color(0xFF036e9a)
+        backgroundColor = primaryColor
     ) {
 
         BoxWithConstraints(
@@ -51,7 +57,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                 horizontal = 10.dp
             )
         ) {
-            val firstColumnWidth = maxWidth.times(.10f)
+            val firstColumnWidth = maxWidth.times(.1f)
             val monthColumnWidth = (maxWidth - firstColumnWidth) / 5
 
             Column(
@@ -72,7 +78,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
 
                     MonthTextStat(
-                        "This week",
+                        "Current",
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -130,7 +136,13 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     var elevation = 0f
                     var time = 0
                     weeklyActivityMap.second.forEach { activitiesItem ->
-                        if (activitiesItem.type == selectedActivityType!!.name) {
+                        if (selectedActivityType!!.name == ActivityType.All.name) {
+                            count = count.inc()
+                            distance += activitiesItem.distance
+                            elevation += activitiesItem.total_elevation_gain
+                            time += activitiesItem.elapsed_time
+                        }
+                        else if (activitiesItem.type == selectedActivityType!!.name) {
                             count = count.inc()
                             distance += activitiesItem.distance
                             elevation += activitiesItem.total_elevation_gain
@@ -148,7 +160,10 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
                     Log.d(
                         "TAG",
-                        "StravaDashboard: $count, ${distance.getDistanceString()}, ${elevation.getElevationString()}, ${time.getTimeStringHoursAndMinutes()}"
+                        "StravaDashboard: $count, ${distance.getDistanceString(selectedUnitType!!)}, ${elevation.getElevationString(
+                            selectedUnitType!!
+                        )
+                        }, ${time.getTimeStringHoursAndMinutes()}"
                     )
                 }
 
@@ -165,7 +180,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
 
                     MonthTextStat(
-                        weeklyDataMap[0].totalDistance.getDistanceString(),
+                        weeklyDataMap[0].totalDistance.getDistanceString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -177,7 +192,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
 
                     MonthTextStat(
-                        weeklyDataMap[1].totalDistance.getDistanceString(),
+                        weeklyDataMap[1].totalDistance.getDistanceString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -189,7 +204,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
 
                     MonthTextStat(
-                        weeklyDataMap[2].totalDistance.getDistanceString(),
+                        weeklyDataMap[2].totalDistance.getDistanceString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
                 }
@@ -246,7 +261,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
 
                     MonthTextStat(
-                        weeklyDataMap[0].totalElevation.getElevationString(),
+                        weeklyDataMap[0].totalElevation.getElevationString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -258,7 +273,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
 
                     MonthTextStat(
-                        weeklyDataMap[1].totalElevation.getElevationString(),
+                        weeklyDataMap[1].totalElevation.getElevationString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
 
@@ -270,7 +285,7 @@ fun WeekCompareWidget(activitesList: List<ActivitesItem>, selectedActivityType: 
                     )
 
                     MonthTextStat(
-                        weeklyDataMap[2].totalElevation.getElevationString(),
+                        weeklyDataMap[2].totalElevation.getElevationString(selectedUnitType!!),
                         monthColumnWidth = monthColumnWidth
                     )
                 }

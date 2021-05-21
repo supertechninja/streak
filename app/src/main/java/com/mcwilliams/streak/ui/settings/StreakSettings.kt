@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
+import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.theme.primaryColor
 
 @Composable
 fun StreakSettingsView(paddingValues: PaddingValues, viewModel: StravaDashboardViewModel) {
@@ -68,6 +70,7 @@ fun StreakSettingsView(paddingValues: PaddingValues, viewModel: StravaDashboardV
             ) {
                 var showDropDownMenu by remember { mutableStateOf(false) }
                 val selectedActivityType by viewModel.activityType.observeAsState()
+                val selectedUnitType by viewModel.unitType.observeAsState()
 
                 Row(
                     modifier = Modifier
@@ -88,7 +91,7 @@ fun StreakSettingsView(paddingValues: PaddingValues, viewModel: StravaDashboardV
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .background(
-                                    color = Color(0xFF036e9a),
+                                    color = primaryColor,
                                     shape = RoundedCornerShape(20.dp)
                                 )
                         ) {
@@ -129,14 +132,14 @@ fun StreakSettingsView(paddingValues: PaddingValues, viewModel: StravaDashboardV
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .background(
-                                    color = Color(0xFF036e9a),
+                                    color = primaryColor,
                                     shape = RoundedCornerShape(20.dp)
                                 )
                         ) {
                             Row(
                                 modifier = Modifier
                                     .clickable {
-//                                        viewModel.updateSelectedActivity(activityType = activityType)
+                                        viewModel.updateSelectedUnit(UnitType.Imperial)
                                     }
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
@@ -147,18 +150,18 @@ fun StreakSettingsView(paddingValues: PaddingValues, viewModel: StravaDashboardV
                             ) {
                                 Text("Imperial")
 
-//                                if (selectedActivityType!!.name == activityType.name) {
-//                                    Icon(
-//                                        imageVector = Icons.Default.Check,
-//                                        contentDescription = "Currently Selected"
-//                                    )
-//                                }
+                                if (UnitType.Imperial.name == selectedUnitType?.name) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Currently Selected"
+                                    )
+                                }
                             }
 
                             Row(
                                 modifier = Modifier
                                     .clickable {
-//                                        viewModel.updateSelectedActivity(activityType = activityType)
+                                        viewModel.updateSelectedUnit(UnitType.Metric)
                                     }
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
@@ -169,12 +172,12 @@ fun StreakSettingsView(paddingValues: PaddingValues, viewModel: StravaDashboardV
                             ) {
                                 Text("Metric")
 
-//                                if (selectedActivityType!!.name == activityType.name) {
-//                                    Icon(
-//                                        imageVector = Icons.Default.Check,
-//                                        contentDescription = "Currently Selected"
-//                                    )
-//                                }
+                                if (UnitType.Metric.name == selectedUnitType?.name) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Currently Selected"
+                                    )
+                                }
                             }
                         }
 
