@@ -122,25 +122,39 @@ class StravaDashboardViewModel @Inject constructor(
             stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
                 after = previousMonthEpoch,
                 before = currentMonthEpoch
-            ).collect {
-                _error.postValue(null)
-                _previousMonthActivities.postValue(it)
+            ).catch { exception ->
+                val errorCode = (exception as HttpException).code()
+                if (errorCode in 400..499) {
+                    _error.postValue("Error! Force Refresh")
+                } else {
+                    _error.postValue("Have issues connecting to Strava")
+                }
             }
+                .collect {
+                    _error.postValue(null)
+                    _previousMonthActivities.postValue(it)
+                }
 
             stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
                 after = previousPreviousMonthEpoch,
                 before = previousMonthEpoch
-            ).collect {
-                _error.postValue(null)
-                _previousPreviousMonthActivities.postValue(it)
+            ).catch { exception ->
+                val errorCode = (exception as HttpException).code()
+                if (errorCode in 400..499) {
+                    _error.postValue("Error! Force Refresh")
+                } else {
+                    _error.postValue("Have issues connecting to Strava")
+                }
             }
+                .collect {
+                    _error.postValue(null)
+                    _previousPreviousMonthActivities.postValue(it)
+                }
 
             val combinedList = currentMonthActivites.value!!.toMutableList()
             combinedList.plus(previousMonthActivities.value?.toMutableList())
             _lastTwoMonthsActivities.postValue(combinedList)
         }
-
-
 
 
 //        currentMonthActivites =

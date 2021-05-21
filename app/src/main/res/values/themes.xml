@@ -18,7 +18,7 @@
         <item name="colorOnError">@color/color_on_error</item>
 
         <!-- Customize your theme here. -->
-        <item name="android:navigationBarColor">@color/primary_shade</item>
+        <item name="android:navigationBarColor">@color/primary_shade1</item>
         <item name="android:navigationBarDividerColor" tools:ignore="NewApi">
             @android:color/transparent
         </item>

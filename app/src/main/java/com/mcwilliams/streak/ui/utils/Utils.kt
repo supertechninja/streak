@@ -65,7 +65,7 @@ fun caloriesBurned(met: Float, weight: Int, minutesWorkedOut: Int): Int {
 
 //Returns time based on seconds passed in
 fun Int.getTimeStringHoursAndMinutes(): String {
-    return "${(this / 3600)}h ${(this % 60)}m"
+    return "${(this / 3600)}h ${((this % 3600) / 60)}m"
 }
 
 fun Float.getElevationString(): String {

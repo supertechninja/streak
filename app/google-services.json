@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "254978638333",
+    "project_id": "streak-b945a",
+    "storage_bucket": "streak-b945a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254978638333:android:b3dc5155c992a26eb55994",
+        "android_client_info": {
+          "package_name": "com.mcwilliams.streak"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "254978638333-nbpn970gs78skj82sa8ejs5c1vo17q0i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBh7qgEWq68xP-JUcqc9lNBPMJJCtOQlCo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "254978638333-nbpn970gs78skj82sa8ejs5c1vo17q0i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

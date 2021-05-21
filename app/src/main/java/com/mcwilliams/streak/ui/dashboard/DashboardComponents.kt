@@ -2,128 +2,29 @@ package com.mcwilliams.streak.ui.dashboard
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.ui.utils.getDate
-
-@SuppressLint("SimpleDateFormat")
-@Composable
-fun CalendarView(
-    startDayOffSet: Int,
-    endDayCount: Int,
-    monthWeekNumber: Int,
-    priorMonthLength: Int,
-    weekCount: Int,
-    width: Dp,
-    daysActivitiesLogged: MutableList<Int>,
-    actualWeekCount: Int
-) {
-    val dateModifier = Modifier.width(width = width / 7)
-    Row(modifier = Modifier.fillMaxWidth()) {
-
-        val listOfDatesInWeek: MutableList<Int> = mutableListOf()
-
-        if (monthWeekNumber == 0) {
-            for (i in 0 until startDayOffSet) {
-                val priorDay = (priorMonthLength - (startDayOffSet - i - 1))
-                Log.d("TAG", "CalendarView: $priorDay")
-
-                listOfDatesInWeek.add(priorDay)
-
-                Text(
-                    " ",
-                    color = MaterialTheme.colors.onSurface,
-                    textAlign = TextAlign.Center,
-                    modifier = dateModifier
-                )
-            }
-        }
-
-        val endDay = when (monthWeekNumber) {
-            0 -> 7 - startDayOffSet
-            weekCount -> endDayCount
-            else -> 7
-        }
-
-        for (i in 1..endDay) {
-            val day =
-                if (monthWeekNumber == 0) i else (i + (7 * monthWeekNumber) - startDayOffSet)
-
-            val dayColor =
-                when {
-                    daysActivitiesLogged.contains(day) -> Color(0xFFFFA500)
-                    day < today -> MaterialTheme.colors.onSurface
-                    else -> Color.LightGray.copy(alpha = .8f)
-                }
-
-            Row() {
-                Surface(
-                    color = Color.Transparent,
-                    shape = CircleShape,
-                    border = if (day == today) BorderStroke(
-                        1.dp,
-                        color = MaterialTheme.colors.onSurface
-                    ) else null
-                ) {
-                    Text(
-                        "$day",
-                        textAlign = TextAlign.Center,
-                        modifier = dateModifier.padding(2.dp),
-                        fontWeight = FontWeight.Medium,
-                        color = dayColor,
-                        style = MaterialTheme.typography.body2
-                    )
-                }
-            }
-
-            listOfDatesInWeek.add(day)
-        }
-
-
-//        val firstDayWeekZeroMonth = (priorMonthLength - (startDayOffSet - 1))
-//
-//        if (monthWeekNumber == 0 || monthWeekNumber == 1) {
-//            val listOfDatesInPreviousWeeks: MutableList<Int> = mutableListOf()
-//            for (i in 0 until (firstDayWeekZeroMonth - 7)) {
-//                val priorDay = (firstDayWeekZeroMonth - (i + 1))
-//                Log.d("TAG", "CalendarView: Prior Day $priorDay")
-//                Log.d("TAG", "CalendarView: Prior Day $i")
-//
-//                listOfDatesInPreviousWeeks.add(priorDay)
-//                if (i == 6) {
-//                    monthWeekMap.put(-1, listOfDatesInPreviousWeeks)
-//                    listOfDatesInPreviousWeeks.clear()
-//                } else if (i == 13) {
-//                    monthWeekMap.put(-2, listOfDatesInPreviousWeeks)
-//                    listOfDatesInPreviousWeeks.clear()
-//                }
-//                Log.d("TAG", "CalendarView: Prior Day $priorDay")
-//            }
-//        }
-
-        if (listOfDatesInWeek.contains(today)) {
-            currentWeek = listOfDatesInWeek
-        }
-
-        monthWeekMap.put(monthWeekNumber, listOfDatesInWeek)
-        Log.d("TAG", "CalendarView: $monthWeekMap")
-    }
-}
 
 @Composable
 fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
@@ -174,4 +75,34 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
             color = textColor
         )
     }
+}
+
+@Composable
+fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modifier = Modifier) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+        Icon(
+            painter = painterResource(id = image),
+            contentDescription = "",
+            modifier = Modifier.size(18.dp),
+            tint = Color.LightGray.copy(alpha = .8f)
+        )
+        stat?.let {
+            Text(
+                text = stat,
+                modifier = Modifier.padding(start = 8.dp),
+                color = MaterialTheme.colors.onSurface,
+            )
+        }
+    }
+}
+
+@Composable
+fun MonthTextStat(monthStat: String, monthColumnWidth: Dp) {
+    Text(
+        text = monthStat,
+        color = MaterialTheme.colors.onSurface,
+        modifier = Modifier.width(monthColumnWidth),
+        textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.caption
+    )
 }
