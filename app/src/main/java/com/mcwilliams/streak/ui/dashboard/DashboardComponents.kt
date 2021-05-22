@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -24,7 +25,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
+
+@Composable
+fun StreakWidgetCard(content: @Composable () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 8.dp, bottom = 10.dp, top = 4.dp)
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = 4.dp,
+        backgroundColor = primaryColor
+    ) {
+        content()
+    }
+}
+
 
 @Composable
 fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
@@ -47,7 +65,7 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
 
     var surfaceColor: Color
     var percentString: String
-    var textColor : Color
+    var textColor: Color
     if (then > now) {
         percent = (1.0 - percent) * 100
         percentString = "- ${percent.toInt()}%"
@@ -55,9 +73,9 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
         textColor = Color.White
     } else {
         percent = (1.0 - percent) * 100
-        percentString = "${Math.abs(percent.toInt())}%"
+        percentString = "+ ${Math.abs(percent.toInt())}%"
         surfaceColor = Color(0xFF008000)
-        textColor = Color.Black
+        textColor = Color.White
     }
 
     Surface(
@@ -65,6 +83,7 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
         modifier = Modifier
             .width(monthColumnWidth)
             .padding(horizontal = 4.dp),
+        elevation = 4.dp,
         shape = RoundedCornerShape(50)
     ) {
         Text(
@@ -79,7 +98,7 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
 
 @Composable
 fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modifier = Modifier) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(vertical = 4.dp)) {
         Icon(
             painter = painterResource(id = image),
             contentDescription = "",
@@ -91,6 +110,7 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
                 text = stat,
                 modifier = Modifier.padding(start = 8.dp),
                 color = MaterialTheme.colors.onSurface,
+                style = MaterialTheme.typography.body2
             )
         }
     }

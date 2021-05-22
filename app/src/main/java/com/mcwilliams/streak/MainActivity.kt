@@ -43,6 +43,7 @@ import com.mcwilliams.streak.ui.theme.primaryBlueShade2
 import com.mcwilliams.streak.ui.theme.primaryColorShade1
 import dagger.hilt.android.AndroidEntryPoint
 
+@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -76,57 +77,57 @@ class MainActivity : ComponentActivity() {
                                             paddingValues = paddingValues
                                         )
                                     }
-                                    composable(NavigationDestination.StreakSettings.destination) {
-                                        StreakSettingsView(
-                                            viewModel = viewModel,
-                                            paddingValues = paddingValues
-                                        )
-                                    }
+//                                    composable(NavigationDestination.StreakSettings.destination) {
+//                                        StreakSettingsView(
+//                                            viewModel = viewModel,
+//                                            paddingValues = paddingValues
+//                                        )
+//                                    }
                                 }
                             },
-                            bottomBar = {
-                                BottomNavigation(
-                                    elevation = 16.dp,
-                                    backgroundColor = primaryBlueShade2
-                                ) {
-                                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                                    val currentRoute = navBackStackEntry?.destination?.route
-                                    items.forEach { screen ->
-                                        BottomNavigationItem(
-                                            icon = {
-                                                Icon(
-                                                    painter = painterResource(id = screen.resId!!),
-                                                    contentDescription = "",
-                                                    modifier = Modifier.size(24.dp)
-                                                )
-//                                            val animationSpec =
-//                                                remember { LottieAnimationSpec.RawRes(screen.resId!!) }
-//
-//                                            LottieAnimation(
-//                                                animationSpec,
-//                                                modifier = Modifier.size(24.dp)
-//                                            )
-                                            },
-                                            label = { Text(screen.label!!) },
-                                            selected = currentRoute == screen.destination,
-                                            onClick = {
-                                                navController.navigate(screen.destination) {
-                                                    // Pop up to the start destination of the graph to
-                                                    // avoid building up a large stack of destinations
-                                                    // on the back stack as users select items
-                                                    popUpTo(navController.graph.startDestinationRoute!!) {
-                                                        saveState = true
-                                                    }
-                                                    // Avoid multiple copies of the same destination when
-                                                    // reselecting the same item
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            }
+//                            bottomBar = {
+//                                BottomNavigation(
+//                                    elevation = 16.dp,
+//                                    backgroundColor = primaryBlueShade2
+//                                ) {
+//                                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+//                                    val currentRoute = navBackStackEntry?.destination?.route
+//                                    items.forEach { screen ->
+//                                        BottomNavigationItem(
+//                                            icon = {
+//                                                Icon(
+//                                                    painter = painterResource(id = screen.resId!!),
+//                                                    contentDescription = "",
+//                                                    modifier = Modifier.size(24.dp)
+//                                                )
+////                                            val animationSpec =
+////                                                remember { LottieAnimationSpec.RawRes(screen.resId!!) }
+////
+////                                            LottieAnimation(
+////                                                animationSpec,
+////                                                modifier = Modifier.size(24.dp)
+////                                            )
+//                                            },
+//                                            label = { Text(screen.label!!) },
+//                                            selected = currentRoute == screen.destination,
+//                                            onClick = {
+//                                                navController.navigate(screen.destination) {
+//                                                    // Pop up to the start destination of the graph to
+//                                                    // avoid building up a large stack of destinations
+//                                                    // on the back stack as users select items
+//                                                    popUpTo(navController.graph.startDestinationRoute!!) {
+//                                                        saveState = true
+//                                                    }
+//                                                    // Avoid multiple copies of the same destination when
+//                                                    // reselecting the same item
+//                                                    launchSingleTop = true
+//                                                    restoreState = true
+//                                                }
+//                                            }
+//                                        )
+//                                    }
+//                                }
+//                            }
                         )
                     } else {
                         Scaffold(

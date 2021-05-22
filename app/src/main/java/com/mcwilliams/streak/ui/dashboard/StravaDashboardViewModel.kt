@@ -28,6 +28,9 @@ class StravaDashboardViewModel @Inject constructor(
     private var _isLoggedIn: MutableLiveData<Boolean> = MutableLiveData(null)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
+    private var _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
+    var isRefreshing: LiveData<Boolean> = _isRefreshing
+
     var currentMonthEpoch = 0
     var currentMonth = ""
     var _currentMonthActivites: MutableLiveData<List<ActivitesItem>> =
@@ -104,9 +107,12 @@ class StravaDashboardViewModel @Inject constructor(
         prevYearEpoch = getEpoch(2020, 0, 1).first
         prevPrevYearEpoch = getEpoch(2019, 0, 1).first
 
+        _isRefreshing.postValue(true)
     }
 
     fun fetchData() {
+        _isRefreshing.postValue(true)
+
         _activityType.postValue(stravaDashboardRepository.getPreferredActivity())
 
         _unitType.postValue(stravaDashboardRepository.getPreferredUnitType())
@@ -161,6 +167,8 @@ class StravaDashboardViewModel @Inject constructor(
             val combinedList = currentMonthActivites.value!!.toMutableList()
             combinedList.plus(previousMonthActivities.value?.toMutableList())
             _lastTwoMonthsActivities.postValue(combinedList)
+
+            _isRefreshing.postValue(false)
         }
 
 

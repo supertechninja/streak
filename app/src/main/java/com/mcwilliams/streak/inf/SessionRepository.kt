@@ -2,6 +2,7 @@ package com.mcwilliams.streak.inf
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.Keep
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.inf.model.GrantType
 import com.mcwilliams.streak.inf.model.TokenResponse
@@ -9,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@Keep
 class SessionRepository @Inject constructor(
     val context: Context,
     private val session: Session

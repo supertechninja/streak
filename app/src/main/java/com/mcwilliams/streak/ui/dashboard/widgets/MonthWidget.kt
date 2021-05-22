@@ -29,6 +29,7 @@ import com.mcwilliams.streak.R
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
+import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.dashboard.monthWeekMap
@@ -40,7 +41,6 @@ import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 import java.time.YearMonth
 import java.util.Locale
-import kotlin.math.roundToInt
 
 @Composable
 fun MonthWidget(
@@ -54,151 +54,149 @@ fun MonthWidget(
     currentWeek: (MutableList<Int>) -> Unit,
     selectedUnitType: UnitType?,
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(20.dp),
-        backgroundColor = primaryColor
-    ) {
-        BoxWithConstraints(
-            modifier = Modifier.padding(
-                vertical = 12.dp,
-                horizontal = 10.dp
-            )
-        ) {
-            val width = this.maxWidth / 2
-
-            var listOfDaysLoggedActivity = mutableListOf<Int>()
-            var totalDistance = 0f
-            var totalElevation = 0f
-            var totalTime = 0
-            var count = 0
-
-            monthlyWorkouts.forEach {
-                if (selectedActivityType!!.name == ActivityType.All.name) {
-                    val date = it.start_date_local.getDate()
-                    listOfDaysLoggedActivity.add(date.dayOfMonth)
-
-                    totalElevation += it.total_elevation_gain
-
-                    totalTime += it.elapsed_time
-
-                    totalDistance += it.distance
-
-                    count = count.inc()
-                } else if (it.type == selectedActivityType!!.name) {
-                    val date = it.start_date_local.getDate()
-                    listOfDaysLoggedActivity.add(date.dayOfMonth)
-
-                    totalElevation += it.total_elevation_gain
-
-                    totalTime += it.elapsed_time
-
-                    totalDistance += it.distance
-
-                    count = count.inc()
-                }
-            }
-
-            listOfDaysLoggedActivity =
-                listOfDaysLoggedActivity.distinct().toMutableList()
-
-            updateMonthlyMetrics(
-                SummaryMetrics(
-                    count = count,
-                    totalDistance = totalDistance,
-                    totalElevation = totalElevation,
-                    totalTime = totalTime
+    StreakWidgetCard(
+        content = {
+            BoxWithConstraints(
+                modifier = Modifier.padding(
+                    vertical = 12.dp,
+                    horizontal = 10.dp
                 )
-            )
+            ) {
+                val width = this.maxWidth / 2
 
-            Row() {
-                Column(
-                    modifier = Modifier.width(width = width),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Row() {
-                        Text(
-                            selectedActivityType?.name!!,
-                            color = Color(0xFFFFA500),
-                        )
-                        Text(
-                            "  |  ${
-                                YearMonth.now().month.name.toLowerCase(Locale.getDefault())
-                                    .capitalize(Locale.getDefault())
-                            }",
+                var listOfDaysLoggedActivity = mutableListOf<Int>()
+                var totalDistance = 0f
+                var totalElevation = 0f
+                var totalTime = 0
+                var count = 0
+
+                monthlyWorkouts.forEach {
+                    if (selectedActivityType!!.name == ActivityType.All.name) {
+                        val date = it.start_date_local.getDate()
+                        listOfDaysLoggedActivity.add(date.dayOfMonth)
+
+                        totalElevation += it.total_elevation_gain
+
+                        totalTime += it.elapsed_time
+
+                        totalDistance += it.distance
+
+                        count = count.inc()
+                    } else if (it.type == selectedActivityType!!.name) {
+                        val date = it.start_date_local.getDate()
+                        listOfDaysLoggedActivity.add(date.dayOfMonth)
+
+                        totalElevation += it.total_elevation_gain
+
+                        totalTime += it.elapsed_time
+
+                        totalDistance += it.distance
+
+                        count = count.inc()
+                    }
+                }
+
+                listOfDaysLoggedActivity =
+                    listOfDaysLoggedActivity.distinct().toMutableList()
+
+                updateMonthlyMetrics(
+                    SummaryMetrics(
+                        count = count,
+                        totalDistance = totalDistance,
+                        totalElevation = totalElevation,
+                        totalTime = totalTime
+                    )
+                )
+
+                Row() {
+                    Column(
+                        modifier = Modifier.width(width = width),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Row() {
+                            Text(
+                                selectedActivityType?.name!!,
+                                color = Color(0xFFFFA500),
+                                fontWeight = FontWeight.ExtraBold,
+                                style = MaterialTheme.typography.body2
+                            )
+                            Text(
+                                "  |  ${
+                                    YearMonth.now().month.name.toLowerCase(Locale.getDefault())
+                                        .capitalize(Locale.getDefault())
+                                }",
+                                color = MaterialTheme.colors.onSurface,
+                                style = MaterialTheme.typography.body2
+                            )
+                        }
+                        Divider(
+                            modifier = Modifier
+                                .width(80.dp)
+                                .padding(vertical = 4.dp)
+                                .height(1.dp),
                             color = MaterialTheme.colors.onSurface
                         )
-                    }
-                    Divider(
-                        modifier = Modifier
-                            .width(80.dp)
-                            .padding(vertical = 4.dp)
-                            .height(1.dp),
-                        color = MaterialTheme.colors.onSurface
-                    )
-                    DashboardStat(
-                        image = R.drawable.ic_ruler,
-                        stat = totalDistance.getDistanceString(selectedUnitType!!)
-                    )
+                        DashboardStat(
+                            image = R.drawable.ic_ruler,
+                            stat = totalDistance.getDistanceString(selectedUnitType!!)
+                        )
 
-                    DashboardStat(
-                        image = R.drawable.ic_clock_time,
-                        stat = totalTime.getTimeStringHoursAndMinutes()
-                    )
+                        DashboardStat(
+                            image = R.drawable.ic_clock_time,
+                            stat = totalTime.getTimeStringHoursAndMinutes()
+                        )
 
-                    DashboardStat(
-                        image = R.drawable.ic_up_right,
-                        stat = totalElevation.getElevationString(selectedUnitType!!)
-                    )
+                        DashboardStat(
+                            image = R.drawable.ic_up_right,
+                            stat = totalElevation.getElevationString(selectedUnitType!!)
+                        )
 
-                    DashboardStat(
-                        image = R.drawable.ic_hashtag,
-                        stat = "$count"
-                    )
-                }
-                Column(modifier = Modifier.width(width = width)) {
-                    for (i in 0..weekCount) {
-                        CalendarView(
-                            startDayOffSet = firstDayOffset,
-                            endDayCount = lastDayCount,
-                            monthWeekNumber = i,
-                            priorMonthLength = priorMonthLength,
-                            weekCount = weekCount,
-                            width = width,
-                            daysActivitiesLogged = listOfDaysLoggedActivity,
-                            currentWeek = currentWeek
+                        DashboardStat(
+                            image = R.drawable.ic_hashtag,
+                            stat = "$count"
                         )
                     }
+                    Column(modifier = Modifier.width(width = width)) {
+                        for (i in 0..weekCount) {
+                            CalendarView(
+                                startDayOffSet = firstDayOffset,
+                                endDayCount = lastDayCount,
+                                monthWeekNumber = i,
+                                priorMonthLength = priorMonthLength,
+                                weekCount = weekCount,
+                                width = width,
+                                daysActivitiesLogged = listOfDaysLoggedActivity,
+                                currentWeek = currentWeek
+                            )
+                        }
 
-                    //Add previous 2 weeks to week map
-                    val firstDayWeekZeroMonth =
-                        (priorMonthLength - (firstDayOffset - 1))
+                        //Add previous 2 weeks to week map
+                        val firstDayWeekZeroMonth =
+                            (priorMonthLength - (firstDayOffset - 1))
 
-                    val listOfDatesInPreviousWeek: MutableList<Int> =
-                        mutableListOf()
+                        val listOfDatesInPreviousWeek: MutableList<Int> =
+                            mutableListOf()
 
-                    for (i in 0..6) {
-                        val priorDay = (firstDayWeekZeroMonth - (i + 1))
-                        listOfDatesInPreviousWeek.add(priorDay)
+                        for (i in 0..6) {
+                            val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                            listOfDatesInPreviousWeek.add(priorDay)
+                        }
+                        monthWeekMap.put(-1, listOfDatesInPreviousWeek)
+
+                        val listOfDatesInTwoWeeksAgo: MutableList<Int> =
+                            mutableListOf()
+                        val twoWeekAgo = firstDayWeekZeroMonth - 7
+                        for (i in 0..6) {
+                            val priorDay = (twoWeekAgo - (i + 1))
+                            listOfDatesInTwoWeeksAgo.add(priorDay)
+                        }
+                        monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
+                        Log.d("TAG", "StravaDashboard: $monthWeekMap")
                     }
-                    monthWeekMap.put(-1, listOfDatesInPreviousWeek)
-
-                    val listOfDatesInTwoWeeksAgo: MutableList<Int> =
-                        mutableListOf()
-                    val twoWeekAgo = firstDayWeekZeroMonth - 7
-                    for (i in 0..6) {
-                        val priorDay = (twoWeekAgo - (i + 1))
-                        listOfDatesInTwoWeeksAgo.add(priorDay)
-                    }
-                    monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
-                    Log.d("TAG", "StravaDashboard: $monthWeekMap")
                 }
             }
         }
-    }
+    )
 }
 
 @SuppressLint("SimpleDateFormat")
