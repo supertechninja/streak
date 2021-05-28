@@ -95,7 +95,6 @@ fun Float.getElevationString(selectedUnitType: UnitType): String {
             } m"
         }
     }
-
 }
 
 fun Float.getDistanceString(selectedUnitType: UnitType) : String {

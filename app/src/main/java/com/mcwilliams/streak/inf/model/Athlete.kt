@@ -1,5 +1,8 @@
 package com.mcwilliams.streak.inf.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class Athlete(
     val badge_type_id: Int,
     val city: String,

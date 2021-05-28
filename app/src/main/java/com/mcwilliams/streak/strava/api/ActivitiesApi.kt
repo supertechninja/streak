@@ -1,9 +1,11 @@
 package com.mcwilliams.streak.strava.api
 
+import androidx.annotation.Keep
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+@Keep
 interface ActivitiesApi {
 
     @GET("athlete/activities")

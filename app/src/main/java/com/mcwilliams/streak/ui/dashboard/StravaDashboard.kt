@@ -1,5 +1,13 @@
 package com.mcwilliams.streak.ui.dashboard
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.util.Log
+import android.view.LayoutInflater
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,6 +16,7 @@ import androidx.compose.material.BottomSheetValue.Collapsed
 import androidx.compose.material.BottomSheetValue.Expanded
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -19,11 +28,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
@@ -37,10 +48,16 @@ import com.mcwilliams.streak.ui.settings.StreakSettingsView
 import com.mcwilliams.streak.ui.theme.StreakTheme
 import com.mcwilliams.streak.ui.theme.primaryBlueShade2
 import com.mcwilliams.streak.ui.theme.primaryColor
+import com.muddzdev.quickshot.QuickShot
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
+import java.io.File
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
-import java.util.*
+import androidx.core.content.FileProvider
+
+
+
 
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
@@ -91,6 +108,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         val context = LocalContext.current
         val isRefreshing by viewModel.isRefreshing.observeAsState()
 
+        val today by viewModel.today.observeAsState()
+
         val bottomSheetScaffoldState =
             rememberBottomSheetScaffoldState(bottomSheetState = BottomSheetState(initialValue = Collapsed))
 
@@ -132,6 +151,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                 ) {
                     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
                         val (title, action) = createRefs()
+
                         Text(
                             "Streak",
                             style = MaterialTheme.typography.h6,
@@ -166,156 +186,176 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                 }
             },
             content = {
-                SwipeRefresh(
-                    state = rememberSwipeRefreshState(isRefreshing!!),
-                    onRefresh = { viewModel.fetchData() },
-                    indicator = { s, trigger ->
-                        SwipeRefreshIndicator(
-                            s,
-                            trigger,
-                            contentColor = primaryColor,
-                            backgroundColor = Color.White
-                        )
-                    },
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(paddingValues = paddingValues)
-                            .verticalScroll(rememberScrollState())
-                            .background(color = Color(0xFF01374D))
+                Box() {
+                    SwipeRefresh(
+                        state = rememberSwipeRefreshState(isRefreshing!!),
+                        onRefresh = {
+                            viewModel.fetchData()
+                        },
+                        indicator = { s, trigger ->
+                            SwipeRefreshIndicator(
+                                s,
+                                trigger,
+                                contentColor = primaryColor,
+                                backgroundColor = Color.White
+                            )
+                        },
                     ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(paddingValues = paddingValues)
+                                .verticalScroll(rememberScrollState())
+                                .background(color = Color(0xFF01374D))
+                        ) {
 
-                        error?.let {
-                            if (it.isNotEmpty()) {
-                                Snackbar(action = {
-                                    Text(text = "Refresh")
-                                }) {
-                                    Text(text = it)
+                            error?.let {
+                                if (it.isNotEmpty()) {
+                                    Snackbar(action = {
+                                        Text(text = "Refresh")
+                                    }) {
+                                        Text(text = it)
+                                    }
                                 }
                             }
-                        }
-
-                        monthlyActivities?.let { monthlyWorkouts ->
-                            Title(text = "Week Summary")
 
                             monthlyActivities?.let { monthlyWorkouts ->
-                                WeekSummaryWidget(
-                                    monthlyWorkouts = monthlyWorkouts,
-                                    selectedActivityType = selectedActivityType,
-                                    currentWeek = currentWeek,
-                                    selectedUnitType = selectedUnitType
-                                )
-                            }
-
-                            Title(text = "Month Summary")
-                            MonthWidget(
-                                monthlyWorkouts = monthlyWorkouts,
-                                updateMonthlyMetrics,
-                                selectedActivityType,
-                                weekCount,
-                                firstDayOffset,
-                                lastDayCount,
-                                priorMonthLength,
-                                updateCurrentWeek,
-                                selectedUnitType = selectedUnitType
-                            )
-
-                            Title(text = "Week vs Week")
-                            last2MonthsActivities?.let { activitesList ->
-                                WeekCompareWidget(
-                                    activitesList = activitesList,
-                                    selectedActivityType = selectedActivityType,
-                                    selectedUnitType = selectedUnitType
-                                )
-                            }
-
-                            if (previousMonthActivities != null && previousPreviousMonthActivities != null) {
-
-                                var runCountPrev = 0
-                                var prevDistance = 0f
-                                var prevElevation = 0f
-                                var prevTime = 0
-                                previousMonthActivities?.forEach {
-                                    if (selectedActivityType!!.name == ActivityType.All.name) {
-                                        runCountPrev = runCountPrev.inc()
-                                        prevDistance += it.distance
-                                        prevElevation += it.total_elevation_gain
-                                        prevTime += it.elapsed_time
-                                    } else if (it.type == selectedActivityType!!.name) {
-                                        runCountPrev = runCountPrev.inc()
-                                        prevDistance += it.distance
-                                        prevElevation += it.total_elevation_gain
-                                        prevTime += it.elapsed_time
-                                    }
+                                monthlyActivities?.let { monthlyWorkouts ->
+                                    StreakDashboardWidget(
+                                        content = {
+                                            WeekSummaryWidget(
+                                                monthlyWorkouts = monthlyWorkouts,
+                                                selectedActivityType = selectedActivityType,
+                                                currentWeek = currentWeek,
+                                                selectedUnitType = selectedUnitType,
+                                                today = today!!
+                                            )
+                                        },
+                                        widgetName = "Week Summary"
+                                    )
                                 }
-                                val prevMetrics by remember {
-                                    mutableStateOf(
-                                        SummaryMetrics(
-                                            runCountPrev,
-                                            prevDistance,
-                                            prevElevation,
-                                            prevTime
+
+                                StreakDashboardWidget(
+                                    content = {
+                                        MonthWidget(
+                                            monthlyWorkouts = monthlyWorkouts,
+                                            updateMonthlyMetrics,
+                                            selectedActivityType,
+                                            weekCount,
+                                            firstDayOffset,
+                                            lastDayCount,
+                                            priorMonthLength,
+                                            updateCurrentWeek,
+                                            selectedUnitType = selectedUnitType,
+                                            today = today
                                         )
-                                    )
-                                }
-
-
-                                var runCountPrevPrev = 0
-                                var prevPrevDistance = 0f
-                                var prevPrevElevation = 0f
-                                var prevPrevTime = 0
-                                previousPreviousMonthActivities?.forEach {
-                                    if (selectedActivityType!!.name == ActivityType.All.name) {
-                                        runCountPrevPrev = runCountPrevPrev.inc()
-                                        prevPrevDistance += it.distance
-                                        prevPrevElevation += it.total_elevation_gain
-                                        prevPrevTime += it.elapsed_time
-                                    } else if (it.type == selectedActivityType!!.name) {
-                                        runCountPrevPrev = runCountPrevPrev.inc()
-                                        prevPrevDistance += it.distance
-                                        prevPrevElevation += it.total_elevation_gain
-                                        prevPrevTime += it.elapsed_time
-                                    }
-                                }
-
-                                val prevPrevMetrics by remember {
-                                    mutableStateOf(
-                                        SummaryMetrics(
-                                            runCountPrevPrev,
-                                            prevPrevDistance,
-                                            prevPrevElevation,
-                                            prevPrevTime
-                                        )
-                                    )
-                                }
-
-                                Title(text = "Month vs Month")
-                                MonthCompareWidget(
-                                    viewModel = viewModel,
-                                    selectedActivityType = selectedActivityType,
-                                    currentMonthMetrics = currentMonthMetrics,
-                                    prevMetrics = prevMetrics,
-                                    prevPrevMetrics = prevPrevMetrics,
-                                    selectedUnitType = selectedUnitType
+                                    }, widgetName = "Month Summary"
                                 )
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 16.dp),
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.powerd_by_strava_logo),
-                                        contentDescription = "Powered By Strava",
+                                last2MonthsActivities?.let { activitesList ->
+                                    StreakDashboardWidget(
+                                        content = {
+                                            WeekCompareWidget(
+                                                activitesList = activitesList,
+                                                selectedActivityType = selectedActivityType,
+                                                selectedUnitType = selectedUnitType,
+                                                today = today!!
+                                            )
+                                        }, widgetName = "Week vs Week"
                                     )
+                                }
+
+                                if (previousMonthActivities != null && previousPreviousMonthActivities != null) {
+
+                                    var runCountPrev = 0
+                                    var prevDistance = 0f
+                                    var prevElevation = 0f
+                                    var prevTime = 0
+                                    previousMonthActivities?.forEach {
+                                        if (selectedActivityType!!.name == ActivityType.All.name) {
+                                            runCountPrev = runCountPrev.inc()
+                                            prevDistance += it.distance
+                                            prevElevation += it.total_elevation_gain
+                                            prevTime += it.elapsed_time
+                                        } else if (it.type == selectedActivityType!!.name) {
+                                            runCountPrev = runCountPrev.inc()
+                                            prevDistance += it.distance
+                                            prevElevation += it.total_elevation_gain
+                                            prevTime += it.elapsed_time
+                                        }
+                                    }
+                                    val prevMetrics by remember {
+                                        mutableStateOf(
+                                            SummaryMetrics(
+                                                runCountPrev,
+                                                prevDistance,
+                                                prevElevation,
+                                                prevTime
+                                            )
+                                        )
+                                    }
+
+
+                                    var runCountPrevPrev = 0
+                                    var prevPrevDistance = 0f
+                                    var prevPrevElevation = 0f
+                                    var prevPrevTime = 0
+                                    previousPreviousMonthActivities?.forEach {
+                                        if (selectedActivityType!!.name == ActivityType.All.name) {
+                                            runCountPrevPrev = runCountPrevPrev.inc()
+                                            prevPrevDistance += it.distance
+                                            prevPrevElevation += it.total_elevation_gain
+                                            prevPrevTime += it.elapsed_time
+                                        } else if (it.type == selectedActivityType!!.name) {
+                                            runCountPrevPrev = runCountPrevPrev.inc()
+                                            prevPrevDistance += it.distance
+                                            prevPrevElevation += it.total_elevation_gain
+                                            prevPrevTime += it.elapsed_time
+                                        }
+                                    }
+
+                                    val prevPrevMetrics by remember {
+                                        mutableStateOf(
+                                            SummaryMetrics(
+                                                runCountPrevPrev,
+                                                prevPrevDistance,
+                                                prevPrevElevation,
+                                                prevPrevTime
+                                            )
+                                        )
+                                    }
+
+                                    StreakDashboardWidget(
+                                        content = {
+                                            MonthCompareWidget(
+                                                viewModel = viewModel,
+                                                selectedActivityType = selectedActivityType,
+                                                currentMonthMetrics = currentMonthMetrics,
+                                                prevMetrics = prevMetrics,
+                                                prevPrevMetrics = prevPrevMetrics,
+                                                selectedUnitType = selectedUnitType
+                                            )
+                                        }, widgetName = "Month vs Month"
+                                    )
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 16.dp, bottom = 16.dp),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.powerd_by_strava_logo),
+                                            contentDescription = "Powered By Strava",
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            })
+            }
+        )
     }
 }
 
@@ -330,10 +370,60 @@ fun ColumnScope.Title(text: String) {
     )
 }
 
+
+@Composable
+fun StreakDashboardWidget(content: @Composable () -> Unit, widgetName: String) {
+    AndroidView(factory = { context ->
+        val androidView =
+            LayoutInflater.from(context)
+                .inflate(R.layout.compose_view, null)
+
+
+        val composeView =
+            androidView.findViewById<ComposeView>(R.id.compose_view)
+        composeView.setContent {
+            content()
+        }
+
+        val titleComposeView =
+            androidView.findViewById<ComposeView>(R.id.title_compose_view)
+        titleComposeView.setContent {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = widgetName,
+                    style = MaterialTheme.typography.h6,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colors.onSurface,
+                    modifier = Modifier
+                        .padding(top = 4.dp, start = 16.dp)
+                )
+
+                val fileName = widgetName.replace(" ", "-")
+                IconButton(
+                    onClick = {
+                        share(composeView, fileName, context = context)
+                    },
+                    modifier = Modifier.padding(end = 16.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_save),
+                        contentDescription = "Share"
+                    )
+                }
+            }
+        }
+
+        return@AndroidView androidView
+    })
+}
+
 enum class StatType { Distance, Time, Elevation, Count }
 
 val monthWeekMap: MutableMap<Int, MutableList<Int>> = mutableMapOf()
-val today = SimpleDateFormat("dd").format(Calendar.getInstance().time).toInt()
 
 data class SummaryMetrics(
     val count: Int,
@@ -341,4 +431,25 @@ data class SummaryMetrics(
     val totalElevation: Float,
     val totalTime: Int
 )
+
+private fun share(view: ComposeView, name: String, context: Context) {
+    val fileName = "$name-${LocalDate.now()}-${LocalTime.now().hour}-${LocalTime.now().minute}"
+    QuickShot.of(view).setResultListener(HandleSavedImage(context, fileName))
+        .setFilename(fileName)
+        .setPath("Streak")
+        .toPNG()
+//        .toJPG()
+        .save();
+}
+
+class HandleSavedImage(val context: Context,val fileName: String) : QuickShot.QuickShotListener {
+    override fun onQuickShotSuccess(path: String?) {
+        Toast.makeText(context, "Dashboard Saved", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onQuickShotFailed(path: String?) {
+        Toast.makeText(context, "Error Saving", Toast.LENGTH_SHORT).show()
+    }
+
+}
 

@@ -1,5 +1,8 @@
 package com.mcwilliams.streak.strava.model.activites
 
+import androidx.annotation.Keep
+
+@Keep
 data class ActivitesItem(
     val achievement_count: Int,
     val athlete: Athlete,

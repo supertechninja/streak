@@ -1,11 +1,13 @@
 package com.mcwilliams.streak.inf
 
+import androidx.annotation.Keep
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException
 import javax.inject.Inject
 
+@Keep
 class AuthorizationInterceptor @Inject constructor(val sessionRepository: SessionRepository) :
     Interceptor {
     @Throws(IOException::class)

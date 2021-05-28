@@ -1,7 +1,8 @@
 package com.mcwilliams.streak.inf.model
 
-import com.mcwilliams.streak.inf.model.Athlete
+import androidx.annotation.Keep
 
+@Keep
 data class TokenResponse(
     val access_token: String,
     val athlete: Athlete?,

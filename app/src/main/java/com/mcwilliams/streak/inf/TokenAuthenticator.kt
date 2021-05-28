@@ -1,6 +1,7 @@
 package com.mcwilliams.streak.inf
 
 import android.util.Log
+import androidx.annotation.Keep
 import com.mcwilliams.streak.inf.SessionRepository
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
@@ -9,6 +10,7 @@ import okhttp3.Response
 import okhttp3.Route
 import javax.inject.Inject
 
+@Keep
 class TokenAuthenticator @Inject constructor(val sessionRepository: SessionRepository) : Authenticator {
     override fun authenticate(route: Route?, response: Response): Request? {
         // This is a synchronous call

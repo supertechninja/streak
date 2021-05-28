@@ -33,8 +33,7 @@ fun StreakWidgetCard(content: @Composable () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, bottom = 10.dp, top = 4.dp)
-            .padding(horizontal = 16.dp),
+            .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = 4.dp,
         backgroundColor = primaryColor

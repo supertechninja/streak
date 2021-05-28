@@ -89,6 +89,12 @@ class StravaDashboardViewModel @Inject constructor(
     var lastTwoMonthsActivities: LiveData<List<ActivitesItem>> =
         _lastTwoMonthsActivities
 
+
+    var _today: MutableLiveData<Int> =
+        MutableLiveData()
+    var today: LiveData<Int> =
+        _today
+
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
 
@@ -112,6 +118,8 @@ class StravaDashboardViewModel @Inject constructor(
 
     fun fetchData() {
         _isRefreshing.postValue(true)
+
+        _today.postValue(LocalDate.now().dayOfMonth)
 
         _activityType.postValue(stravaDashboardRepository.getPreferredActivity())
 

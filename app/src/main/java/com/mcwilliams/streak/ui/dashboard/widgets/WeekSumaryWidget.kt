@@ -1,22 +1,17 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,16 +27,12 @@ import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.dashboard.today
-import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.util.Calendar
-import kotlin.math.roundToInt
 
 @Composable
 fun WeekSummaryWidget(
@@ -49,10 +40,10 @@ fun WeekSummaryWidget(
     selectedActivityType: ActivityType?,
     currentWeek: MutableList<Int>,
     selectedUnitType: UnitType?,
+    today: Int,
 ) {
     StreakWidgetCard(
         content = {
-
             val dayOfWeekWithDistance: MutableMap<Int, Int> = mutableMapOf()
             BoxWithConstraints(
                 modifier = Modifier.padding(

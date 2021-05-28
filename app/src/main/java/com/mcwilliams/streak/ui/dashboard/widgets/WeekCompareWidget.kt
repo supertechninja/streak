@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -32,8 +30,6 @@ import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.dashboard.monthWeekMap
-import com.mcwilliams.streak.ui.dashboard.today
-import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
@@ -43,11 +39,11 @@ import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 fun WeekCompareWidget(
     activitesList: List<ActivitesItem>,
     selectedActivityType: ActivityType?,
-    selectedUnitType: UnitType?
+    selectedUnitType: UnitType?,
+    today: Int?
 ) {
     StreakWidgetCard(
         content = {
-
             BoxWithConstraints(
                 modifier = Modifier.padding(
                     vertical = 12.dp,

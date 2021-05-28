@@ -20,4 +20,6 @@
 # hide the original source file name.
 -renamesourcefileattribute SourceFile
 
--keep public class
+-printconfiguration ~/tmp/full-r8-config.txt
+
+-printusage /Users/jtmac/Documents/Android/streak/usage.txt

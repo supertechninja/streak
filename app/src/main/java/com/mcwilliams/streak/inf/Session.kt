@@ -1,11 +1,12 @@
 package com.mcwilliams.streak.inf
 
+import androidx.annotation.Keep
 import com.mcwilliams.streak.inf.model.TokenResponse
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 
-
+@Keep
 interface Session {
     @POST("/oauth/token")
     @FormUrlEncoded

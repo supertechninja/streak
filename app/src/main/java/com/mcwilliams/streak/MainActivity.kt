@@ -1,9 +1,12 @@
 package com.mcwilliams.streak
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.Keep
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -45,7 +48,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
+@Keep
 @AndroidEntryPoint
+@RequiresApi(Build.VERSION_CODES.Q)
 class MainActivity : ComponentActivity() {
     private val viewModel: StravaDashboardViewModel by viewModels()
 
@@ -145,17 +150,17 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
                                     Text(
-                                        text = "I have always wanted a way to analyze my athletic activity overtime.",
+                                        text = "I have always wanted a way to analyze my athletic activity overtime, as well as track my progress",
                                         style = MaterialTheme.typography.subtitle1,
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
                                     Text(
-                                        text = "Streak provides snapshots of your Strava data organized by comparing your data week over week, month over month, and year over year",
+                                        text = "Streak provides snapshots of your Strava data organized by comparing your data week over week, month over month",
                                         style = MaterialTheme.typography.subtitle1,
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
                                     Text(
-                                        text = "Tap the \" Connect With Strava \" to login and get started",
+                                        text = "Tap the \"Connect With Strava\" to login and get started",
                                         style = MaterialTheme.typography.subtitle1,
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
@@ -190,7 +195,8 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                 }
-                            })
+                            }
+                        )
                     }
                 }
             }
@@ -198,6 +204,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Keep
 sealed class NavigationDestination(
     val destination: String,
     val label: String? = null,

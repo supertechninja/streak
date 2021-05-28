@@ -1,7 +1,9 @@
 package com.mcwilliams.streak.inf.model
 
 import android.content.Context
+import androidx.annotation.Keep
 
+@Keep
 class StravaLogin(private val context: Context?) {
     private var clientID = 0
     private var redirectURI: String? = null

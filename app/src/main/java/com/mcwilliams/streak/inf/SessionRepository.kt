@@ -22,21 +22,20 @@ class SessionRepository @Inject constructor(
     )
 
     override suspend fun getFirstTokens(code: String): TokenResponse {
-        return withContext(context = Dispatchers.IO) {
-            val firstToken = session.getFirstToken(
+        val firstToken: TokenResponse
+        withContext(context = Dispatchers.IO) {
+            firstToken = session.getFirstToken(
                 CLIENT_ID,
                 CLIENT_SECRET,
                 code,
                 GrantType.AUTHORIZATION_CODE.toString()
             )
-            if (firstToken.athlete != null) {
-//                athleteRepo.saveAthlete(firstToken.athlete)
-            }
-
             setAccessToken(firstToken.access_token)
             setRefreshToken(firstToken.refresh_token)
             firstToken
         }
+
+        return firstToken
     }
 
     override suspend fun refreshToken() : String {
@@ -99,6 +98,7 @@ class SessionRepository @Inject constructor(
         preferences.edit().remove(REFRESH_TOKEN).apply()
     }
 
+    @Keep
     companion object {
         const val CLIENT_ID = 66172
         const val CLIENT_SECRET = "9d8bc5846db6c2df5750f0a130fd88c445b0b363"

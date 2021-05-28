@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -33,8 +31,6 @@ import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.dashboard.monthWeekMap
-import com.mcwilliams.streak.ui.dashboard.today
-import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
@@ -53,6 +49,7 @@ fun MonthWidget(
     priorMonthLength: Int,
     currentWeek: (MutableList<Int>) -> Unit,
     selectedUnitType: UnitType?,
+    today: Int?,
 ) {
     StreakWidgetCard(
         content = {
@@ -166,7 +163,8 @@ fun MonthWidget(
                                 weekCount = weekCount,
                                 width = width,
                                 daysActivitiesLogged = listOfDaysLoggedActivity,
-                                currentWeek = currentWeek
+                                currentWeek = currentWeek,
+                                today = today!!
                             )
                         }
 
@@ -210,6 +208,7 @@ fun CalendarView(
     width: Dp,
     daysActivitiesLogged: MutableList<Int>,
     currentWeek: (MutableList<Int>) -> Unit,
+    today: Int,
 ) {
     val dateModifier = Modifier.width(width = width / 7)
     Row(modifier = Modifier.fillMaxWidth()) {
@@ -219,7 +218,6 @@ fun CalendarView(
         if (monthWeekNumber == 0) {
             for (i in 0 until startDayOffSet) {
                 val priorDay = (priorMonthLength - (startDayOffSet - i - 1))
-                Log.d("TAG", "CalendarView: $priorDay")
 
                 listOfDatesInWeek.add(priorDay)
 
@@ -275,10 +273,8 @@ fun CalendarView(
 
         if (listOfDatesInWeek.contains(today)) {
             currentWeek(listOfDatesInWeek)
-//            currentWeek = listOfDatesInWeek
         }
 
         monthWeekMap.put(monthWeekNumber, listOfDatesInWeek)
-        Log.d("TAG", "CalendarView: $monthWeekMap")
     }
 }
