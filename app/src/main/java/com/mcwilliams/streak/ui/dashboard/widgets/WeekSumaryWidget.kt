@@ -33,12 +33,15 @@ import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.Month
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Composable
 fun WeekSummaryWidget(
     monthlyWorkouts: List<ActivitesItem>,
     selectedActivityType: ActivityType?,
-    currentWeek: MutableList<Int>,
+    currentWeek: MutableList<Pair<Int, Int>>,
     selectedUnitType: UnitType?,
     today: Int,
 ) {
@@ -61,53 +64,56 @@ fun WeekSummaryWidget(
                 monthlyWorkouts.forEach { activitesItem ->
                     val date = activitesItem.start_date_local.getDate()
 
-                    if (currentWeek.contains(date.dayOfMonth)) {
-                        if (selectedActivityType!!.name == ActivityType.All.name) {
-                            totalElevation += activitesItem.total_elevation_gain
+                    currentWeek.forEach {
+                        if (it.second == date.dayOfMonth && it.first == date.monthValue) {
+                            if (selectedActivityType!!.name == ActivityType.All.name) {
+                                totalElevation += activitesItem.total_elevation_gain
 
-                            totalTime += activitesItem.elapsed_time
+                                totalTime += activitesItem.elapsed_time
 
-                            totalDistance += activitesItem.distance
+                                totalDistance += activitesItem.distance
 
-                            if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                                val newDistance =
-                                    dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                                dayOfWeekWithDistance.replace(
-                                    date.dayOfMonth,
-                                    newDistance
-                                )
-                            } else {
-                                dayOfWeekWithDistance.put(
-                                    date.dayOfMonth,
-                                    activitesItem.distance.toInt()
-                                )
+                                if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
+                                    val newDistance =
+                                        dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
+                                    dayOfWeekWithDistance.replace(
+                                        date.dayOfMonth,
+                                        newDistance
+                                    )
+                                } else {
+                                    dayOfWeekWithDistance.put(
+                                        date.dayOfMonth,
+                                        activitesItem.distance.toInt()
+                                    )
+                                }
+
+                                count = count.inc()
+                            } else if (activitesItem.type == selectedActivityType!!.name) {
+                                totalElevation += activitesItem.total_elevation_gain
+
+                                totalTime += activitesItem.elapsed_time
+
+                                totalDistance += activitesItem.distance
+
+                                if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
+                                    val newDistance =
+                                        dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
+                                    dayOfWeekWithDistance.replace(
+                                        date.dayOfMonth,
+                                        newDistance
+                                    )
+                                } else {
+                                    dayOfWeekWithDistance.put(
+                                        date.dayOfMonth,
+                                        activitesItem.distance.toInt()
+                                    )
+                                }
+
+                                count = count.inc()
                             }
-
-                            count = count.inc()
-                        } else if (activitesItem.type == selectedActivityType!!.name) {
-                            totalElevation += activitesItem.total_elevation_gain
-
-                            totalTime += activitesItem.elapsed_time
-
-                            totalDistance += activitesItem.distance
-
-                            if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                                val newDistance =
-                                    dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                                dayOfWeekWithDistance.replace(
-                                    date.dayOfMonth,
-                                    newDistance
-                                )
-                            } else {
-                                dayOfWeekWithDistance.put(
-                                    date.dayOfMonth,
-                                    activitesItem.distance.toInt()
-                                )
-                            }
-
-                            count = count.inc()
                         }
                     }
+
                 }
 
                 Row() {
@@ -123,12 +129,21 @@ fun WeekSummaryWidget(
                                 style = MaterialTheme.typography.body2
                             )
                             if (currentWeek.isNotEmpty()) {
+                                val text =
+                                    " | ${
+                                        Month.of(currentWeek[0].first).getDisplayName(
+                                            TextStyle.SHORT_STANDALONE,
+                                            Locale.getDefault()
+                                        )
+                                    } ${currentWeek[0].second}-" +
+                                            "${
+                                                Month.of(currentWeek.last().first).getDisplayName(
+                                                    TextStyle.SHORT_STANDALONE,
+                                                    Locale.getDefault()
+                                                )
+                                            }  ${currentWeek.last().second}"
                                 Text(
-                                    "  |  May ${
-                                        currentWeek[0]
-                                    }-${
-                                        currentWeek.last()
-                                    }",
+                                    text = text,
                                     color = MaterialTheme.colors.onSurface,
                                     style = MaterialTheme.typography.body2
                                 )
@@ -178,7 +193,7 @@ fun WeekSummaryWidget(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         dayOfWeekWithDistance.forEach {
-                                            if (it.key == dateInWeek) {
+                                            if (it.key == dateInWeek.second) {
                                                 Log.d(
                                                     "TAG",
                                                     "StravaDashboard: ${it.value}"

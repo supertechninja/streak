@@ -55,8 +55,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import androidx.core.content.FileProvider
-
-
+import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 
 
 @ExperimentalMaterialApi
@@ -81,7 +80,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         val previousMonthActivities by viewModel.previousMonthActivities.observeAsState()
         val previousPreviousMonthActivities by viewModel.previousPreviousMonthActivities.observeAsState()
 
-        val last2MonthsActivities by viewModel.lastTwoMonthsActivities.observeAsState()
+        var last2MonthsActivities: List<ActivitesItem> by remember { mutableStateOf(emptyList()) }
 
         val currentYearActivities by viewModel.currentYearActivites.observeAsState()
         val prevYearActivities by viewModel.prevYearActivites.observeAsState()
@@ -91,8 +90,12 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
         val selectedUnitType by viewModel.unitType.observeAsState()
 
-        var currentWeek: MutableList<Int> by rememberSaveable { mutableStateOf(mutableListOf()) }
-        val updateCurrentWeek = { updatedWeek: MutableList<Int> ->
+        var currentWeek: MutableList<Pair<Int, Int>> by rememberSaveable {
+            mutableStateOf(
+                mutableListOf()
+            )
+        }
+        val updateCurrentWeek = { updatedWeek: MutableList<Pair<Int, Int>> ->
             currentWeek = updatedWeek
         }
 
@@ -220,11 +223,13 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                             }
 
                             monthlyActivities?.let { monthlyWorkouts ->
-                                monthlyActivities?.let { monthlyWorkouts ->
+                                previousMonthActivities?.let {
+                                    last2MonthsActivities = monthlyWorkouts.plus(it)
+
                                     StreakDashboardWidget(
                                         content = {
                                             WeekSummaryWidget(
-                                                monthlyWorkouts = monthlyWorkouts,
+                                                monthlyWorkouts = last2MonthsActivities,
                                                 selectedActivityType = selectedActivityType,
                                                 currentWeek = currentWeek,
                                                 selectedUnitType = selectedUnitType,
@@ -252,18 +257,16 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     }, widgetName = "Month Summary"
                                 )
 
-                                last2MonthsActivities?.let { activitesList ->
-                                    StreakDashboardWidget(
-                                        content = {
-                                            WeekCompareWidget(
-                                                activitesList = activitesList,
-                                                selectedActivityType = selectedActivityType,
-                                                selectedUnitType = selectedUnitType,
-                                                today = today!!
-                                            )
-                                        }, widgetName = "Week vs Week"
-                                    )
-                                }
+                                StreakDashboardWidget(
+                                    content = {
+                                        WeekCompareWidget(
+                                            activitesList = last2MonthsActivities,
+                                            selectedActivityType = selectedActivityType,
+                                            selectedUnitType = selectedUnitType,
+                                            today = today!!
+                                        )
+                                    }, widgetName = "Week vs Week"
+                                )
 
                                 if (previousMonthActivities != null && previousPreviousMonthActivities != null) {
 
@@ -423,7 +426,7 @@ fun StreakDashboardWidget(content: @Composable () -> Unit, widgetName: String) {
 
 enum class StatType { Distance, Time, Elevation, Count }
 
-val monthWeekMap: MutableMap<Int, MutableList<Int>> = mutableMapOf()
+val monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>> = mutableMapOf()
 
 data class SummaryMetrics(
     val count: Int,
@@ -442,7 +445,7 @@ private fun share(view: ComposeView, name: String, context: Context) {
         .save();
 }
 
-class HandleSavedImage(val context: Context,val fileName: String) : QuickShot.QuickShotListener {
+class HandleSavedImage(val context: Context, val fileName: String) : QuickShot.QuickShotListener {
     override fun onQuickShotSuccess(path: String?) {
         Toast.makeText(context, "Dashboard Saved", Toast.LENGTH_SHORT).show()
     }

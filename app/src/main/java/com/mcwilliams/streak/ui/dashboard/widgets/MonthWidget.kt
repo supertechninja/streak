@@ -35,6 +35,7 @@ import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
+import java.time.Month
 import java.time.YearMonth
 import java.util.Locale
 
@@ -47,10 +48,12 @@ fun MonthWidget(
     firstDayOffset: Int,
     lastDayCount: Int,
     priorMonthLength: Int,
-    currentWeek: (MutableList<Int>) -> Unit,
+    currentWeek: (MutableList<Pair<Int,Int>>) -> Unit,
     selectedUnitType: UnitType?,
     today: Int?,
 ) {
+    val currentMonth = YearMonth.now().month
+
     StreakWidgetCard(
         content = {
             BoxWithConstraints(
@@ -119,7 +122,7 @@ fun MonthWidget(
                             )
                             Text(
                                 "  |  ${
-                                    YearMonth.now().month.name.toLowerCase(Locale.getDefault())
+                                    currentMonth.name.toLowerCase(Locale.getDefault())
                                         .capitalize(Locale.getDefault())
                                 }",
                                 color = MaterialTheme.colors.onSurface,
@@ -164,7 +167,8 @@ fun MonthWidget(
                                 width = width,
                                 daysActivitiesLogged = listOfDaysLoggedActivity,
                                 currentWeek = currentWeek,
-                                today = today!!
+                                today = today!!,
+                                currentMonth = currentMonth
                             )
                         }
 
@@ -172,24 +176,34 @@ fun MonthWidget(
                         val firstDayWeekZeroMonth =
                             (priorMonthLength - (firstDayOffset - 1))
 
-                        val listOfDatesInPreviousWeek: MutableList<Int> =
+                        val listOfDatesInPreviousWeek: MutableList<Pair<Int,Int>> =
                             mutableListOf()
 
                         for (i in 0..6) {
-                            val priorDay = (firstDayWeekZeroMonth - (i + 1))
-                            listOfDatesInPreviousWeek.add(priorDay)
+                            if(today!! < 7) {
+                                val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                                listOfDatesInPreviousWeek.add(currentMonth.value - 1 to priorDay)
+                            } else {
+                                val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                                listOfDatesInPreviousWeek.add(currentMonth.value to priorDay)
+                            }
                         }
                         monthWeekMap.put(-1, listOfDatesInPreviousWeek)
 
-                        val listOfDatesInTwoWeeksAgo: MutableList<Int> =
+                        val listOfDatesInTwoWeeksAgo: MutableList<Pair<Int,Int>> =
                             mutableListOf()
                         val twoWeekAgo = firstDayWeekZeroMonth - 7
                         for (i in 0..6) {
-                            val priorDay = (twoWeekAgo - (i + 1))
-                            listOfDatesInTwoWeeksAgo.add(priorDay)
+                            if(today!! < 7) {
+                                val priorDay = (twoWeekAgo - (i + 1))
+                                listOfDatesInTwoWeeksAgo.add(currentMonth.value - 1 to priorDay)
+                            } else {
+                                val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                                listOfDatesInTwoWeeksAgo.add(currentMonth.value to priorDay)
+                            }
                         }
                         monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
-                        Log.d("TAG", "StravaDashboard: $monthWeekMap")
+                        Log.d("TAG", "StravaDashboard: MONTH WEEK MAP $monthWeekMap")
                     }
                 }
             }
@@ -207,19 +221,20 @@ fun CalendarView(
     weekCount: Int,
     width: Dp,
     daysActivitiesLogged: MutableList<Int>,
-    currentWeek: (MutableList<Int>) -> Unit,
+    currentWeek: (MutableList<Pair<Int, Int>>) -> Unit,
     today: Int,
+    currentMonth: Month,
 ) {
     val dateModifier = Modifier.width(width = width / 7)
     Row(modifier = Modifier.fillMaxWidth()) {
 
-        val listOfDatesInWeek: MutableList<Int> = mutableListOf()
+        val listOfDatesInWeek: MutableList<Pair<Int, Int>> = mutableListOf()
 
         if (monthWeekNumber == 0) {
             for (i in 0 until startDayOffSet) {
                 val priorDay = (priorMonthLength - (startDayOffSet - i - 1))
 
-                listOfDatesInWeek.add(priorDay)
+                listOfDatesInWeek.add(currentMonth.value - 1 to priorDay)
 
                 Text(
                     " ",
@@ -268,11 +283,13 @@ fun CalendarView(
                 }
             }
 
-            listOfDatesInWeek.add(day)
+            listOfDatesInWeek.add(currentMonth.value to day)
         }
 
-        if (listOfDatesInWeek.contains(today)) {
-            currentWeek(listOfDatesInWeek)
+        listOfDatesInWeek.forEach {
+            if (it.second == today) {
+                currentWeek(listOfDatesInWeek)
+            }
         }
 
         monthWeekMap.put(monthWeekNumber, listOfDatesInWeek)

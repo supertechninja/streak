@@ -1,6 +1,7 @@
 package com.mcwilliams.streak.di
 
 import android.content.Context
+import com.mcwilliams.streak.BuildConfig
 import com.mcwilliams.streak.inf.AuthorizationInterceptor
 import com.mcwilliams.streak.inf.Session
 import com.mcwilliams.streak.inf.SessionRepository
@@ -102,7 +103,9 @@ object StravaNetworkModule {
         logging.level = HttpLoggingInterceptor.Level.BODY
 
         val okHttpClient = OkHttpClient.Builder()
-        okHttpClient.addInterceptor(logging)
+        if (BuildConfig.DEBUG) {
+            okHttpClient.addInterceptor(logging)
+        }
         return okHttpClient
     }
 }

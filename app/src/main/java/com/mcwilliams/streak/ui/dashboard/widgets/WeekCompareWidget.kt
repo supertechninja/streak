@@ -106,22 +106,33 @@ fun WeekCompareWidget(
 
                     var startingWeekInMap: MutableList<Int> = mutableListOf()
                     monthWeekMap.forEach loop@{ weekCount, datesInWeek ->
-                        if (datesInWeek.contains(today)) {
-                            startingWeekInMap.add(weekCount)
+                        datesInWeek.forEach { week ->
+                            if (week.second == today!!) {
+                                startingWeekInMap.add(weekCount)
+                            }
                         }
                     }
+
+                    Log.d("TAG", "WeekCompareWidget: starting week map $startingWeekInMap")
 
                     for (i in startingWeekInMap[0] downTo (startingWeekInMap[0] - 2)) {
                         val weeklyActivitiesList =
                             mutableListOf<ActivitesItem>()
                         activitesList.forEach { activitiesItem ->
                             val datesInWeek = monthWeekMap.get(i)
-                            if (datesInWeek!!.contains(activitiesItem.start_date_local.getDate().dayOfMonth)) {
-                                weeklyActivitiesList.add(activitiesItem)
+                            datesInWeek!!.forEach {
+                                if (it.second == activitiesItem.start_date_local.getDate().dayOfMonth &&
+                                    it.first == activitiesItem.start_date_local.getDate().monthValue) {
+                                    weeklyActivitiesList.add(activitiesItem)
+                                }
                             }
+
                         }
+                        Log.d("TAG", "WeekCompareWidget: Weekly List: $weeklyActivitiesList")
                         weeklyActivitiesMap.add(Pair(i, weeklyActivitiesList))
                     }
+
+                    Log.d("TAG", "WeekCompareWidget: $weeklyActivitiesMap")
 
 
                     weeklyActivitiesMap.forEach { weeklyActivityMap ->
