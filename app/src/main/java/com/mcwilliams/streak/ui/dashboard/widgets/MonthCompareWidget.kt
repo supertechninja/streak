@@ -42,8 +42,8 @@ import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 
 @Composable
-fun MonthCompareWidget(
-    viewModel: StravaDashboardViewModel,
+fun CompareWidget(
+    dashboardType: DashboardType,
     selectedActivityType: ActivityType?,
     columnTitles: Array<String>,
     prevMetrics: SummaryMetrics,
@@ -121,7 +121,10 @@ fun MonthCompareWidget(
                         )
 
                         MonthTextStat(
-                            currentMonthMetrics.totalDistance.getDistanceString(selectedUnitType!!),
+                            currentMonthMetrics.totalDistance.getDistanceString(
+                                selectedUnitType!!,
+                                isYearSummary = dashboardType == DashboardType.Year
+                            ),
                             monthColumnWidth = monthColumnWidth
                         )
 
@@ -133,7 +136,10 @@ fun MonthCompareWidget(
                         )
 
                         MonthTextStat(
-                            prevMetrics.totalDistance.getDistanceString(selectedUnitType!!),
+                            prevMetrics.totalDistance.getDistanceString(
+                                selectedUnitType!!,
+                                isYearSummary = dashboardType == DashboardType.Year
+                            ),
                             monthColumnWidth = monthColumnWidth
                         )
 
@@ -145,7 +151,10 @@ fun MonthCompareWidget(
                         )
 
                         MonthTextStat(
-                            prevPrevMetrics.totalDistance.getDistanceString(selectedUnitType!!),
+                            prevPrevMetrics.totalDistance.getDistanceString(
+                                selectedUnitType!!,
+                                isYearSummary = dashboardType == DashboardType.Year
+                            ),
                             monthColumnWidth = monthColumnWidth
                         )
                     }
@@ -273,26 +282,8 @@ fun MonthCompareWidget(
                         )
                     }
                 }
-
-//                Surface(
-//                    shape = RectangleShape,
-//                    modifier = Modifier
-//                        .fillMaxHeight()
-//                        .width(2.dp)
-//                        .padding(start = 20.dp),
-//                    color = MaterialTheme.colors.onSurface
-//                ) {
-//
-//                }
-//            Divider(
-//                modifier = Modifier
-//                    .width(1.dp)
-//                    .padding(vertical = firstColumnWidth)
-//                    .height(100.dp),
-//                thickness = 100.dp,
-//                color = MaterialTheme.colors.onSurface,
-//                startIndent = firstColumnWidth
-//            )
             }
         })
 }
+
+enum class DashboardType { Week, Month, Year }

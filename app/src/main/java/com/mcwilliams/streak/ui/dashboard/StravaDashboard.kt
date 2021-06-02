@@ -40,7 +40,6 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.ui.dashboard.widgets.MonthCompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.MonthWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekCompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekSummaryWidget
@@ -56,6 +55,8 @@ import java.time.LocalTime
 import java.time.YearMonth
 import androidx.core.content.FileProvider
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
+import com.mcwilliams.streak.ui.dashboard.widgets.CompareWidget
+import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
 
 
 @ExperimentalMaterialApi
@@ -269,72 +270,35 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 )
 
                                 if (previousMonthActivities != null && previousPreviousMonthActivities != null) {
-
-                                    var runCountPrev = 0
-                                    var prevDistance = 0f
-                                    var prevElevation = 0f
-                                    var prevTime = 0
-                                    previousMonthActivities?.forEach {
-                                        if (selectedActivityType!!.name == ActivityType.All.name) {
-                                            runCountPrev = runCountPrev.inc()
-                                            prevDistance += it.distance
-                                            prevElevation += it.total_elevation_gain
-                                            prevTime += it.elapsed_time
-                                        } else if (it.type == selectedActivityType!!.name) {
-                                            runCountPrev = runCountPrev.inc()
-                                            prevDistance += it.distance
-                                            prevElevation += it.total_elevation_gain
-                                            prevTime += it.elapsed_time
-                                        }
-                                    }
                                     val prevMetrics by remember {
                                         mutableStateOf(
-                                            SummaryMetrics(
-                                                runCountPrev,
-                                                prevDistance,
-                                                prevElevation,
-                                                prevTime
+                                            getStats(
+                                                previousMonthActivities!!,
+                                                selectedActivity = selectedActivityType!!
                                             )
                                         )
                                     }
 
-
-                                    var runCountPrevPrev = 0
-                                    var prevPrevDistance = 0f
-                                    var prevPrevElevation = 0f
-                                    var prevPrevTime = 0
-                                    previousPreviousMonthActivities?.forEach {
-                                        if (selectedActivityType!!.name == ActivityType.All.name) {
-                                            runCountPrevPrev = runCountPrevPrev.inc()
-                                            prevPrevDistance += it.distance
-                                            prevPrevElevation += it.total_elevation_gain
-                                            prevPrevTime += it.elapsed_time
-                                        } else if (it.type == selectedActivityType!!.name) {
-                                            runCountPrevPrev = runCountPrevPrev.inc()
-                                            prevPrevDistance += it.distance
-                                            prevPrevElevation += it.total_elevation_gain
-                                            prevPrevTime += it.elapsed_time
-                                        }
-                                    }
-
                                     val prevPrevMetrics by remember {
                                         mutableStateOf(
-                                            SummaryMetrics(
-                                                runCountPrevPrev,
-                                                prevPrevDistance,
-                                                prevPrevElevation,
-                                                prevPrevTime
+                                            getStats(
+                                                previousPreviousMonthActivities!!,
+                                                selectedActivity = selectedActivityType!!
                                             )
                                         )
                                     }
 
                                     StreakDashboardWidget(
                                         content = {
-                                            MonthCompareWidget(
-                                                viewModel = viewModel,
+                                            CompareWidget(
+                                                dashboardType = DashboardType.Month,
                                                 selectedActivityType = selectedActivityType,
                                                 currentMonthMetrics = currentMonthMetrics,
-                                                columnTitles = arrayOf(viewModel.currentMonth, viewModel.previousMonth, viewModel.previousPreviousMonth),
+                                                columnTitles = arrayOf(
+                                                    viewModel.currentMonth,
+                                                    viewModel.previousMonth,
+                                                    viewModel.previousPreviousMonth
+                                                ),
                                                 prevMetrics = prevMetrics,
                                                 prevPrevMetrics = prevPrevMetrics,
                                                 selectedUnitType = selectedUnitType
@@ -367,8 +331,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                                         StreakDashboardWidget(
                                             content = {
-                                                MonthCompareWidget(
-                                                    viewModel = viewModel,
+                                                CompareWidget(
+                                                    dashboardType = DashboardType.Year,
                                                     selectedActivityType = selectedActivityType,
                                                     columnTitles = arrayOf("2021", "2020", "2019"),
                                                     currentMonthMetrics = currentYearSummaryMetrics,

@@ -68,6 +68,10 @@ fun Int.getTimeStringHoursAndMinutes(): String {
     val hours = this / 3600
     return if (hours == 0) {
         "${((this % 3600) / 60)}m"
+    } else if (hours > 24) {
+        val days = hours / 24
+        val remainderHours = hours - (days * 24)
+        "${days}d ${remainderHours}h"
     } else
         "${hours}h ${((this % 3600) / 60)}m"
 }
@@ -101,16 +105,18 @@ fun Float.getElevationString(selectedUnitType: UnitType): String {
     }
 }
 
-fun Float.getDistanceString(selectedUnitType: UnitType): String {
+fun Float.getDistanceString(selectedUnitType: UnitType, isYearSummary: Boolean = false): String {
+    val decimals = if(isYearSummary) 0 else 1
+
     return when (selectedUnitType) {
         UnitType.Imperial -> {
             "${
-                this.div(1609).toDouble().round(1).toString().replace("0*$".toRegex(), "")
+                this.div(1609).toDouble().round(decimals).toString().replace("0*$".toRegex(), "")
                     .replace("\\.$".toRegex(), "")
             } mi"
         }
         UnitType.Metric -> {
-            var elevation: Number = (this / 1000).toDouble().round(1)
+            var elevation: Number = (this / 1000).toDouble().round(decimals)
             "${elevation.toString().replace("0*$".toRegex(), "").replace("\\.$".toRegex(), "")} km"
         }
     }
