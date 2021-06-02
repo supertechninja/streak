@@ -65,7 +65,11 @@ fun caloriesBurned(met: Float, weight: Int, minutesWorkedOut: Int): Int {
 
 //Returns time based on seconds passed in
 fun Int.getTimeStringHoursAndMinutes(): String {
-    return "${(this / 3600)}h ${((this % 3600) / 60)}m"
+    val hours = this / 3600
+    return if (hours == 0) {
+        "${((this % 3600) / 60)}m"
+    } else
+        "${hours}h ${((this % 3600) / 60)}m"
 }
 
 fun Float.getElevationString(selectedUnitType: UnitType): String {
@@ -97,7 +101,7 @@ fun Float.getElevationString(selectedUnitType: UnitType): String {
     }
 }
 
-fun Float.getDistanceString(selectedUnitType: UnitType) : String {
+fun Float.getDistanceString(selectedUnitType: UnitType): String {
     return when (selectedUnitType) {
         UnitType.Imperial -> {
             "${

@@ -11,14 +11,16 @@ interface ActivitiesApi {
     @GET("athlete/activities")
     suspend fun getAthleteActivitiesAfter(
         @Query("after") after: Int,
-        @Query("per_page") count: Int = 200
+        @Query("per_page") count: Int = 200,
+        @Query("page") page: Int = 1
     ): List<ActivitesItem>
 
     @GET("athlete/activities")
     suspend fun getAthleteActivitiesBeforeAndAfter(
-        @Query("before") before: Int,
+        @Query("before") before: Int?,
         @Query("after") after: Int,
-        @Query("per_page") count: Int = 200
+        @Query("per_page") count: Int = 200,
+        @Query("page") page: Int = 1
     ): List<ActivitesItem>
 
 }

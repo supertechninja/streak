@@ -334,12 +334,53 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                                 viewModel = viewModel,
                                                 selectedActivityType = selectedActivityType,
                                                 currentMonthMetrics = currentMonthMetrics,
+                                                columnTitles = arrayOf(viewModel.currentMonth, viewModel.previousMonth, viewModel.previousPreviousMonth),
                                                 prevMetrics = prevMetrics,
                                                 prevPrevMetrics = prevPrevMetrics,
                                                 selectedUnitType = selectedUnitType
                                             )
                                         }, widgetName = "Month vs Month"
                                     )
+
+                                    prevYearActivities?.let { lastYearActivities ->
+                                        val lastYearSummaryMetrics = getStats(
+                                            lastYearActivities,
+                                            selectedActivity = selectedActivityType!!
+                                        )
+
+                                        var currentYearSummaryMetrics = SummaryMetrics()
+                                        var lastLastYearSummaryMetrics = SummaryMetrics()
+
+                                        prevPrevYearActivities?.let {
+                                            lastLastYearSummaryMetrics = getStats(
+                                                it,
+                                                selectedActivity = selectedActivityType!!
+                                            )
+                                        }
+
+                                        currentYearActivities?.let {
+                                            currentYearSummaryMetrics = getStats(
+                                                it,
+                                                selectedActivity = selectedActivityType!!
+                                            )
+                                        }
+
+                                        StreakDashboardWidget(
+                                            content = {
+                                                MonthCompareWidget(
+                                                    viewModel = viewModel,
+                                                    selectedActivityType = selectedActivityType,
+                                                    columnTitles = arrayOf("2021", "2020", "2019"),
+                                                    currentMonthMetrics = currentYearSummaryMetrics,
+                                                    prevMetrics = lastYearSummaryMetrics,
+                                                    prevPrevMetrics = lastLastYearSummaryMetrics,
+                                                    selectedUnitType = selectedUnitType
+                                                )
+                                            }, widgetName = "Year vs Year"
+                                        )
+
+
+                                    }
 
                                     Row(
                                         modifier = Modifier
@@ -429,10 +470,10 @@ enum class StatType { Distance, Time, Elevation, Count }
 val monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>> = mutableMapOf()
 
 data class SummaryMetrics(
-    val count: Int,
-    val totalDistance: Float,
-    val totalElevation: Float,
-    val totalTime: Int
+    val count: Int = 0,
+    val totalDistance: Float = 0f,
+    val totalElevation: Float = 0f,
+    val totalTime: Int = 0
 )
 
 private fun share(view: ComposeView, name: String, context: Context) {
@@ -456,3 +497,30 @@ class HandleSavedImage(val context: Context, val fileName: String) : QuickShot.Q
 
 }
 
+fun getStats(
+    activitiesToFilter: List<ActivitesItem>,
+    selectedActivity: ActivityType
+): SummaryMetrics {
+    val filteredActivities =
+        if (selectedActivity == ActivityType.All) activitiesToFilter
+        else activitiesToFilter.filter { it.type == selectedActivity.name }
+
+    var count = 0
+    var distance = 0f
+    var elevation = 0f
+    var time = 0
+
+    filteredActivities.forEach {
+        count = count.inc()
+        distance += it.distance
+        elevation += it.total_elevation_gain
+        time += it.elapsed_time
+    }
+
+    return SummaryMetrics(
+        count = count,
+        totalDistance = distance,
+        totalTime = time,
+        totalElevation = elevation
+    )
+}

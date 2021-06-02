@@ -110,8 +110,11 @@ class StravaDashboardViewModel @Inject constructor(
         previousPreviousMonth = getEpoch(2021, currentMonthInt - 3, 1).second
 
         currentYearEpoch = getEpoch(2021, 0, 1).first
+        currentYear = "2021"
         prevYearEpoch = getEpoch(2020, 0, 1).first
+        currentYear = "2020"
         prevPrevYearEpoch = getEpoch(2019, 0, 1).first
+        currentYear = "2019"
 
         _isRefreshing.postValue(true)
     }
@@ -166,11 +169,52 @@ class StravaDashboardViewModel @Inject constructor(
                 } else {
                     _error.postValue("Have issues connecting to Strava")
                 }
+            }.collect {
+                _error.postValue(null)
+                _previousPreviousMonthActivities.postValue(it)
             }
-                .collect {
-                    _error.postValue(null)
-                    _previousPreviousMonthActivities.postValue(it)
+
+            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
+                after = prevYearEpoch,
+                before = currentYearEpoch
+            ).catch { exception ->
+                val errorCode = (exception as HttpException).code()
+                if (errorCode in 400..499) {
+                    _error.postValue("Error! Force Refresh")
+                } else {
+                    _error.postValue("Have issues connecting to Strava")
                 }
+            }.collect {
+                _prevYearActivites.postValue(it)
+            }
+
+            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
+                after = currentYearEpoch,
+                before = null
+            ).catch { exception ->
+                val errorCode = (exception as HttpException).code()
+                if (errorCode in 400..499) {
+                    _error.postValue("Error! Force Refresh")
+                } else {
+                    _error.postValue("Have issues connecting to Strava")
+                }
+            }.collect {
+                _currentYearActivites.postValue(it)
+            }
+
+            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
+                after = prevPrevYearEpoch,
+                before = prevYearEpoch
+            ).catch { exception ->
+                val errorCode = (exception as HttpException).code()
+                if (errorCode in 400..499) {
+                    _error.postValue("Error! Force Refresh")
+                } else {
+                    _error.postValue("Have issues connecting to Strava")
+                }
+            }.collect {
+                _prevPrevYearActivites.postValue(it)
+            }
 
             val combinedList = currentMonthActivites.value!!.toMutableList()
             combinedList.plus(previousMonthActivities.value?.toMutableList())
@@ -241,7 +285,7 @@ enum class UnitType { Imperial, Metric }
 
 fun getEpoch(year: Int, month: Int, day: Int): Pair<Int, String> {
     val calendar: Calendar = Calendar.getInstance()
-    calendar.set(year, month, day, 0, 0 )
+    calendar.set(year, month, day, 0, 0)
     return Pair(
         calendar.toInstant().epochSecond.toInt(),
         calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault())

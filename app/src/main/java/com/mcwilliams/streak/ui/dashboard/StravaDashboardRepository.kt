@@ -36,15 +36,37 @@ class StravaDashboardRepository @Inject constructor(
         emit(activitiesApi.getAthleteActivitiesBeforeAndAfter(before = before, after = after))
     }
 
+    fun getStravaActivitiesBeforeAndAfterPaginated(
+        before: Int?,
+        after: Int
+    ): Flow<List<ActivitesItem>> = flow {
+        val yearActivities: MutableList<ActivitesItem> = mutableListOf()
+        var pageCount = 1
+        do {
+            yearActivities.addAll(
+                activitiesApi.getAthleteActivitiesBeforeAndAfter(
+                    before = before,
+                    after = after,
+                    page = pageCount
+                )
+            )
+            pageCount = pageCount.inc()
+
+        } while (yearActivities.size % 200 == 0)
+
+        emit(yearActivities)
+    }
+
     fun savePreferredActivity(activityType: ActivityType) {
         preferences.edit().putString(activityTypeKey, activityType.name).apply()
     }
 
-    fun getPreferredActivity() = preferences.getString(activityTypeKey, ActivityType.Run.name)?.let {
-        ActivityType.valueOf(
-            it
-        )
-    }
+    fun getPreferredActivity() =
+        preferences.getString(activityTypeKey, ActivityType.Run.name)?.let {
+            ActivityType.valueOf(
+                it
+            )
+        }
 
     fun savePreferredUnits(unitType: UnitType) {
         preferences.edit().putString(unitTypeKey, unitType.name).apply()

@@ -67,12 +67,12 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
     var textColor: Color
     if (then > now) {
         percent = (1.0 - percent) * 100
-        percentString = "- ${percent.toInt()}%"
+        percentString = "-${percent.toInt()}%"
         surfaceColor = Color(0xFF990000)
         textColor = Color.White
     } else {
         percent = (1.0 - percent) * 100
-        percentString = "+ ${Math.abs(percent.toInt())}%"
+        percentString = "+${Math.abs(percent.toInt())}%"
         surfaceColor = Color(0xFF008000)
         textColor = Color.White
     }
@@ -87,7 +87,7 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
     ) {
         Text(
             text = percentString,
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.overline,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             color = textColor

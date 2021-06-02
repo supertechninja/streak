@@ -45,6 +45,7 @@ import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 fun MonthCompareWidget(
     viewModel: StravaDashboardViewModel,
     selectedActivityType: ActivityType?,
+    columnTitles: Array<String>,
     prevMetrics: SummaryMetrics,
     prevPrevMetrics: SummaryMetrics,
     currentMonthMetrics: SummaryMetrics,
@@ -81,20 +82,20 @@ fun MonthCompareWidget(
                         )
 
                         MonthTextStat(
-                            viewModel.currentMonth,
+                            columnTitles[0],
                             monthColumnWidth = monthColumnWidth
                         )
 
                         Spacer(modifier = Modifier.width(monthColumnWidth))
 
                         MonthTextStat(
-                            viewModel.previousMonth,
+                            columnTitles[1],
                             monthColumnWidth = monthColumnWidth
                         )
                         Spacer(modifier = Modifier.width(monthColumnWidth))
 
                         MonthTextStat(
-                            viewModel.previousPreviousMonth,
+                            columnTitles[2],
                             monthColumnWidth = monthColumnWidth
                         )
                     }
