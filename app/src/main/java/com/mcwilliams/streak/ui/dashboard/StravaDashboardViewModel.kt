@@ -28,6 +28,9 @@ class StravaDashboardViewModel @Inject constructor(
     private var _isLoggedIn: MutableLiveData<Boolean> = MutableLiveData(null)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
+    private var _weeklyGoal: MutableLiveData<String> = MutableLiveData("")
+    var weeklyGoal: LiveData<String> = _weeklyGoal
+
     private var _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
     var isRefreshing: LiveData<Boolean> = _isRefreshing
 
@@ -97,6 +100,8 @@ class StravaDashboardViewModel @Inject constructor(
 
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
+
+        _weeklyGoal.postValue(stravaDashboardRepository.getWeeklyGoal())
 
         val currentMonthInt = LocalDate.now().monthValue
 
@@ -223,35 +228,6 @@ class StravaDashboardViewModel @Inject constructor(
             _isRefreshing.postValue(false)
         }
 
-
-//        currentMonthActivites =
-//            stravaDashboardRepository.getStravaActivitiesAfter(currentMonthEpoch)
-//                .toLiveData(rootDisposable) { it }
-//
-//        previousMonthActivities =
-//            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//                after = previousMonthEpoch,
-//                before = currentMonthEpoch
-//            ).toLiveData(rootDisposable) { it }
-//
-//        previousPreviousMonthActivities =
-//            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//                after = previousPreviousMonthEpoch,
-//                before = previousMonthEpoch
-//            ).toLiveData(rootDisposable) { it }
-
-//        currentYearActivites = stravaDashboardRepository.getStravaActivitiesAfter(currentYearEpoch)
-//            .toLiveData(rootDisposable) { it }
-//
-//        prevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//            after = prevYearEpoch,
-//            before = currentYearEpoch
-//        ).toLiveData(rootDisposable) { it }
-//
-//        prevPrevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//            after = prevPrevYearEpoch,
-//            before = prevYearEpoch
-//        ).toLiveData(rootDisposable) { it }
     }
 
     fun loginAthlete(code: String) {
@@ -275,6 +251,11 @@ class StravaDashboardViewModel @Inject constructor(
         stravaDashboardRepository.savePreferredUnits(unitType = unitType)
         _unitType.postValue(stravaDashboardRepository.getPreferredUnitType()!!)
     }
+
+    fun setWeeklyGoal(weeklyGoal: String) {
+        stravaDashboardRepository.saveWeeklyGoal(weeklyGoal)
+        _weeklyGoal.postValue(stravaDashboardRepository.getWeeklyGoal())
+    }
 }
 
 fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
@@ -282,6 +263,7 @@ fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
 
 enum class ActivityType { Run, Swim, Bike, All }
 enum class UnitType { Imperial, Metric }
+//enum class Dashboard { WeekSnapshot, }
 
 fun getEpoch(year: Int, month: Int, day: Int): Pair<Int, String> {
     val calendar: Calendar = Calendar.getInstance()

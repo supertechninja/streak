@@ -78,8 +78,15 @@ class StravaDashboardRepository @Inject constructor(
         )
     }
 
+    fun saveWeeklyGoal(weeklyGoal: String) {
+        preferences.edit().putString(weeklyGoal, weeklyGoal).apply()
+    }
+
+    fun getWeeklyGoal() = preferences.getString(weeklyGoal, "")
+
     companion object {
         const val activityTypeKey: String = "activityType"
         const val unitTypeKey: String = "unitType"
+        const val weeklyGoal: String = "weeklyGoal"
     }
 }

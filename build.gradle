@@ -1,17 +1,23 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        compose_version = '1.0.0-beta07'
-        kotlin_version = "1.4.32"
-        hilt_version = '2.35'
+        compose_version = '1.0.0-beta09'
+        kotlin_version = "1.5.10"
+        hilt_version = '2.37'
     }
     repositories {
         google()
         mavenCentral()
-//        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven {
+            url  "https://oss.sonatype.org/content/repositories/snapshots"
+            content {
+                includeModule("com.google.dagger", "hilt-android-gradle-plugin")
+            }
+        }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.0-beta01'
+        classpath 'com.android.tools.build:gradle:7.0.0-beta04'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
         classpath 'com.google.gms:google-services:4.3.8'

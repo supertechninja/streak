@@ -180,7 +180,7 @@ fun MonthWidget(
                             mutableListOf()
 
                         for (i in 0..6) {
-                            if(today!! < 7) {
+                            if(today!! > 7) {
                                 val priorDay = (firstDayWeekZeroMonth - (i + 1))
                                 listOfDatesInPreviousWeek.add(currentMonth.value - 1 to priorDay)
                             } else {
@@ -194,7 +194,7 @@ fun MonthWidget(
                             mutableListOf()
                         val twoWeekAgo = firstDayWeekZeroMonth - 7
                         for (i in 0..6) {
-                            if(today!! < 7) {
+                            if(today!! > 7) {
                                 val priorDay = (twoWeekAgo - (i + 1))
                                 listOfDatesInTwoWeeksAgo.add(currentMonth.value - 1 to priorDay)
                             } else {

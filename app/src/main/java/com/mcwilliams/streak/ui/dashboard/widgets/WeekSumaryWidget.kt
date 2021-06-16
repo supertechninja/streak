@@ -1,6 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
-import android.util.Log
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -14,10 +14,16 @@ import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -26,11 +32,12 @@ import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
+import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
@@ -39,15 +46,14 @@ import java.util.Locale
 
 @Composable
 fun WeekSummaryWidget(
-    monthlyWorkouts: List<ActivitesItem>,
     selectedActivityType: ActivityType?,
     currentWeek: MutableList<Pair<Int, Int>>,
     selectedUnitType: UnitType?,
-    today: Int,
+    weeklySummaryMetrics: SummaryMetrics,
+    dayOfWeekWithDistance: MutableMap<Int, Int>,
 ) {
     StreakWidgetCard(
         content = {
-            val dayOfWeekWithDistance: MutableMap<Int, Int> = mutableMapOf()
             BoxWithConstraints(
                 modifier = Modifier.padding(
                     vertical = 12.dp,
@@ -55,66 +61,6 @@ fun WeekSummaryWidget(
                 )
             ) {
                 val width = this.maxWidth / 2
-
-                var totalDistance = 0f
-                var totalElevation = 0f
-                var totalTime = 0
-                var count = 0
-
-                monthlyWorkouts.forEach { activitesItem ->
-                    val date = activitesItem.start_date_local.getDate()
-
-                    currentWeek.forEach {
-                        if (it.second == date.dayOfMonth && it.first == date.monthValue) {
-                            if (selectedActivityType!!.name == ActivityType.All.name) {
-                                totalElevation += activitesItem.total_elevation_gain
-
-                                totalTime += activitesItem.elapsed_time
-
-                                totalDistance += activitesItem.distance
-
-                                if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                                    val newDistance =
-                                        dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                                    dayOfWeekWithDistance.replace(
-                                        date.dayOfMonth,
-                                        newDistance
-                                    )
-                                } else {
-                                    dayOfWeekWithDistance.put(
-                                        date.dayOfMonth,
-                                        activitesItem.distance.toInt()
-                                    )
-                                }
-
-                                count = count.inc()
-                            } else if (activitesItem.type == selectedActivityType!!.name) {
-                                totalElevation += activitesItem.total_elevation_gain
-
-                                totalTime += activitesItem.elapsed_time
-
-                                totalDistance += activitesItem.distance
-
-                                if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                                    val newDistance =
-                                        dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                                    dayOfWeekWithDistance.replace(
-                                        date.dayOfMonth,
-                                        newDistance
-                                    )
-                                } else {
-                                    dayOfWeekWithDistance.put(
-                                        date.dayOfMonth,
-                                        activitesItem.distance.toInt()
-                                    )
-                                }
-
-                                count = count.inc()
-                            }
-                        }
-                    }
-
-                }
 
                 Row() {
                     Column(
@@ -158,17 +104,17 @@ fun WeekSummaryWidget(
                         )
                         DashboardStat(
                             image = R.drawable.ic_ruler,
-                            stat = totalDistance.getDistanceString(selectedUnitType!!)
+                            stat = weeklySummaryMetrics.totalDistance.getDistanceString(selectedUnitType!!)
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_clock_time,
-                            stat = totalTime.getTimeStringHoursAndMinutes()
+                            stat = weeklySummaryMetrics.totalTime.getTimeStringHoursAndMinutes()
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_up_right,
-                            stat = "${totalElevation.getElevationString(selectedUnitType!!)}"
+                            stat = "${weeklySummaryMetrics.totalElevation.getElevationString(selectedUnitType!!)}"
                         )
                     }
                     Column(
@@ -178,6 +124,7 @@ fun WeekSummaryWidget(
                     ) {
                         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
                             val (progress, days) = createRefs()
+                            val coroutineScope = rememberCoroutineScope()
 
                             Row(
                                 verticalAlignment = Alignment.Bottom,
@@ -193,11 +140,8 @@ fun WeekSummaryWidget(
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         dayOfWeekWithDistance.forEach {
+                                            var showValue by remember { mutableStateOf(false) }
                                             if (it.key == dateInWeek.second) {
-                                                Log.d(
-                                                    "TAG",
-                                                    "StravaDashboard: ${it.value}"
-                                                )
                                                 val progressHeight =
                                                     when (it.value.div(1609)) {
                                                         in 1..2 -> {
@@ -217,6 +161,13 @@ fun WeekSummaryWidget(
                                                         }
                                                     }
                                                 if (it.value > 0) {
+                                                    if (showValue) {
+                                                        Text(
+                                                            text = "${it.value / 1609}",
+                                                            style = MaterialTheme.typography.overline
+                                                        )
+                                                    }
+
                                                     Divider(
                                                         color = Color(
                                                             0xFFFFA500
@@ -225,7 +176,7 @@ fun WeekSummaryWidget(
                                                             .height(
                                                                 progressHeight
                                                             )
-                                                            .width(15.dp)
+                                                            .width(20.dp)
                                                             .clip(
                                                                 RoundedCornerShape(
                                                                     50
@@ -234,6 +185,21 @@ fun WeekSummaryWidget(
                                                             .padding(
                                                                 horizontal = 4.dp
                                                             )
+                                                            .pointerInput(Unit) {
+                                                                detectTapGestures(
+                                                                    onPress = {
+                                                                        coroutineScope.launch {
+                                                                            showValue = true
+                                                                            awaitRelease()
+                                                                            showValue = false
+                                                                        }
+                                                                    },
+                                                                    onDoubleTap = { /* Called on Double Tap */ },
+                                                                    onLongPress = { /* Called on Long Press */ },
+                                                                    onTap = { /* Called on Tap */ }
+                                                                )
+
+                                                            }
                                                     )
                                                 }
                                             }
