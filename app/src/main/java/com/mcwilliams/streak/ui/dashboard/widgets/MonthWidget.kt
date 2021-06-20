@@ -31,10 +31,7 @@ import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.dashboard.monthWeekMap
-import com.mcwilliams.streak.ui.utils.getDate
-import com.mcwilliams.streak.ui.utils.getDistanceString
-import com.mcwilliams.streak.ui.utils.getElevationString
-import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
+import com.mcwilliams.streak.ui.utils.*
 import java.time.Month
 import java.time.YearMonth
 import java.util.Locale
@@ -77,7 +74,7 @@ fun MonthWidget(
 
                         totalElevation += it.total_elevation_gain
 
-                        totalTime += it.elapsed_time
+                        totalTime += it.moving_time
 
                         totalDistance += it.distance
 
@@ -88,7 +85,7 @@ fun MonthWidget(
 
                         totalElevation += it.total_elevation_gain
 
-                        totalTime += it.elapsed_time
+                        totalTime += it.moving_time
 
                         totalDistance += it.distance
 
@@ -149,6 +146,11 @@ fun MonthWidget(
                         DashboardStat(
                             image = R.drawable.ic_up_right,
                             stat = totalElevation.getElevationString(selectedUnitType!!)
+                        )
+
+                        DashboardStat(
+                            image = R.drawable.ic_speed,
+                            stat = getAveragePaceString(totalDistance, totalTime, selectedUnitType!!)
                         )
 
                         DashboardStat(
@@ -226,7 +228,7 @@ fun CalendarView(
     currentMonth: Month,
 ) {
     val dateModifier = Modifier.width(width = width / 7)
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
 
         val listOfDatesInWeek: MutableList<Pair<Int, Int>> = mutableListOf()
 

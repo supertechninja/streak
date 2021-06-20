@@ -30,10 +30,7 @@ import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.dashboard.monthWeekMap
-import com.mcwilliams.streak.ui.utils.getDate
-import com.mcwilliams.streak.ui.utils.getDistanceString
-import com.mcwilliams.streak.ui.utils.getElevationString
-import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
+import com.mcwilliams.streak.ui.utils.*
 
 @Composable
 fun WeekCompareWidget(
@@ -122,7 +119,8 @@ fun WeekCompareWidget(
                             val datesInWeek = monthWeekMap.get(i)
                             datesInWeek!!.forEach {
                                 if (it.second == activitiesItem.start_date_local.getDate().dayOfMonth &&
-                                    it.first == activitiesItem.start_date_local.getDate().monthValue) {
+                                    it.first == activitiesItem.start_date_local.getDate().monthValue
+                                ) {
                                     weeklyActivitiesList.add(activitiesItem)
                                 }
                             }
@@ -145,12 +143,12 @@ fun WeekCompareWidget(
                                 count = count.inc()
                                 distance += activitiesItem.distance
                                 elevation += activitiesItem.total_elevation_gain
-                                time += activitiesItem.elapsed_time
+                                time += activitiesItem.moving_time
                             } else if (activitiesItem.type == selectedActivityType!!.name) {
                                 count = count.inc()
                                 distance += activitiesItem.distance
                                 elevation += activitiesItem.total_elevation_gain
-                                time += activitiesItem.elapsed_time
+                                time += activitiesItem.moving_time
                             }
                         }
 
@@ -294,6 +292,61 @@ fun WeekCompareWidget(
 
                         MonthTextStat(
                             weeklyDataMap[2].totalElevation.getElevationString(selectedUnitType!!),
+                            monthColumnWidth = monthColumnWidth
+                        )
+                    }
+
+                    // Elevation Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        DashboardStat(
+                            image = R.drawable.ic_speed,
+                            modifier = Modifier.width(firstColumnWidth)
+                        )
+
+                        MonthTextStat(
+                            getAveragePaceString(
+                                weeklyDataMap[0].totalDistance,
+                                weeklyDataMap[0].totalTime,
+                                selectedUnitType!!
+                            ),
+                            monthColumnWidth = monthColumnWidth
+                        )
+
+                        PercentDelta(
+                            now = weeklyDataMap[0].totalDistance.getAveragePaceFromDistance(weeklyDataMap[0].totalTime),
+                            then = weeklyDataMap[1].totalDistance.getAveragePaceFromDistance(weeklyDataMap[1].totalTime),
+                            monthColumnWidth = monthColumnWidth,
+                            type = StatType.Pace
+                        )
+
+                        MonthTextStat(
+                            getAveragePaceString(
+                                weeklyDataMap[1].totalDistance,
+                                weeklyDataMap[1].totalTime,
+                                selectedUnitType!!
+                            ),
+                            monthColumnWidth = monthColumnWidth
+                        )
+
+                        PercentDelta(
+                            now = weeklyDataMap[1].totalDistance.getAveragePaceFromDistance(weeklyDataMap[1].totalTime),
+                            then = weeklyDataMap[2].totalDistance.getAveragePaceFromDistance(weeklyDataMap[2].totalTime),
+                            monthColumnWidth = monthColumnWidth,
+                            type = StatType.Pace
+                        )
+
+                        MonthTextStat(
+                            getAveragePaceString(
+                                weeklyDataMap[2].totalDistance,
+                                weeklyDataMap[2].totalTime,
+                                selectedUnitType!!
+                            ),
                             monthColumnWidth = monthColumnWidth
                         )
                     }

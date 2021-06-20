@@ -1,10 +1,12 @@
 package com.mcwilliams.streak.ui.utils
 
+import android.util.Log
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.log
 
 fun String.getDate(): LocalDate {
     val dtf = DateTimeFormatter.ISO_DATE_TIME
@@ -106,7 +108,7 @@ fun Float.getElevationString(selectedUnitType: UnitType): String {
 }
 
 fun Float.getDistanceString(selectedUnitType: UnitType, isYearSummary: Boolean = false): String {
-    val decimals = if(isYearSummary) 0 else 1
+    val decimals = if (isYearSummary) 0 else 1
 
     return when (selectedUnitType) {
         UnitType.Imperial -> {
@@ -120,4 +122,39 @@ fun Float.getDistanceString(selectedUnitType: UnitType, isYearSummary: Boolean =
             "${elevation.toString().replace("0*$".toRegex(), "").replace("\\.$".toRegex(), "")} km"
         }
     }
+}
+
+fun getAveragePaceString(distance: Float, time: Int, selectedUnitType: UnitType): String {
+
+    when(selectedUnitType){
+        UnitType.Imperial -> {
+            val distanceInMiles = distance.div(1609).toDouble().round(2)
+            val minutes = time.div(60)
+
+            val pace = minutes.div(distanceInMiles).round(2)
+
+            val remainder = (pace - pace.toInt())
+            val secondsPace = remainder.times(60).toInt()
+
+            return "${pace.toInt()}:${secondsPace} / mi"
+        }
+        UnitType.Metric -> {
+            val distanceInMeters = distance.div(1000).toDouble().round(2)
+            val minutes = time.div(60)
+
+            val pace = minutes.div(distanceInMeters).round(2)
+
+            val remainder = (pace - pace.toInt())
+            val secondsPace = remainder.times(60).toInt()
+
+            return "${pace.toInt()}:${secondsPace} / km"
+        }
+    }
+}
+
+fun Float.getAveragePaceFromDistance(time: Int): Double {
+    val distanceInMiles = this.div(1609).toDouble().round(2)
+    val minutes = time.div(60)
+
+    return minutes.div(distanceInMiles).round(2)
 }

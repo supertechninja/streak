@@ -429,7 +429,7 @@ fun StreakDashboardWidget(content: @Composable () -> Unit, widgetName: String) {
     })
 }
 
-enum class StatType { Distance, Time, Elevation, Count }
+enum class StatType { Distance, Time, Elevation, Count, Pace }
 
 val monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>> = mutableMapOf()
 
@@ -478,7 +478,7 @@ fun getStats(
         count = count.inc()
         distance += it.distance
         elevation += it.total_elevation_gain
-        time += it.elapsed_time
+        time += it.moving_time
     }
 
     return SummaryMetrics(

@@ -25,8 +25,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.placeholder.material.placeholder
 import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
+import com.mcwilliams.streak.ui.utils.round
 
 @Composable
 fun StreakWidgetCard(content: @Composable () -> Unit) {
@@ -44,12 +46,18 @@ fun StreakWidgetCard(content: @Composable () -> Unit) {
 
 
 @Composable
-fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
-    var percent: Double
+fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType) {
+    var percent = 0.0
 
     when (type) {
         StatType.Distance -> {
-            percent = (now.div(1609)).toDouble() / (then.div(1609)).toDouble()
+            Log.d(
+                "TAG",
+                "PercentDelta: ${(now.toInt().div(1609)).toDouble()}  ${
+                    (then.toInt().div(1609)).toDouble()
+                }"
+            )
+            percent = (now.toDouble().div(1609)) / (then.toDouble().div(1609))
         }
         StatType.Time -> {
             percent = now.toDouble() / then.toDouble()
@@ -60,12 +68,28 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
         StatType.Count -> {
             percent = now.toDouble() / then.toDouble()
         }
+        StatType.Pace -> {
+            percent = now.toDouble() / then.toDouble()
+        }
     }
 
     var surfaceColor: Color
     var percentString: String
     var textColor: Color
-    if (then > now) {
+
+    if (type == StatType.Pace) {
+        if (then.toDouble() < now.toDouble()) {
+            percent = (1.0 - percent) * 100
+            percentString = "${percent.toInt()}%"
+            surfaceColor = Color(0xFF990000)
+            textColor = Color.White
+        } else {
+            percent = (1.0 - percent) * 100
+            percentString = "+${Math.abs(percent.toInt())}%"
+            surfaceColor = Color(0xFF008000)
+            textColor = Color.White
+        }
+    } else if (then.toDouble() > now.toDouble()) {
         percent = (1.0 - percent) * 100
         percentString = "-${percent.toInt()}%"
         surfaceColor = Color(0xFF990000)
@@ -97,7 +121,10 @@ fun PercentDelta(now: Int, then: Int, monthColumnWidth: Dp, type: StatType) {
 
 @Composable
 fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modifier = Modifier) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(vertical = 4.dp)) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.padding(vertical = 4.dp)
+    ) {
         Icon(
             painter = painterResource(id = image),
             contentDescription = "",
@@ -106,10 +133,10 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
         )
         stat?.let {
             Text(
-                text = stat,
+                text = it,
                 modifier = Modifier.padding(start = 8.dp),
                 color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.body2,
             )
         }
     }

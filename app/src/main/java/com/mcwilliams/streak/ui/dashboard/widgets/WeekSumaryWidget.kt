@@ -27,10 +27,7 @@ import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.utils.getDate
-import com.mcwilliams.streak.ui.utils.getDistanceString
-import com.mcwilliams.streak.ui.utils.getElevationString
-import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
+import com.mcwilliams.streak.ui.utils.*
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
@@ -69,7 +66,7 @@ fun WeekSummaryWidget(
                             if (selectedActivityType!!.name == ActivityType.All.name) {
                                 totalElevation += activitesItem.total_elevation_gain
 
-                                totalTime += activitesItem.elapsed_time
+                                totalTime += activitesItem.moving_time
 
                                 totalDistance += activitesItem.distance
 
@@ -91,7 +88,7 @@ fun WeekSummaryWidget(
                             } else if (activitesItem.type == selectedActivityType!!.name) {
                                 totalElevation += activitesItem.total_elevation_gain
 
-                                totalTime += activitesItem.elapsed_time
+                                totalTime += activitesItem.moving_time
 
                                 totalDistance += activitesItem.distance
 
@@ -145,7 +142,7 @@ fun WeekSummaryWidget(
                                 Text(
                                     text = text,
                                     color = MaterialTheme.colors.onSurface,
-                                    style = MaterialTheme.typography.body2
+                                    style = MaterialTheme.typography.body2,
                                 )
                             }
                         }
@@ -168,7 +165,12 @@ fun WeekSummaryWidget(
 
                         DashboardStat(
                             image = R.drawable.ic_up_right,
-                            stat = "${totalElevation.getElevationString(selectedUnitType!!)}"
+                            stat = totalElevation.getElevationString(selectedUnitType!!)
+                        )
+
+                        DashboardStat(
+                            image = R.drawable.ic_speed,
+                            stat = getAveragePaceString(totalDistance, totalTime, selectedUnitType!!)
                         )
                     }
                     Column(

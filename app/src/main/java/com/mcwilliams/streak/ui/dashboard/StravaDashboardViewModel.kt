@@ -97,6 +97,7 @@ class StravaDashboardViewModel @Inject constructor(
 
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
+        _today.postValue(LocalDate.now().dayOfMonth)
 
         val currentMonthInt = LocalDate.now().monthValue
 
