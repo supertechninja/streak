@@ -1,5 +1,8 @@
 # Streak #
 
+[Google Play Link](https://play.google.com/store/apps/details?id=com.mcwilliams.streak)
+
+
 Streak is a Strava Dashboard Application that provides snapshot of your Strava data based on weeks,
 months, and years of data
 
