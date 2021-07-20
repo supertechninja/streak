@@ -272,18 +272,14 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 if (previousMonthActivities != null && previousPreviousMonthActivities != null) {
                                     val prevMetrics by remember {
                                         mutableStateOf(
-                                            getStats(
-                                                previousMonthActivities!!,
-                                                selectedActivity = selectedActivityType!!
-                                            )
+                                            previousMonthActivities!!.getStats(selectedActivityType!!)
                                         )
                                     }
 
                                     val prevPrevMetrics by remember {
                                         mutableStateOf(
-                                            getStats(
-                                                previousPreviousMonthActivities!!,
-                                                selectedActivity = selectedActivityType!!
+                                            previousPreviousMonthActivities!!.getStats(
+                                                selectedActivityType!!
                                             )
                                         )
                                     }
@@ -307,26 +303,26 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     )
 
                                     prevYearActivities?.let { lastYearActivities ->
-                                        val lastYearSummaryMetrics = getStats(
-                                            lastYearActivities,
-                                            selectedActivity = selectedActivityType!!
-                                        )
+                                        val lastYearSummaryMetrics =
+                                            lastYearActivities.getStats(
+                                                selectedActivityType!!
+                                            )
 
                                         var currentYearSummaryMetrics = SummaryMetrics()
                                         var lastLastYearSummaryMetrics = SummaryMetrics()
 
                                         prevPrevYearActivities?.let {
-                                            lastLastYearSummaryMetrics = getStats(
-                                                it,
-                                                selectedActivity = selectedActivityType!!
-                                            )
+                                            lastLastYearSummaryMetrics =
+                                                it.getStats(
+                                                    selectedActivityType!!
+                                                )
                                         }
 
                                         currentYearActivities?.let {
-                                            currentYearSummaryMetrics = getStats(
-                                                it,
-                                                selectedActivity = selectedActivityType!!
-                                            )
+                                            currentYearSummaryMetrics =
+                                                it.getStats(
+                                                    selectedActivityType!!
+                                                )
                                         }
 
                                         StreakDashboardWidget(
@@ -342,8 +338,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                                 )
                                             }, widgetName = "Year vs Year"
                                         )
-
-
                                     }
 
                                     Row(
@@ -461,13 +455,11 @@ class HandleSavedImage(val context: Context, val fileName: String) : QuickShot.Q
 
 }
 
-fun getStats(
-    activitiesToFilter: List<ActivitesItem>,
-    selectedActivity: ActivityType
-): SummaryMetrics {
+
+fun List<ActivitesItem>.getStats(selectedActivity: ActivityType): SummaryMetrics {
     val filteredActivities =
-        if (selectedActivity == ActivityType.All) activitiesToFilter
-        else activitiesToFilter.filter { it.type == selectedActivity.name }
+        if (selectedActivity == ActivityType.All) this
+        else this.filter { it.type == selectedActivity.name }
 
     var count = 0
     var distance = 0f

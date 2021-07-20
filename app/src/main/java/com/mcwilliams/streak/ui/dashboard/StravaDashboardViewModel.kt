@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.mcwilliams.streak.inf.SessionRepository
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.settings.SettingsRepo
+import com.mcwilliams.streak.ui.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -95,11 +96,13 @@ class StravaDashboardViewModel @Inject constructor(
     var today: LiveData<Int> =
         _today
 
+    var currentMonthInt : Int = 0
+
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
         _today.postValue(LocalDate.now().dayOfMonth)
 
-        val currentMonthInt = LocalDate.now().monthValue
+        currentMonthInt = LocalDate.now().monthValue
 
         currentMonthEpoch = getEpoch(2021, currentMonthInt - 1, 1).first
         currentMonth = getEpoch(2021, currentMonthInt - 1, 1).second
@@ -130,23 +133,9 @@ class StravaDashboardViewModel @Inject constructor(
         _unitType.postValue(stravaDashboardRepository.getPreferredUnitType())
 
         viewModelScope.launch {
-            stravaDashboardRepository.getStravaActivitiesAfter(currentMonthEpoch)
-                .catch { exception ->
-                    val errorCode = (exception as HttpException).code()
-                    if (errorCode in 400..499) {
-                        _error.postValue("Error! Force Refresh")
-                    } else {
-                        _error.postValue("Have issues connecting to Strava")
-                    }
-                }
-                .collect {
-                    _currentMonthActivites.postValue(it)
-                    _error.postValue(null)
-                }
-
-            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-                after = previousMonthEpoch,
-                before = currentMonthEpoch
+            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
+                after = currentYearEpoch,
+                before = null
             ).catch { exception ->
                 val errorCode = (exception as HttpException).code()
                 if (errorCode in 400..499) {
@@ -154,25 +143,18 @@ class StravaDashboardViewModel @Inject constructor(
                 } else {
                     _error.postValue("Have issues connecting to Strava")
                 }
-            }
-                .collect {
-                    _error.postValue(null)
-                    _previousMonthActivities.postValue(it)
-                }
+            }.collect { currentYearActivities ->
+                _currentMonthActivites.postValue(currentYearActivities.filter {
+                    it.start_date.getDate().monthValue == currentMonthInt
+                })
+                _previousMonthActivities.postValue(currentYearActivities.filter {
+                    it.start_date.getDate().monthValue == currentMonthInt - 1
+                })
+                _previousPreviousMonthActivities.postValue(currentYearActivities.filter {
+                    it.start_date.getDate().monthValue == currentMonthInt - 2
+                })
 
-            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-                after = previousPreviousMonthEpoch,
-                before = previousMonthEpoch
-            ).catch { exception ->
-                val errorCode = (exception as HttpException).code()
-                if (errorCode in 400..499) {
-                    _error.postValue("Error! Force Refresh")
-                } else {
-                    _error.postValue("Have issues connecting to Strava")
-                }
-            }.collect {
-                _error.postValue(null)
-                _previousPreviousMonthActivities.postValue(it)
+                _currentYearActivites.postValue(currentYearActivities)
             }
 
             stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
@@ -187,20 +169,6 @@ class StravaDashboardViewModel @Inject constructor(
                 }
             }.collect {
                 _prevYearActivites.postValue(it)
-            }
-
-            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
-                after = currentYearEpoch,
-                before = null
-            ).catch { exception ->
-                val errorCode = (exception as HttpException).code()
-                if (errorCode in 400..499) {
-                    _error.postValue("Error! Force Refresh")
-                } else {
-                    _error.postValue("Have issues connecting to Strava")
-                }
-            }.collect {
-                _currentYearActivites.postValue(it)
             }
 
             stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
@@ -223,36 +191,6 @@ class StravaDashboardViewModel @Inject constructor(
 
             _isRefreshing.postValue(false)
         }
-
-
-//        currentMonthActivites =
-//            stravaDashboardRepository.getStravaActivitiesAfter(currentMonthEpoch)
-//                .toLiveData(rootDisposable) { it }
-//
-//        previousMonthActivities =
-//            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//                after = previousMonthEpoch,
-//                before = currentMonthEpoch
-//            ).toLiveData(rootDisposable) { it }
-//
-//        previousPreviousMonthActivities =
-//            stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//                after = previousPreviousMonthEpoch,
-//                before = previousMonthEpoch
-//            ).toLiveData(rootDisposable) { it }
-
-//        currentYearActivites = stravaDashboardRepository.getStravaActivitiesAfter(currentYearEpoch)
-//            .toLiveData(rootDisposable) { it }
-//
-//        prevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//            after = prevYearEpoch,
-//            before = currentYearEpoch
-//        ).toLiveData(rootDisposable) { it }
-//
-//        prevPrevYearActivites = stravaDashboardRepository.getStravaActivitiesBeforeAndAfter(
-//            after = prevPrevYearEpoch,
-//            before = prevYearEpoch
-//        ).toLiveData(rootDisposable) { it }
     }
 
     fun loginAthlete(code: String) {

@@ -205,7 +205,6 @@ fun MonthWidget(
                             }
                         }
                         monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
-                        Log.d("TAG", "StravaDashboard: MONTH WEEK MAP $monthWeekMap")
                     }
                 }
             }
