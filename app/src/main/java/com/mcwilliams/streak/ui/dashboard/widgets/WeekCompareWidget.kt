@@ -29,7 +29,6 @@ import com.mcwilliams.streak.ui.dashboard.StatType
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.dashboard.monthWeekMap
 import com.mcwilliams.streak.ui.utils.*
 
 @Composable
@@ -37,7 +36,8 @@ fun WeekCompareWidget(
     activitesList: List<ActivitesItem>,
     selectedActivityType: ActivityType?,
     selectedUnitType: UnitType?,
-    today: Int?
+    today: Int?,
+    monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>>,
 ) {
     StreakWidgetCard(
         content = {
@@ -50,345 +50,360 @@ fun WeekCompareWidget(
                 val firstColumnWidth = maxWidth.times(.12f)
                 val monthColumnWidth = (maxWidth - firstColumnWidth) / 5
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    //Header Row
-                    Row(
+                if (monthWeekMap.isNotEmpty()) {
+
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = selectedActivityType?.name!!,
-                            color = Color(0xFFFFA500),
-                            modifier = Modifier.width(firstColumnWidth),
-                            style = MaterialTheme.typography.caption,
-                            textAlign = TextAlign.Start,
-                            fontWeight = FontWeight.ExtraBold,
+                        //Header Row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = selectedActivityType?.name!!,
+                                color = Color(0xFFFFA500),
+                                modifier = Modifier.width(firstColumnWidth),
+                                style = MaterialTheme.typography.caption,
+                                textAlign = TextAlign.Start,
+                                fontWeight = FontWeight.ExtraBold,
+                            )
+
+                            MonthTextStat(
+                                "Current",
+                                monthColumnWidth = monthColumnWidth
+                            )
+
+                            Spacer(modifier = Modifier.width(monthColumnWidth))
+
+                            MonthTextStat(
+                                "1w ago",
+                                monthColumnWidth = monthColumnWidth
+                            )
+                            Spacer(modifier = Modifier.width(monthColumnWidth))
+
+                            MonthTextStat(
+                                "2w ago",
+                                monthColumnWidth = monthColumnWidth
+                            )
+                        }
+
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colors.onSurface
                         )
 
-                        MonthTextStat(
-                            "Current",
-                            monthColumnWidth = monthColumnWidth
-                        )
+                        val weeklyDataMap: MutableList<SummaryMetrics> =
+                            mutableListOf()
 
-                        Spacer(modifier = Modifier.width(monthColumnWidth))
+                        val weeklyActivitiesMap: MutableList<Pair<Int, MutableList<ActivitesItem>>> =
+                            mutableListOf()
 
-                        MonthTextStat(
-                            "1w ago",
-                            monthColumnWidth = monthColumnWidth
-                        )
-                        Spacer(modifier = Modifier.width(monthColumnWidth))
-
-                        MonthTextStat(
-                            "2w ago",
-                            monthColumnWidth = monthColumnWidth
-                        )
-                    }
-
-                    Divider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp),
-                        thickness = 1.dp,
-                        color = MaterialTheme.colors.onSurface
-                    )
-
-                    val weeklyDataMap: MutableList<SummaryMetrics> =
-                        mutableListOf()
-
-                    val weeklyActivitiesMap: MutableList<Pair<Int, MutableList<ActivitesItem>>> =
-                        mutableListOf()
-
-                    var startingWeekInMap: MutableList<Int> = mutableListOf()
-                    monthWeekMap.forEach loop@{ weekCount, datesInWeek ->
-                        datesInWeek.forEach { week ->
-                            if (week.second == today!!) {
-                                startingWeekInMap.add(weekCount)
+                        var startingWeekInMap: MutableList<Int> = mutableListOf()
+                        monthWeekMap.forEach loop@{ weekCount, datesInWeek ->
+                            datesInWeek.forEach { week ->
+                                if (week.second == today!!) {
+                                    startingWeekInMap.add(weekCount)
+                                }
                             }
                         }
-                    }
 
-                    Log.d("TAG", "WeekCompareWidget: starting week map $startingWeekInMap")
+                        Log.d("TAG", "WeekCompareWidget: starting week map $startingWeekInMap")
 
-                    for (i in startingWeekInMap[0] downTo (startingWeekInMap[0] - 2)) {
-                        val weeklyActivitiesList =
-                            mutableListOf<ActivitesItem>()
-                        activitesList.forEach { activitiesItem ->
-                            val datesInWeek = monthWeekMap.get(i)
-                            datesInWeek!!.forEach {
-                                if (it.second == activitiesItem.start_date_local.getDate().dayOfMonth &&
-                                    it.first == activitiesItem.start_date_local.getDate().monthValue
-                                ) {
-                                    weeklyActivitiesList.add(activitiesItem)
+                        for (i in startingWeekInMap[0] downTo (startingWeekInMap[0] - 2)) {
+                            val weeklyActivitiesList =
+                                mutableListOf<ActivitesItem>()
+                            activitesList.forEach { activitiesItem ->
+                                val datesInWeek = monthWeekMap.get(i)
+                                datesInWeek!!.forEach {
+                                    if (it.second == activitiesItem.start_date_local.getDate().dayOfMonth &&
+                                        it.first == activitiesItem.start_date_local.getDate().monthValue
+                                    ) {
+                                        weeklyActivitiesList.add(activitiesItem)
+                                    }
+                                }
+
+                            }
+                            Log.d("TAG", "WeekCompareWidget: Weekly List: $weeklyActivitiesList")
+                            weeklyActivitiesMap.add(Pair(i, weeklyActivitiesList))
+                        }
+
+                        Log.d("TAG", "WeekCompareWidget: $weeklyActivitiesMap")
+
+
+                        weeklyActivitiesMap.forEach { weeklyActivityMap ->
+                            var count = 0
+                            var distance = 0f
+                            var elevation = 0f
+                            var time = 0
+                            weeklyActivityMap.second.forEach { activitiesItem ->
+                                if (selectedActivityType!!.name == ActivityType.All.name) {
+                                    count = count.inc()
+                                    distance += activitiesItem.distance
+                                    elevation += activitiesItem.total_elevation_gain
+                                    time += activitiesItem.moving_time
+                                } else if (activitiesItem.type == selectedActivityType!!.name) {
+                                    count = count.inc()
+                                    distance += activitiesItem.distance
+                                    elevation += activitiesItem.total_elevation_gain
+                                    time += activitiesItem.moving_time
                                 }
                             }
 
-                        }
-                        Log.d("TAG", "WeekCompareWidget: Weekly List: $weeklyActivitiesList")
-                        weeklyActivitiesMap.add(Pair(i, weeklyActivitiesList))
-                    }
-
-                    Log.d("TAG", "WeekCompareWidget: $weeklyActivitiesMap")
-
-
-                    weeklyActivitiesMap.forEach { weeklyActivityMap ->
-                        var count = 0
-                        var distance = 0f
-                        var elevation = 0f
-                        var time = 0
-                        weeklyActivityMap.second.forEach { activitiesItem ->
-                            if (selectedActivityType!!.name == ActivityType.All.name) {
-                                count = count.inc()
-                                distance += activitiesItem.distance
-                                elevation += activitiesItem.total_elevation_gain
-                                time += activitiesItem.moving_time
-                            } else if (activitiesItem.type == selectedActivityType!!.name) {
-                                count = count.inc()
-                                distance += activitiesItem.distance
-                                elevation += activitiesItem.total_elevation_gain
-                                time += activitiesItem.moving_time
-                            }
-                        }
-
-                        weeklyDataMap.add(
-                            SummaryMetrics(
-                                count = count,
-                                totalDistance = distance,
-                                totalElevation = elevation,
-                                totalTime = time
-                            )
-                        )
-                        Log.d(
-                            "TAG",
-                            "StravaDashboard: $count, ${distance.getDistanceString(selectedUnitType!!)}, ${
-                                elevation.getElevationString(
-                                    selectedUnitType!!
+                            weeklyDataMap.add(
+                                SummaryMetrics(
+                                    count = count,
+                                    totalDistance = distance,
+                                    totalElevation = elevation,
+                                    totalTime = time
                                 )
-                            }, ${time.getTimeStringHoursAndMinutes()}"
-                        )
-                    }
+                            )
+                            Log.d(
+                                "TAG",
+                                "StravaDashboard: $count, ${
+                                    distance.getDistanceString(
+                                        selectedUnitType!!
+                                    )
+                                }, ${
+                                    elevation.getElevationString(
+                                        selectedUnitType!!
+                                    )
+                                }, ${time.getTimeStringHoursAndMinutes()}"
+                            )
+                        }
 
-                    // Distance Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        DashboardStat(
-                            image = R.drawable.ic_ruler,
-                            modifier = Modifier.width(firstColumnWidth)
-                        )
+                        // Distance Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            DashboardStat(
+                                image = R.drawable.ic_ruler,
+                                modifier = Modifier.width(firstColumnWidth)
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[0].totalDistance.getDistanceString(selectedUnitType!!),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                weeklyDataMap[0].totalDistance.getDistanceString(selectedUnitType!!),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[0].totalDistance.toInt(),
-                            then = weeklyDataMap[1].totalDistance.toInt(),
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Distance
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[0].totalDistance.toInt(),
+                                then = weeklyDataMap[1].totalDistance.toInt(),
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Distance
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[1].totalDistance.getDistanceString(selectedUnitType!!),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                weeklyDataMap[1].totalDistance.getDistanceString(selectedUnitType!!),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[1].totalDistance.toInt(),
-                            then = weeklyDataMap[2].totalDistance.toInt(),
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Distance
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[1].totalDistance.toInt(),
+                                then = weeklyDataMap[2].totalDistance.toInt(),
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Distance
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[2].totalDistance.getDistanceString(selectedUnitType!!),
-                            monthColumnWidth = monthColumnWidth
-                        )
-                    }
-                    //Time Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        DashboardStat(
-                            image = R.drawable.ic_clock_time,
-                            modifier = Modifier.width(firstColumnWidth)
-                        )
+                            MonthTextStat(
+                                weeklyDataMap[2].totalDistance.getDistanceString(selectedUnitType!!),
+                                monthColumnWidth = monthColumnWidth
+                            )
+                        }
+                        //Time Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            DashboardStat(
+                                image = R.drawable.ic_clock_time,
+                                modifier = Modifier.width(firstColumnWidth)
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[0].totalTime.getTimeStringHoursAndMinutes(),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                weeklyDataMap[0].totalTime.getTimeStringHoursAndMinutes(),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[0].totalTime,
-                            then = weeklyDataMap[1].totalTime,
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Time
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[0].totalTime,
+                                then = weeklyDataMap[1].totalTime,
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Time
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[1].totalTime.getTimeStringHoursAndMinutes(),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                weeklyDataMap[1].totalTime.getTimeStringHoursAndMinutes(),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[1].totalTime,
-                            then = weeklyDataMap[2].totalTime,
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Time
-                        )
-                        MonthTextStat(
-                            weeklyDataMap[2].totalTime.getTimeStringHoursAndMinutes(),
-                            monthColumnWidth = monthColumnWidth
-                        )
-                    }
-                    // Elevation Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        DashboardStat(
-                            image = R.drawable.ic_up_right,
-                            modifier = Modifier.width(firstColumnWidth)
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[1].totalTime,
+                                then = weeklyDataMap[2].totalTime,
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Time
+                            )
+                            MonthTextStat(
+                                weeklyDataMap[2].totalTime.getTimeStringHoursAndMinutes(),
+                                monthColumnWidth = monthColumnWidth
+                            )
+                        }
+                        // Elevation Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            DashboardStat(
+                                image = R.drawable.ic_up_right,
+                                modifier = Modifier.width(firstColumnWidth)
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[0].totalElevation.getElevationString(selectedUnitType!!),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                weeklyDataMap[0].totalElevation.getElevationString(selectedUnitType!!),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[0].totalElevation.toInt(),
-                            then = weeklyDataMap[1].totalElevation.toInt(),
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Count
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[0].totalElevation.toInt(),
+                                then = weeklyDataMap[1].totalElevation.toInt(),
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Count
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[1].totalElevation.getElevationString(selectedUnitType!!),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                weeklyDataMap[1].totalElevation.getElevationString(selectedUnitType!!),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[1].totalElevation.toInt(),
-                            then = weeklyDataMap[2].totalElevation.toInt(),
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Count
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[1].totalElevation.toInt(),
+                                then = weeklyDataMap[2].totalElevation.toInt(),
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Count
+                            )
 
-                        MonthTextStat(
-                            weeklyDataMap[2].totalElevation.getElevationString(selectedUnitType!!),
-                            monthColumnWidth = monthColumnWidth
-                        )
-                    }
+                            MonthTextStat(
+                                weeklyDataMap[2].totalElevation.getElevationString(selectedUnitType!!),
+                                monthColumnWidth = monthColumnWidth
+                            )
+                        }
 
-                    // Elevation Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        DashboardStat(
-                            image = R.drawable.ic_speed,
-                            modifier = Modifier.width(firstColumnWidth)
-                        )
+                        // Elevation Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            DashboardStat(
+                                image = R.drawable.ic_speed,
+                                modifier = Modifier.width(firstColumnWidth)
+                            )
 
-                        MonthTextStat(
-                            getAveragePaceString(
-                                weeklyDataMap[0].totalDistance,
-                                weeklyDataMap[0].totalTime,
-                                selectedUnitType!!
-                            ),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                getAveragePaceString(
+                                    weeklyDataMap[0].totalDistance,
+                                    weeklyDataMap[0].totalTime,
+                                    selectedUnitType!!
+                                ),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[0].totalDistance.getAveragePaceFromDistance(weeklyDataMap[0].totalTime),
-                            then = weeklyDataMap[1].totalDistance.getAveragePaceFromDistance(weeklyDataMap[1].totalTime),
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Pace
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[0].totalDistance.getAveragePaceFromDistance(
+                                    weeklyDataMap[0].totalTime
+                                ),
+                                then = weeklyDataMap[1].totalDistance.getAveragePaceFromDistance(
+                                    weeklyDataMap[1].totalTime
+                                ),
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Pace
+                            )
 
-                        MonthTextStat(
-                            getAveragePaceString(
-                                weeklyDataMap[1].totalDistance,
-                                weeklyDataMap[1].totalTime,
-                                selectedUnitType!!
-                            ),
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                getAveragePaceString(
+                                    weeklyDataMap[1].totalDistance,
+                                    weeklyDataMap[1].totalTime,
+                                    selectedUnitType!!
+                                ),
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[1].totalDistance.getAveragePaceFromDistance(weeklyDataMap[1].totalTime),
-                            then = weeklyDataMap[2].totalDistance.getAveragePaceFromDistance(weeklyDataMap[2].totalTime),
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Pace
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[1].totalDistance.getAveragePaceFromDistance(
+                                    weeklyDataMap[1].totalTime
+                                ),
+                                then = weeklyDataMap[2].totalDistance.getAveragePaceFromDistance(
+                                    weeklyDataMap[2].totalTime
+                                ),
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Pace
+                            )
 
-                        MonthTextStat(
-                            getAveragePaceString(
-                                weeklyDataMap[2].totalDistance,
-                                weeklyDataMap[2].totalTime,
-                                selectedUnitType!!
-                            ),
-                            monthColumnWidth = monthColumnWidth
-                        )
-                    }
-                    //Count Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        DashboardStat(
-                            image = R.drawable.ic_hashtag,
-                            modifier = Modifier.width(firstColumnWidth)
-                        )
+                            MonthTextStat(
+                                getAveragePaceString(
+                                    weeklyDataMap[2].totalDistance,
+                                    weeklyDataMap[2].totalTime,
+                                    selectedUnitType!!
+                                ),
+                                monthColumnWidth = monthColumnWidth
+                            )
+                        }
+                        //Count Row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            DashboardStat(
+                                image = R.drawable.ic_hashtag,
+                                modifier = Modifier.width(firstColumnWidth)
+                            )
 
-                        MonthTextStat(
-                            "${weeklyDataMap[0].count}",
-                            monthColumnWidth = monthColumnWidth
-                        )
-                        PercentDelta(
-                            now = weeklyDataMap[0].count,
-                            then = weeklyDataMap[1].count,
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Count
-                        )
-                        MonthTextStat(
-                            "${weeklyDataMap[1].count}",
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                "${weeklyDataMap[0].count}",
+                                monthColumnWidth = monthColumnWidth
+                            )
+                            PercentDelta(
+                                now = weeklyDataMap[0].count,
+                                then = weeklyDataMap[1].count,
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Count
+                            )
+                            MonthTextStat(
+                                "${weeklyDataMap[1].count}",
+                                monthColumnWidth = monthColumnWidth
+                            )
 
-                        PercentDelta(
-                            now = weeklyDataMap[1].count,
-                            then = weeklyDataMap[2].count,
-                            monthColumnWidth = monthColumnWidth,
-                            type = StatType.Count
-                        )
+                            PercentDelta(
+                                now = weeklyDataMap[1].count,
+                                then = weeklyDataMap[2].count,
+                                monthColumnWidth = monthColumnWidth,
+                                type = StatType.Count
+                            )
 
-                        MonthTextStat(
-                            "${weeklyDataMap[2].count}",
-                            monthColumnWidth = monthColumnWidth
-                        )
+                            MonthTextStat(
+                                "${weeklyDataMap[2].count}",
+                                monthColumnWidth = monthColumnWidth
+                            )
+                        }
                     }
                 }
             }

@@ -1,7 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -30,7 +29,6 @@ import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.dashboard.monthWeekMap
 import com.mcwilliams.streak.ui.utils.*
 import java.time.Month
 import java.time.YearMonth
@@ -41,12 +39,8 @@ fun MonthWidget(
     monthlyWorkouts: List<ActivitesItem>,
     updateMonthlyMetrics: (SummaryMetrics) -> Unit,
     selectedActivityType: ActivityType?,
-    weekCount: Int,
-    firstDayOffset: Int,
-    lastDayCount: Int,
-    priorMonthLength: Int,
-    currentWeek: (MutableList<Pair<Int,Int>>) -> Unit,
     selectedUnitType: UnitType?,
+    monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>>,
     today: Int?,
 ) {
     val currentMonth = YearMonth.now().month
@@ -119,7 +113,7 @@ fun MonthWidget(
                             )
                             Text(
                                 "  |  ${
-                                    currentMonth.name.toLowerCase(Locale.getDefault())
+                                    currentMonth.name.lowercase(Locale.getDefault())
                                         .capitalize(Locale.getDefault())
                                 }",
                                 color = MaterialTheme.colors.onSurface,
@@ -150,7 +144,11 @@ fun MonthWidget(
 
                         DashboardStat(
                             image = R.drawable.ic_speed,
-                            stat = getAveragePaceString(totalDistance, totalTime, selectedUnitType!!)
+                            stat = getAveragePaceString(
+                                totalDistance,
+                                totalTime,
+                                selectedUnitType!!
+                            )
                         )
 
                         DashboardStat(
@@ -159,140 +157,54 @@ fun MonthWidget(
                         )
                     }
                     Column(modifier = Modifier.width(width = width)) {
-                        for (i in 0..weekCount) {
-                            CalendarView(
-                                startDayOffSet = firstDayOffset,
-                                endDayCount = lastDayCount,
-                                monthWeekNumber = i,
-                                priorMonthLength = priorMonthLength,
-                                weekCount = weekCount,
-                                width = width,
-                                daysActivitiesLogged = listOfDaysLoggedActivity,
-                                currentWeek = currentWeek,
-                                today = today!!,
-                                currentMonth = currentMonth
-                            )
-                        }
 
-                        //Add previous 2 weeks to week map
-                        val firstDayWeekZeroMonth =
-                            (priorMonthLength - (firstDayOffset - 1))
+                        val dateModifier = Modifier.width(width = width / 7)
 
-                        val listOfDatesInPreviousWeek: MutableList<Pair<Int,Int>> =
-                            mutableListOf()
+                        for (weekCount in 0..monthWeekMap.size - 2) {
+                            val week = monthWeekMap[weekCount]
 
-                        for (i in 0..6) {
-                            if(today!! < 7) {
-                                val priorDay = (firstDayWeekZeroMonth - (i + 1))
-                                listOfDatesInPreviousWeek.add(currentMonth.value - 1 to priorDay)
-                            } else {
-                                val priorDay = (firstDayWeekZeroMonth - (i + 1))
-                                listOfDatesInPreviousWeek.add(currentMonth.value to priorDay)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 3.dp)
+                            ) {
+
+                                week?.forEach {
+                                    Row() {
+                                        val dayColor =
+                                            when {
+                                                listOfDaysLoggedActivity.contains(it.second) -> Color(
+                                                    0xFFFFA500
+                                                )
+                                                it.second < today!! -> MaterialTheme.colors.onSurface
+                                                it.second == today -> MaterialTheme.colors.onSurface
+                                                else -> Color.LightGray.copy(alpha = .8f)
+                                            }
+
+                                        Surface(
+                                            color = Color.Transparent,
+                                            shape = CircleShape,
+                                            border = if (it.second == today) BorderStroke(
+                                                1.dp,
+                                                color = MaterialTheme.colors.onSurface
+                                            ) else null
+                                        ) {
+                                            Text(
+                                                "${it.second}",
+                                                textAlign = TextAlign.Center,
+                                                modifier = dateModifier.padding(2.dp),
+                                                fontWeight = FontWeight.Medium,
+                                                color = dayColor,
+                                                style = MaterialTheme.typography.body2
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
-                        monthWeekMap.put(-1, listOfDatesInPreviousWeek)
-
-                        val listOfDatesInTwoWeeksAgo: MutableList<Pair<Int,Int>> =
-                            mutableListOf()
-                        val twoWeekAgo = firstDayWeekZeroMonth - 7
-                        for (i in 0..6) {
-                            if(today!! < 7) {
-                                val priorDay = (twoWeekAgo - (i + 1))
-                                listOfDatesInTwoWeeksAgo.add(currentMonth.value - 1 to priorDay)
-                            } else {
-                                val priorDay = (firstDayWeekZeroMonth - (i + 1))
-                                listOfDatesInTwoWeeksAgo.add(currentMonth.value to priorDay)
-                            }
-                        }
-                        monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
                     }
                 }
             }
         }
     )
-}
-
-@SuppressLint("SimpleDateFormat")
-@Composable
-fun CalendarView(
-    startDayOffSet: Int,
-    endDayCount: Int,
-    monthWeekNumber: Int,
-    priorMonthLength: Int,
-    weekCount: Int,
-    width: Dp,
-    daysActivitiesLogged: MutableList<Int>,
-    currentWeek: (MutableList<Pair<Int, Int>>) -> Unit,
-    today: Int,
-    currentMonth: Month,
-) {
-    val dateModifier = Modifier.width(width = width / 7)
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
-
-        val listOfDatesInWeek: MutableList<Pair<Int, Int>> = mutableListOf()
-
-        if (monthWeekNumber == 0) {
-            for (i in 0 until startDayOffSet) {
-                val priorDay = (priorMonthLength - (startDayOffSet - i - 1))
-
-                listOfDatesInWeek.add(currentMonth.value - 1 to priorDay)
-
-                Text(
-                    " ",
-                    color = MaterialTheme.colors.onSurface,
-                    textAlign = TextAlign.Center,
-                    modifier = dateModifier
-                )
-            }
-        }
-
-        val endDay = when (monthWeekNumber) {
-            0 -> 7 - startDayOffSet
-            weekCount -> endDayCount
-            else -> 7
-        }
-
-        for (i in 1..endDay) {
-            val day =
-                if (monthWeekNumber == 0) i else (i + (7 * monthWeekNumber) - startDayOffSet)
-
-            val dayColor =
-                when {
-                    daysActivitiesLogged.contains(day) -> Color(0xFFFFA500)
-                    day < today -> MaterialTheme.colors.onSurface
-                    day == today -> MaterialTheme.colors.onSurface
-                    else -> Color.LightGray.copy(alpha = .8f)
-                }
-
-            Row() {
-                Surface(
-                    color = Color.Transparent,
-                    shape = CircleShape,
-                    border = if (day == today) BorderStroke(
-                        1.dp,
-                        color = MaterialTheme.colors.onSurface
-                    ) else null
-                ) {
-                    Text(
-                        "$day",
-                        textAlign = TextAlign.Center,
-                        modifier = dateModifier.padding(2.dp),
-                        fontWeight = FontWeight.Medium,
-                        color = dayColor,
-                        style = MaterialTheme.typography.body2
-                    )
-                }
-            }
-
-            listOfDatesInWeek.add(currentMonth.value to day)
-        }
-
-        listOfDatesInWeek.forEach {
-            if (it.second == today) {
-                currentWeek(listOfDatesInWeek)
-            }
-        }
-
-        monthWeekMap.put(monthWeekNumber, listOfDatesInWeek)
-    }
 }

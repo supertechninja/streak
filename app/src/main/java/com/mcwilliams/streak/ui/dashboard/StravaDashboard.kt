@@ -1,13 +1,8 @@
 package com.mcwilliams.streak.ui.dashboard
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +11,6 @@ import androidx.compose.material.BottomSheetValue.Collapsed
 import androidx.compose.material.BottomSheetValue.Expanded
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -49,11 +43,9 @@ import com.mcwilliams.streak.ui.theme.primaryBlueShade2
 import com.mcwilliams.streak.ui.theme.primaryColor
 import com.muddzdev.quickshot.QuickShot
 import kotlinx.coroutines.launch
-import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
-import androidx.core.content.FileProvider
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.dashboard.widgets.CompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
@@ -91,14 +83,10 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
         val selectedUnitType by viewModel.unitType.observeAsState()
 
-        var currentWeek: MutableList<Pair<Int, Int>> by rememberSaveable {
-            mutableStateOf(
-                mutableListOf()
-            )
-        }
-        val updateCurrentWeek = { updatedWeek: MutableList<Pair<Int, Int>> ->
-            currentWeek = updatedWeek
-        }
+        val today by viewModel.today.observeAsState()
+
+        val monthWeekMap by viewModel.monthWeekMap.observeAsState(mutableMapOf())
+        val currentWeek by viewModel.currentWeek.observeAsState(mutableListOf())
 
         var currentMonthMetrics by remember {
             mutableStateOf(SummaryMetrics(0, 0f, 0f, 0))
@@ -112,7 +100,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         val context = LocalContext.current
         val isRefreshing by viewModel.isRefreshing.observeAsState()
 
-        val today by viewModel.today.observeAsState()
 
         val bottomSheetScaffoldState =
             rememberBottomSheetScaffoldState(bottomSheetState = BottomSheetState(initialValue = Collapsed))
@@ -190,7 +177,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                 }
             },
             content = {
-                Box() {
+                Box(modifier = Modifier.fillMaxSize().background(color = Color(0xFF01374D))) {
                     SwipeRefresh(
                         state = rememberSwipeRefreshState(isRefreshing!!),
                         onRefresh = {
@@ -227,6 +214,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 previousMonthActivities?.let {
                                     last2MonthsActivities = monthlyWorkouts.plus(it)
 
+
                                     StreakDashboardWidget(
                                         content = {
                                             WeekSummaryWidget(
@@ -247,12 +235,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                             monthlyWorkouts = monthlyWorkouts,
                                             updateMonthlyMetrics,
                                             selectedActivityType,
-                                            weekCount,
-                                            firstDayOffset,
-                                            lastDayCount,
-                                            priorMonthLength,
-                                            updateCurrentWeek,
                                             selectedUnitType = selectedUnitType,
+                                            monthWeekMap,
                                             today = today
                                         )
                                     }, widgetName = "Month Summary"
@@ -264,7 +248,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                             activitesList = last2MonthsActivities,
                                             selectedActivityType = selectedActivityType,
                                             selectedUnitType = selectedUnitType,
-                                            today = today!!
+                                            today = today!!,
+                                            monthWeekMap = monthWeekMap
                                         )
                                     }, widgetName = "Week vs Week"
                                 )
@@ -424,8 +409,6 @@ fun StreakDashboardWidget(content: @Composable () -> Unit, widgetName: String) {
 }
 
 enum class StatType { Distance, Time, Elevation, Count, Pace }
-
-val monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>> = mutableMapOf()
 
 data class SummaryMetrics(
     val count: Int = 0,

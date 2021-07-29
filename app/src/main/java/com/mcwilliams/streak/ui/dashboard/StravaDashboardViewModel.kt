@@ -1,5 +1,16 @@
 package com.mcwilliams.streak.ui.dashboard
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +26,7 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.YearMonth
 import java.time.ZoneId
 import java.util.*
 import javax.inject.Inject
@@ -29,7 +41,7 @@ class StravaDashboardViewModel @Inject constructor(
     private var _isLoggedIn: MutableLiveData<Boolean> = MutableLiveData(null)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
-    private var _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(false)
+    private var _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(true)
     var isRefreshing: LiveData<Boolean> = _isRefreshing
 
     var currentMonthEpoch = 0
@@ -92,15 +104,24 @@ class StravaDashboardViewModel @Inject constructor(
 
 
     var _today: MutableLiveData<Int> =
-        MutableLiveData()
+        MutableLiveData(0)
     var today: LiveData<Int> =
         _today
 
     var currentMonthInt : Int = 0
 
+    var _monthWeekMap : MutableLiveData<MutableMap<Int, MutableList<Pair<Int, Int>>>> = MutableLiveData()
+    var monthWeekMap : LiveData<MutableMap<Int, MutableList<Pair<Int, Int>>>> = _monthWeekMap
+
+    var _currentWeek: MutableLiveData<MutableList<Pair<Int, Int>>> = MutableLiveData()
+    var currentWeek: MutableLiveData<MutableList<Pair<Int, Int>>> = _currentWeek
+
+
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
         _today.postValue(LocalDate.now().dayOfMonth)
+
+        monthBreakDown()
 
         currentMonthInt = LocalDate.now().monthValue
 
@@ -214,6 +235,84 @@ class StravaDashboardViewModel @Inject constructor(
         stravaDashboardRepository.savePreferredUnits(unitType = unitType)
         _unitType.postValue(stravaDashboardRepository.getPreferredUnitType()!!)
     }
+
+    fun monthBreakDown() {
+        val monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>> = mutableMapOf()
+        val month = YearMonth.now()
+        val firstDayOffset = month.atDay(1).dayOfWeek.ordinal
+        val monthLength = month.lengthOfMonth()
+        val currentMonth = YearMonth.now().month
+
+        val priorMonthLength = month.minusMonths(1).lengthOfMonth()
+        val lastDayCount = (monthLength + firstDayOffset) % 7
+        val weekCount = (firstDayOffset + monthLength) / 7
+
+        for (week in 0..weekCount) {
+            val listOfDatesInWeek: MutableList<Pair<Int, Int>> = mutableListOf()
+
+            if (week == 0) {
+                for (i in 0 until firstDayOffset) {
+                    val priorDay = (priorMonthLength - (firstDayOffset - i - 1))
+                    listOfDatesInWeek.add(currentMonth.value - 1 to priorDay)
+                }
+            }
+
+            val endDay = when (week) {
+                0 -> 7 - firstDayOffset
+                weekCount -> lastDayCount
+                else -> 7
+            }
+
+            for (i in 1..endDay) {
+                val day =
+                    if (week == 0) i else (i + (7 * week) - firstDayOffset)
+
+                listOfDatesInWeek.add(currentMonth.value to day)
+            }
+
+            listOfDatesInWeek.forEach { weekDates ->
+                if (weekDates.second == LocalDate.now().dayOfMonth) {
+                    _currentWeek.postValue(listOfDatesInWeek)
+                }
+            }
+
+            monthWeekMap.put(week, listOfDatesInWeek)
+        }
+
+        //Add previous 2 weeks to week map
+        val firstDayWeekZeroMonth =
+            (priorMonthLength - (firstDayOffset - 1))
+
+        val listOfDatesInPreviousWeek: MutableList<Pair<Int,Int>> =
+            mutableListOf()
+
+        for (i in 0..6) {
+            if(today.value!! < 7) {
+                val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                listOfDatesInPreviousWeek.add(currentMonth.value - 1 to priorDay)
+            } else {
+                val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                listOfDatesInPreviousWeek.add(currentMonth.value to priorDay)
+            }
+        }
+        monthWeekMap.put(-1, listOfDatesInPreviousWeek)
+
+        val listOfDatesInTwoWeeksAgo: MutableList<Pair<Int,Int>> =
+            mutableListOf()
+        val twoWeekAgo = firstDayWeekZeroMonth - 7
+        for (i in 0..6) {
+            if(today.value!! < 7) {
+                val priorDay = (twoWeekAgo - (i + 1))
+                listOfDatesInTwoWeeksAgo.add(currentMonth.value - 1 to priorDay)
+            } else {
+                val priorDay = (firstDayWeekZeroMonth - (i + 1))
+                listOfDatesInTwoWeeksAgo.add(currentMonth.value to priorDay)
+            }
+        }
+        monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
+
+        _monthWeekMap.postValue(monthWeekMap)
+    }
 }
 
 fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
@@ -230,3 +329,4 @@ fun getEpoch(year: Int, month: Int, day: Int): Pair<Int, String> {
         calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault())
     )
 }
+
