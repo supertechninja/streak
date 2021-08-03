@@ -69,9 +69,11 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
             viewModel.fetchData()
             fetchData = fetchData.inc()
         }
-        val monthlyActivities by viewModel.currentMonthActivites.observeAsState()
-        val previousMonthActivities by viewModel.previousMonthActivities.observeAsState()
-        val previousPreviousMonthActivities by viewModel.previousPreviousMonthActivities.observeAsState()
+        val monthlyActivities by viewModel.currentMonthActivites.observeAsState(emptyList())
+        val previousMonthActivities by viewModel.previousMonthActivities.observeAsState(emptyList())
+        val previousPreviousMonthActivities by viewModel.previousPreviousMonthActivities.observeAsState(
+            emptyList()
+        )
 
         var last2MonthsActivities: List<ActivitesItem> by remember { mutableStateOf(emptyList()) }
 
@@ -79,9 +81,9 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         val prevYearActivities by viewModel.prevYearActivites.observeAsState()
         val prevPrevYearActivities by viewModel.prevPrevYearActivites.observeAsState()
 
-        val selectedActivityType by viewModel.activityType.observeAsState()
+        val selectedActivityType by viewModel.activityType.observeAsState(ActivityType.Run)
 
-        val selectedUnitType by viewModel.unitType.observeAsState()
+        val selectedUnitType by viewModel.unitType.observeAsState(UnitType.Imperial)
 
         val today by viewModel.today.observeAsState()
 
@@ -98,7 +100,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         val error by viewModel.error.observeAsState()
 
         val context = LocalContext.current
-        val isRefreshing by viewModel.isRefreshing.observeAsState()
+        val isRefreshing by viewModel.isRefreshing.observeAsState(true)
 
 
         val bottomSheetScaffoldState =
@@ -177,7 +179,11 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                 }
             },
             content = {
-                Box(modifier = Modifier.fillMaxSize().background(color = Color(0xFF01374D))) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = Color(0xFF01374D))
+                ) {
                     SwipeRefresh(
                         state = rememberSwipeRefreshState(isRefreshing!!),
                         onRefresh = {
@@ -210,133 +216,130 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 }
                             }
 
-                            monthlyActivities?.let { monthlyWorkouts ->
-                                previousMonthActivities?.let {
-                                    last2MonthsActivities = monthlyWorkouts.plus(it)
 
+                            last2MonthsActivities = monthlyActivities.plus(previousMonthActivities)
 
-                                    StreakDashboardWidget(
-                                        content = {
-                                            WeekSummaryWidget(
-                                                monthlyWorkouts = last2MonthsActivities,
-                                                selectedActivityType = selectedActivityType,
-                                                currentWeek = currentWeek,
-                                                selectedUnitType = selectedUnitType,
-                                                today = today!!
-                                            )
-                                        },
-                                        widgetName = "Week Summary"
+                            StreakDashboardWidget(
+                                content = {
+                                    WeekSummaryWidget(
+                                        monthlyWorkouts = last2MonthsActivities,
+                                        selectedActivityType = selectedActivityType,
+                                        currentWeek = currentWeek,
+                                        selectedUnitType = selectedUnitType,
+                                        today = today!!,
+                                        isLoading = last2MonthsActivities.isEmpty()
                                     )
+                                },
+                                widgetName = "Week Summary"
+                            )
+
+                            StreakDashboardWidget(
+                                content = {
+                                    MonthWidget(
+                                        monthlyWorkouts = monthlyActivities,
+                                        updateMonthlyMetrics = updateMonthlyMetrics,
+                                        selectedActivityType = selectedActivityType,
+                                        selectedUnitType = selectedUnitType,
+                                        monthWeekMap = monthWeekMap,
+                                        today = today,
+                                        isLoading = monthlyActivities.isEmpty()
+                                    )
+                                }, widgetName = "Month Summary"
+                            )
+
+                            StreakDashboardWidget(
+                                content = {
+                                    WeekCompareWidget(
+                                        activitesList = last2MonthsActivities,
+                                        selectedActivityType = selectedActivityType,
+                                        selectedUnitType = selectedUnitType,
+                                        today = today!!,
+                                        monthWeekMap = monthWeekMap,
+                                        isLoading = last2MonthsActivities.isEmpty()
+                                    )
+                                }, widgetName = "Week vs Week"
+                            )
+
+                            val prevMetrics by remember {
+                                mutableStateOf(
+                                    previousMonthActivities.getStats(selectedActivityType)
+                                )
+                            }
+
+                            val prevPrevMetrics by remember {
+                                mutableStateOf(
+                                    previousPreviousMonthActivities.getStats(
+                                        selectedActivityType
+                                    )
+                                )
+                            }
+
+                            StreakDashboardWidget(
+                                content = {
+                                    CompareWidget(
+                                        dashboardType = DashboardType.Month,
+                                        selectedActivityType = selectedActivityType,
+                                        currentMonthMetrics = currentMonthMetrics,
+                                        columnTitles = arrayOf(
+                                            viewModel.currentMonth,
+                                            viewModel.previousMonth,
+                                            viewModel.previousPreviousMonth
+                                        ),
+                                        prevMetrics = prevMetrics,
+                                        prevPrevMetrics = prevPrevMetrics,
+                                        selectedUnitType = selectedUnitType
+                                    )
+                                }, widgetName = "Month vs Month"
+                            )
+
+                            prevYearActivities?.let { lastYearActivities ->
+                                val lastYearSummaryMetrics =
+                                    lastYearActivities.getStats(
+                                        selectedActivityType
+                                    )
+
+                                var currentYearSummaryMetrics = SummaryMetrics()
+                                var lastLastYearSummaryMetrics = SummaryMetrics()
+
+                                prevPrevYearActivities?.let {
+                                    lastLastYearSummaryMetrics =
+                                        it.getStats(
+                                            selectedActivityType
+                                        )
+                                }
+
+                                currentYearActivities?.let {
+                                    currentYearSummaryMetrics =
+                                        it.getStats(
+                                            selectedActivityType
+                                        )
                                 }
 
                                 StreakDashboardWidget(
                                     content = {
-                                        MonthWidget(
-                                            monthlyWorkouts = monthlyWorkouts,
-                                            updateMonthlyMetrics,
-                                            selectedActivityType,
-                                            selectedUnitType = selectedUnitType,
-                                            monthWeekMap,
-                                            today = today
-                                        )
-                                    }, widgetName = "Month Summary"
-                                )
-
-                                StreakDashboardWidget(
-                                    content = {
-                                        WeekCompareWidget(
-                                            activitesList = last2MonthsActivities,
+                                        CompareWidget(
+                                            dashboardType = DashboardType.Year,
                                             selectedActivityType = selectedActivityType,
-                                            selectedUnitType = selectedUnitType,
-                                            today = today!!,
-                                            monthWeekMap = monthWeekMap
+                                            columnTitles = arrayOf("2021", "2020", "2019"),
+                                            currentMonthMetrics = currentYearSummaryMetrics,
+                                            prevMetrics = lastYearSummaryMetrics,
+                                            prevPrevMetrics = lastLastYearSummaryMetrics,
+                                            selectedUnitType = selectedUnitType
                                         )
-                                    }, widgetName = "Week vs Week"
+                                    }, widgetName = "Year vs Year"
                                 )
+                            }
 
-                                if (previousMonthActivities != null && previousPreviousMonthActivities != null) {
-                                    val prevMetrics by remember {
-                                        mutableStateOf(
-                                            previousMonthActivities!!.getStats(selectedActivityType!!)
-                                        )
-                                    }
-
-                                    val prevPrevMetrics by remember {
-                                        mutableStateOf(
-                                            previousPreviousMonthActivities!!.getStats(
-                                                selectedActivityType!!
-                                            )
-                                        )
-                                    }
-
-                                    StreakDashboardWidget(
-                                        content = {
-                                            CompareWidget(
-                                                dashboardType = DashboardType.Month,
-                                                selectedActivityType = selectedActivityType,
-                                                currentMonthMetrics = currentMonthMetrics,
-                                                columnTitles = arrayOf(
-                                                    viewModel.currentMonth,
-                                                    viewModel.previousMonth,
-                                                    viewModel.previousPreviousMonth
-                                                ),
-                                                prevMetrics = prevMetrics,
-                                                prevPrevMetrics = prevPrevMetrics,
-                                                selectedUnitType = selectedUnitType
-                                            )
-                                        }, widgetName = "Month vs Month"
-                                    )
-
-                                    prevYearActivities?.let { lastYearActivities ->
-                                        val lastYearSummaryMetrics =
-                                            lastYearActivities.getStats(
-                                                selectedActivityType!!
-                                            )
-
-                                        var currentYearSummaryMetrics = SummaryMetrics()
-                                        var lastLastYearSummaryMetrics = SummaryMetrics()
-
-                                        prevPrevYearActivities?.let {
-                                            lastLastYearSummaryMetrics =
-                                                it.getStats(
-                                                    selectedActivityType!!
-                                                )
-                                        }
-
-                                        currentYearActivities?.let {
-                                            currentYearSummaryMetrics =
-                                                it.getStats(
-                                                    selectedActivityType!!
-                                                )
-                                        }
-
-                                        StreakDashboardWidget(
-                                            content = {
-                                                CompareWidget(
-                                                    dashboardType = DashboardType.Year,
-                                                    selectedActivityType = selectedActivityType,
-                                                    columnTitles = arrayOf("2021", "2020", "2019"),
-                                                    currentMonthMetrics = currentYearSummaryMetrics,
-                                                    prevMetrics = lastYearSummaryMetrics,
-                                                    prevPrevMetrics = lastLastYearSummaryMetrics,
-                                                    selectedUnitType = selectedUnitType
-                                                )
-                                            }, widgetName = "Year vs Year"
-                                        )
-                                    }
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 16.dp, bottom = 16.dp),
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-                                        Image(
-                                            painter = painterResource(id = R.drawable.powerd_by_strava_logo),
-                                            contentDescription = "Powered By Strava",
-                                        )
-                                    }
-                                }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp, bottom = 16.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.powerd_by_strava_logo),
+                                    contentDescription = "Powered By Strava",
+                                )
                             }
                         }
                     }
@@ -427,7 +430,8 @@ private fun share(view: ComposeView, name: String, context: Context) {
         .save();
 }
 
-class HandleSavedImage(val context: Context, val fileName: String) : QuickShot.QuickShotListener {
+class HandleSavedImage(val context: Context, val fileName: String) :
+    QuickShot.QuickShotListener {
     override fun onQuickShotSuccess(path: String?) {
         Toast.makeText(context, "Dashboard Saved", Toast.LENGTH_SHORT).show()
     }

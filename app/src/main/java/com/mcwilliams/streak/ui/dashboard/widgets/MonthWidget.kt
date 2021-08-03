@@ -1,6 +1,5 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
@@ -30,7 +28,6 @@ import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.utils.*
-import java.time.Month
 import java.time.YearMonth
 import java.util.Locale
 
@@ -42,6 +39,7 @@ fun MonthWidget(
     selectedUnitType: UnitType?,
     monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>>,
     today: Int?,
+    isLoading: Boolean,
 ) {
     val currentMonth = YearMonth.now().month
 
@@ -106,7 +104,7 @@ fun MonthWidget(
                     ) {
                         Row() {
                             Text(
-                                selectedActivityType?.name!!,
+                                text = selectedActivityType?.name ?: "",
                                 color = Color(0xFFFFA500),
                                 fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.body2
@@ -129,17 +127,20 @@ fun MonthWidget(
                         )
                         DashboardStat(
                             image = R.drawable.ic_ruler,
-                            stat = totalDistance.getDistanceString(selectedUnitType!!)
+                            stat = totalDistance.getDistanceString(selectedUnitType!!),
+                            isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_clock_time,
-                            stat = totalTime.getTimeStringHoursAndMinutes()
+                            stat = totalTime.getTimeStringHoursAndMinutes(),
+                            isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_up_right,
-                            stat = totalElevation.getElevationString(selectedUnitType!!)
+                            stat = totalElevation.getElevationString(selectedUnitType),
+                            isLoading = isLoading
                         )
 
                         DashboardStat(
@@ -147,13 +148,15 @@ fun MonthWidget(
                             stat = getAveragePaceString(
                                 totalDistance,
                                 totalTime,
-                                selectedUnitType!!
-                            )
+                                selectedUnitType
+                            ),
+                            isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_hashtag,
-                            stat = "$count"
+                            stat = "$count",
+                            isLoading = isLoading
                         )
                     }
                     Column(modifier = Modifier.width(width = width)) {
@@ -171,20 +174,23 @@ fun MonthWidget(
 
                                 week?.forEach {
                                     Row() {
-                                        val dayColor =
-                                            when {
-                                                listOfDaysLoggedActivity.contains(it.second) -> Color(
-                                                    0xFFFFA500
-                                                )
-                                                it.second < today!! -> MaterialTheme.colors.onSurface
-                                                it.second == today -> MaterialTheme.colors.onSurface
-                                                else -> Color.LightGray.copy(alpha = .8f)
-                                            }
+                                        var dayColor = Color.Transparent
+                                        if (it.first == YearMonth.now().monthValue) {
+                                            dayColor =
+                                                when {
+                                                    listOfDaysLoggedActivity.contains(it.second) -> Color(
+                                                        0xFFFFA500
+                                                    )
+                                                    it.second < today!! -> MaterialTheme.colors.onSurface
+                                                    it.second == today -> MaterialTheme.colors.onSurface
+                                                    else -> Color.LightGray.copy(alpha = .8f)
+                                                }
+                                        }
 
                                         Surface(
                                             color = Color.Transparent,
                                             shape = CircleShape,
-                                            border = if (it.second == today) BorderStroke(
+                                            border = if (it.first == YearMonth.now().monthValue && it.second == today) BorderStroke(
                                                 1.dp,
                                                 color = MaterialTheme.colors.onSurface
                                             ) else null

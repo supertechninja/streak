@@ -25,7 +25,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.mcwilliams.streak.ui.theme.primaryColor
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.round
@@ -120,7 +122,7 @@ fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType
 }
 
 @Composable
-fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modifier = Modifier) {
+fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modifier = Modifier, isLoading: Boolean = false) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(vertical = 4.dp)
@@ -134,7 +136,12 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
         stat?.let {
             Text(
                 text = it,
-                modifier = Modifier.padding(start = 8.dp),
+                modifier = Modifier.padding(start = 8.dp).placeholder(
+                    visible = isLoading,
+                    highlight = PlaceholderHighlight.shimmer(),
+                    color = Color.LightGray,
+                    shape = RoundedCornerShape(20.dp)
+                ),
                 color = MaterialTheme.colors.onSurface,
                 style = MaterialTheme.typography.body2,
             )
@@ -143,11 +150,16 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
 }
 
 @Composable
-fun MonthTextStat(monthStat: String, monthColumnWidth: Dp) {
+fun MonthTextStat(monthStat: String, monthColumnWidth: Dp, isLoading: Boolean = false) {
     Text(
         text = monthStat,
         color = MaterialTheme.colors.onSurface,
-        modifier = Modifier.width(monthColumnWidth),
+        modifier = Modifier.width(monthColumnWidth).placeholder(
+            visible = isLoading,
+            highlight = PlaceholderHighlight.shimmer(),
+            color = Color.LightGray,
+            shape = RoundedCornerShape(20.dp)
+        ),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.caption
     )

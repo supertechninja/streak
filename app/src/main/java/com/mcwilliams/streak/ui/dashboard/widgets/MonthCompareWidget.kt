@@ -26,6 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.shimmer
+import com.google.accompanist.placeholder.placeholder
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
@@ -73,7 +76,7 @@ fun CompareWidget(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = selectedActivityType?.name!!,
+                            text = selectedActivityType?.name ?: "",
                             color = Color(0xFFFFA500),
                             modifier = Modifier.width(firstColumnWidth),
                             style = MaterialTheme.typography.caption,

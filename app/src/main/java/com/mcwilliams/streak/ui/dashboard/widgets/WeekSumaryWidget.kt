@@ -41,6 +41,7 @@ fun WeekSummaryWidget(
     currentWeek: MutableList<Pair<Int, Int>>,
     selectedUnitType: UnitType?,
     today: Int,
+    isLoading : Boolean,
 ) {
     StreakWidgetCard(
         content = {
@@ -120,7 +121,7 @@ fun WeekSummaryWidget(
                     ) {
                         Row() {
                             Text(
-                                text = selectedActivityType?.name!!,
+                                text = selectedActivityType?.name ?: "",
                                 color = Color(0xFFFFA500),
                                 fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.body2
@@ -155,22 +156,26 @@ fun WeekSummaryWidget(
                         )
                         DashboardStat(
                             image = R.drawable.ic_ruler,
-                            stat = totalDistance.getDistanceString(selectedUnitType!!)
+                            stat = totalDistance.getDistanceString(selectedUnitType!!),
+                            isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_clock_time,
-                            stat = totalTime.getTimeStringHoursAndMinutes()
+                            stat = totalTime.getTimeStringHoursAndMinutes(),
+                            isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_up_right,
-                            stat = totalElevation.getElevationString(selectedUnitType!!)
+                            stat = totalElevation.getElevationString(selectedUnitType!!),
+                            isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_speed,
-                            stat = getAveragePaceString(totalDistance, totalTime, selectedUnitType!!)
+                            stat = getAveragePaceString(totalDistance, totalTime, selectedUnitType!!),
+                            isLoading = isLoading
                         )
                     }
                     Column(

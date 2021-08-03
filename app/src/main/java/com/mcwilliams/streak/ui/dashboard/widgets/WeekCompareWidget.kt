@@ -38,6 +38,7 @@ fun WeekCompareWidget(
     selectedUnitType: UnitType?,
     today: Int?,
     monthWeekMap: MutableMap<Int, MutableList<Pair<Int, Int>>>,
+    isLoading: Boolean,
 ) {
     StreakWidgetCard(
         content = {
@@ -62,7 +63,7 @@ fun WeekCompareWidget(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = selectedActivityType?.name!!,
+                                text = selectedActivityType?.name ?: "",
                                 color = Color(0xFFFFA500),
                                 modifier = Modifier.width(firstColumnWidth),
                                 style = MaterialTheme.typography.caption,
@@ -186,24 +187,26 @@ fun WeekCompareWidget(
                         ) {
                             DashboardStat(
                                 image = R.drawable.ic_ruler,
-                                modifier = Modifier.width(firstColumnWidth)
+                                modifier = Modifier.width(firstColumnWidth),
                             )
 
                             MonthTextStat(
                                 weeklyDataMap[0].totalDistance.getDistanceString(selectedUnitType!!),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
                                 now = weeklyDataMap[0].totalDistance.toInt(),
                                 then = weeklyDataMap[1].totalDistance.toInt(),
                                 monthColumnWidth = monthColumnWidth,
-                                type = StatType.Distance
+                                type = StatType.Distance,
                             )
 
                             MonthTextStat(
                                 weeklyDataMap[1].totalDistance.getDistanceString(selectedUnitType!!),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -215,7 +218,8 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 weeklyDataMap[2].totalDistance.getDistanceString(selectedUnitType!!),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
                         }
                         //Time Row
@@ -233,7 +237,8 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 weeklyDataMap[0].totalTime.getTimeStringHoursAndMinutes(),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -245,7 +250,8 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 weeklyDataMap[1].totalTime.getTimeStringHoursAndMinutes(),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -256,7 +262,8 @@ fun WeekCompareWidget(
                             )
                             MonthTextStat(
                                 weeklyDataMap[2].totalTime.getTimeStringHoursAndMinutes(),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
                         }
                         // Elevation Row
@@ -274,7 +281,8 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 weeklyDataMap[0].totalElevation.getElevationString(selectedUnitType!!),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -286,7 +294,8 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 weeklyDataMap[1].totalElevation.getElevationString(selectedUnitType!!),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -298,7 +307,8 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 weeklyDataMap[2].totalElevation.getElevationString(selectedUnitType!!),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
                         }
 
@@ -321,7 +331,8 @@ fun WeekCompareWidget(
                                     weeklyDataMap[0].totalTime,
                                     selectedUnitType!!
                                 ),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -341,7 +352,8 @@ fun WeekCompareWidget(
                                     weeklyDataMap[1].totalTime,
                                     selectedUnitType!!
                                 ),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -361,7 +373,8 @@ fun WeekCompareWidget(
                                     weeklyDataMap[2].totalTime,
                                     selectedUnitType!!
                                 ),
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
                         }
                         //Count Row
@@ -379,7 +392,8 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 "${weeklyDataMap[0].count}",
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
                             PercentDelta(
                                 now = weeklyDataMap[0].count,
@@ -389,7 +403,8 @@ fun WeekCompareWidget(
                             )
                             MonthTextStat(
                                 "${weeklyDataMap[1].count}",
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
 
                             PercentDelta(
@@ -401,11 +416,13 @@ fun WeekCompareWidget(
 
                             MonthTextStat(
                                 "${weeklyDataMap[2].count}",
-                                monthColumnWidth = monthColumnWidth
+                                monthColumnWidth = monthColumnWidth,
+                                isLoading = isLoading
                             )
                         }
                     }
                 }
             }
-        })
+        }
+    )
 }
