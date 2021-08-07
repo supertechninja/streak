@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -24,10 +25,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.YearMonth
-import java.time.ZoneId
+import java.time.*
 import java.util.*
 import javax.inject.Inject
 
@@ -108,10 +106,11 @@ class StravaDashboardViewModel @Inject constructor(
     var today: LiveData<Int> =
         _today
 
-    var currentMonthInt : Int = 0
+    var currentMonthInt: Int = 0
 
-    var _monthWeekMap : MutableLiveData<MutableMap<Int, MutableList<Pair<Int, Int>>>> = MutableLiveData()
-    var monthWeekMap : LiveData<MutableMap<Int, MutableList<Pair<Int, Int>>>> = _monthWeekMap
+    var _monthWeekMap: MutableLiveData<MutableMap<Int, MutableList<Pair<Int, Int>>>> =
+        MutableLiveData()
+    var monthWeekMap: LiveData<MutableMap<Int, MutableList<Pair<Int, Int>>>> = _monthWeekMap
 
     var _currentWeek: MutableLiveData<MutableList<Pair<Int, Int>>> = MutableLiveData()
     var currentWeek: MutableLiveData<MutableList<Pair<Int, Int>>> = _currentWeek
@@ -283,11 +282,11 @@ class StravaDashboardViewModel @Inject constructor(
         val firstDayWeekZeroMonth =
             (priorMonthLength - (firstDayOffset - 1))
 
-        val listOfDatesInPreviousWeek: MutableList<Pair<Int,Int>> =
+        val listOfDatesInPreviousWeek: MutableList<Pair<Int, Int>> =
             mutableListOf()
 
         for (i in 0..6) {
-            if(today.value!! < 7) {
+            if (today.value!! < 7) {
                 val priorDay = (firstDayWeekZeroMonth - (i + 1))
                 listOfDatesInPreviousWeek.add(currentMonth.value - 1 to priorDay)
             } else {
@@ -297,11 +296,11 @@ class StravaDashboardViewModel @Inject constructor(
         }
         monthWeekMap.put(-1, listOfDatesInPreviousWeek)
 
-        val listOfDatesInTwoWeeksAgo: MutableList<Pair<Int,Int>> =
+        val listOfDatesInTwoWeeksAgo: MutableList<Pair<Int, Int>> =
             mutableListOf()
         val twoWeekAgo = firstDayWeekZeroMonth - 7
         for (i in 0..6) {
-            if(today.value!! < 7) {
+            if (today.value!! < 7) {
                 val priorDay = (twoWeekAgo - (i + 1))
                 listOfDatesInTwoWeeksAgo.add(currentMonth.value - 1 to priorDay)
             } else {

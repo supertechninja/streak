@@ -107,6 +107,17 @@ fun Float.getElevationString(selectedUnitType: UnitType): String {
     }
 }
 
+fun Float.getDistanceMiles(selectedUnitType: UnitType): Double {
+    return when (selectedUnitType) {
+        UnitType.Imperial -> {
+            this.div(1609).toDouble().round(2)
+        }
+        UnitType.Metric -> {
+            (this / 1000).toDouble().round(2)
+        }
+    }
+}
+
 fun Float.getDistanceString(selectedUnitType: UnitType, isYearSummary: Boolean = false): String {
     val decimals = if (isYearSummary) 0 else 1
 

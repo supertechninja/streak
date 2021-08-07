@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,33 +13,45 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
+import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
 import com.mcwilliams.streak.ui.theme.primaryColor
+import com.mcwilliams.streak.ui.utils.getDistanceMiles
+import com.mcwilliams.streak.ui.utils.getDistanceString
+import com.mcwilliams.streak.ui.utils.round
 import kotlinx.coroutines.Job
+import java.time.Duration
+import java.time.LocalDateTime
 
+@ExperimentalComposeUiApi
 @Composable
 fun StreakSettingsView(
     viewModel: StravaDashboardViewModel,
     selectedActivityType: ActivityType?,
     selectedUnitType: UnitType?,
-    toggleBottomSheet: () -> Job
+    toggleBottomSheet: () -> Job,
+    currentYearSummaryMetrics: SummaryMetrics
 ) {
 //    Scaffold(
 //        topBar = {
@@ -63,6 +76,7 @@ fun StreakSettingsView(
         modifier = Modifier
 //            .background(color = Color(0xFF01374D))
             .wrapContentHeight()
+            .verticalScroll(rememberScrollState())
     ) {
         Row(
             modifier = Modifier
@@ -204,24 +218,63 @@ fun StreakSettingsView(
                     }
                 }
 
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-//                        Text(
-//                            text = "Terms & Conditions",
-//                            style = MaterialTheme.typography.h6
-//                        )
-//                        Spacer(modifier = Modifier.height(32.dp))
-//
-//                        Text(
-//                            text = "Privacy Policy",
-//                            style = MaterialTheme.typography.h6
-//                        )
-//                        Spacer(modifier = Modifier.height(32.dp))
-//
-//                        Text(
-//                            text = "App Feedback",
-//                            style = MaterialTheme.typography.h6
-//                        )
+                Text(
+                    text = "2021 Goal",
+                    style = MaterialTheme.typography.h6
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val keyboardContext = LocalSoftwareKeyboardController.current
+                var annualGoal by remember { mutableStateOf(TextFieldValue("")) }
+                TextField(
+                    value = annualGoal,
+                    onValueChange = { annualGoal = it },
+                    placeholder = {
+                        Text(text = "750")
+                    },
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            keyboardContext?.hide()
+                        }
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val today = LocalDateTime.now()
+                val endOfYear = LocalDateTime.parse("2022-01-01T00:00:00.0000")
+                val remainingDays = Duration.between(today, endOfYear).toDays()
+
+                if (currentYearSummaryMetrics.totalDistance > 0f && annualGoal.text.isNotEmpty()) {
+                    val miles = currentYearSummaryMetrics.totalDistance.getDistanceMiles(
+                        selectedUnitType!!,
+                    )
+
+                    val distanceRemaining = annualGoal.text.removeSurrounding("\"").toInt() - miles
+
+                    val distanceLabel = when (selectedUnitType) {
+                        UnitType.Imperial -> {
+                            " mi"
+                        }
+                        UnitType.Metric -> {
+                            " m"
+                        }
+                    }
+
+                    Text(
+                        "Miles Per Day: ${
+                            (distanceRemaining / remainingDays).round(2)
+                        }$distanceLabel" + "\n${remainingDays / 7} / ${
+                            (distanceRemaining / (remainingDays / 7)).round(2)
+                        }$distanceLabel"
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
 
             }
         }
@@ -237,6 +290,3 @@ fun StreakSettingsView(
         }
     }
 }
-//            }
-//        })
-//}

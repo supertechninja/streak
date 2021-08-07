@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
@@ -45,23 +46,16 @@ import com.muddzdev.quickshot.QuickShot
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.YearMonth
 import com.mcwilliams.streak.strava.model.activites.ActivitesItem
 import com.mcwilliams.streak.ui.dashboard.widgets.CompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
 
 
+@ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @Composable
 fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingValues) {
-    val month = YearMonth.now()
-    val firstDayOffset = month.atDay(1).dayOfWeek.ordinal
-    val monthLength = month.lengthOfMonth()
-    val priorMonthLength = month.minusMonths(1).lengthOfMonth()
-    val lastDayCount = (monthLength + firstDayOffset) % 7
-    val weekCount = (firstDayOffset + monthLength) / 7
-
     var fetchData by rememberSaveable { mutableStateOf(0) }
 
     StreakTheme {
@@ -97,6 +91,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
             currentMonthMetrics = summaryMetrics
         }
 
+        var currentYearSummaryMetrics by remember { mutableStateOf(SummaryMetrics()) }
+
         val error by viewModel.error.observeAsState()
 
         val context = LocalContext.current
@@ -126,7 +122,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                     viewModel = viewModel,
                     selectedActivityType = selectedActivityType,
                     selectedUnitType = selectedUnitType,
-                    toggleBottomSheet = toggleBottomSheet
+                    toggleBottomSheet = toggleBottomSheet,
+                    currentYearSummaryMetrics = currentYearSummaryMetrics
                 )
             },
             sheetPeekHeight = 0.dp,
@@ -260,20 +257,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 }, widgetName = "Week vs Week"
                             )
 
-                            val prevMetrics by remember {
-                                mutableStateOf(
-                                    previousMonthActivities.getStats(selectedActivityType)
-                                )
-                            }
-
-                            val prevPrevMetrics by remember {
-                                mutableStateOf(
-                                    previousPreviousMonthActivities.getStats(
-                                        selectedActivityType
-                                    )
-                                )
-                            }
-
                             StreakDashboardWidget(
                                 content = {
                                     CompareWidget(
@@ -285,8 +268,10 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                             viewModel.previousMonth,
                                             viewModel.previousPreviousMonth
                                         ),
-                                        prevMetrics = prevMetrics,
-                                        prevPrevMetrics = prevPrevMetrics,
+                                        prevMetrics = previousMonthActivities.getStats(selectedActivityType),
+                                        prevPrevMetrics = previousPreviousMonthActivities.getStats(
+                                            selectedActivityType
+                                        ),
                                         selectedUnitType = selectedUnitType
                                     )
                                 }, widgetName = "Month vs Month"
@@ -298,7 +283,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                         selectedActivityType
                                     )
 
-                                var currentYearSummaryMetrics = SummaryMetrics()
                                 var lastLastYearSummaryMetrics = SummaryMetrics()
 
                                 prevPrevYearActivities?.let {
