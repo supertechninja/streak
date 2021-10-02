@@ -10,11 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -24,26 +20,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.hilt.navigation.compose.hiltNavGraphViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.mcwilliams.streak.ui.bottomnavigation.BottomNavEffect
+import com.mcwilliams.streak.ui.dashboard.ActivityType
 //import com.airbnb.lottie.compose.LottieAnimation
 //import com.airbnb.lottie.compose.LottieAnimationSpec
 //import com.airbnb.lottie.compose.rememberLottieAnimationState
 import com.mcwilliams.streak.ui.dashboard.StravaDashboard
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
+import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.goals.GoalsContent
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
 import com.mcwilliams.streak.ui.theme.StreakTheme
-import com.mcwilliams.streak.ui.theme.primaryBlueShade2
 import com.mcwilliams.streak.ui.theme.primaryColorShade1
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -69,11 +66,21 @@ class MainActivity : ComponentActivity() {
             StreakTheme {
                 val isLoggedIn by viewModel.isLoggedIn.observeAsState()
                 var showLoginDialog by remember { mutableStateOf(false) }
+                var selectedTab by remember { mutableStateOf(1) }
+                var updateSelectedTab = { tab: Int ->
+                    selectedTab = tab
+                }
+
+                val selectedActivityType by viewModel.activityType.observeAsState(ActivityType.Run)
+                val selectedUnitType by viewModel.unitType.observeAsState(UnitType.Imperial)
 
                 isLoggedIn?.let {
                     if (it) {
                         Scaffold(
                             content = { paddingValues ->
+                                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                                val currentDestination = navBackStackEntry?.destination
+
                                 NavHost(
                                     navController,
                                     startDestination = NavigationDestination.StravaDashboard.destination
@@ -84,8 +91,29 @@ class MainActivity : ComponentActivity() {
                                             paddingValues = paddingValues
                                         )
                                     }
+                                    composable(NavigationDestination.Goals.destination) {
+                                        GoalsContent(
+                                            viewModel = viewModel,
+                                        )
+                                    }
+                                    composable(NavigationDestination.StreakSettings.destination) {
+                                        StreakSettingsView(
+                                            viewModel = viewModel,
+                                            selectedActivityType = selectedActivityType,
+                                            selectedUnitType = selectedUnitType
+                                        )
+                                    }
                                 }
                             },
+                            bottomBar = {
+                                Surface(modifier = Modifier.fillMaxWidth(), elevation = 8.dp) {
+                                    BottomNavEffect(
+                                        selectedTab = selectedTab,
+                                        updateSelectedTab = updateSelectedTab,
+                                        navController = navController
+                                    )
+                                }
+                            }
                         )
                     } else {
                         Scaffold(
@@ -165,6 +193,8 @@ sealed class NavigationDestination(
 ) {
     object StravaDashboard :
         NavigationDestination("stravaDashboard", "Dashboard", R.drawable.ic_dash)
+
+    object Goals : NavigationDestination("goals", "Goals", R.drawable.ic_clock_time)
 
     object StreakSettings :
         NavigationDestination("streakSettings", "Settings", R.drawable.ic_settings)

@@ -116,22 +116,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
             }
         }
 
-        BottomSheetScaffold(
-            sheetContent = {
-                StreakSettingsView(
-                    viewModel = viewModel,
-                    selectedActivityType = selectedActivityType,
-                    selectedUnitType = selectedUnitType,
-                    toggleBottomSheet = toggleBottomSheet,
-                    currentYearSummaryMetrics = currentYearSummaryMetrics
-                )
-            },
-            sheetPeekHeight = 0.dp,
-            scaffoldState = bottomSheetScaffoldState,
-            sheetShape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-            sheetElevation = 20.dp,
-            sheetBackgroundColor = primaryBlueShade2,
-            topBar = {
+        Scaffold(topBar = {
                 Row(
                     modifier = Modifier
                         .height(56.dp)
@@ -154,25 +139,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 end.linkTo(parent.end)
                             }
                         )
-
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    toggleBottomSheet()
-                                }
-                            },
-                            modifier = Modifier.constrainAs(action) {
-                                end.linkTo(parent.end, 16.dp)
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                            }) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings"
-                            )
-                        }
                     }
-
                 }
             },
             content = {
@@ -297,6 +264,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                         it.getStats(
                                             selectedActivityType
                                         )
+
+                                    viewModel.currentYearSummaryMetrics = currentYearSummaryMetrics
                                 }
 
                                 StreakDashboardWidget(

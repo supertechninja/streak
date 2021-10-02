@@ -36,6 +36,8 @@ class StravaDashboardViewModel @Inject constructor(
     private val settingsRepo: SettingsRepo,
 ) : ViewModel() {
 
+    var currentYearSummaryMetrics: SummaryMetrics? = null
+
     private var _isLoggedIn: MutableLiveData<Boolean> = MutableLiveData(null)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
 

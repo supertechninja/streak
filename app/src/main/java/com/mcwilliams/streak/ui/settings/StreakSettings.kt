@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
@@ -50,103 +51,134 @@ fun StreakSettingsView(
     viewModel: StravaDashboardViewModel,
     selectedActivityType: ActivityType?,
     selectedUnitType: UnitType?,
-    toggleBottomSheet: () -> Job,
-    currentYearSummaryMetrics: SummaryMetrics
 ) {
-//    Scaffold(
-//        topBar = {
-//            Row(
-//                modifier = Modifier
-//                    .height(56.dp)
-//                    .fillMaxWidth()
-//                    .background(color = Color(0xFF01374D)),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.Center
-//            ) {
-//                Text(
-//                    "Settings",
-//                    style = MaterialTheme.typography.h6,
-//                    color = MaterialTheme.colors.onSurface,
-//                    textAlign = TextAlign.Center,
-//                )
-//            }
-//        },
-//        content = {
-    Column(
-        modifier = Modifier
-//            .background(color = Color(0xFF01374D))
-            .wrapContentHeight()
-            .verticalScroll(rememberScrollState())
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Surface(
-                color = Color.White.copy(alpha = .6f),
+    Scaffold(
+        topBar = {
+            Row(
                 modifier = Modifier
-                    .width(50.dp)
-                    .height(4.dp),
-                shape = RoundedCornerShape(2.dp)
+                    .height(56.dp)
+                    .fillMaxWidth()
+                    .background(color = Color(0xFF01374D)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 16.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
-            IconButton(onClick = {
-                toggleBottomSheet()
-            }) {
-                Icon(imageVector = Icons.Default.Close, contentDescription = "Close Bottom Sheet")
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
                 Text(
-                    text = "Activities",
-                    style = MaterialTheme.typography.h6
+                    "Settings",
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.onSurface,
+                    textAlign = TextAlign.Center,
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Column(
+            }
+        },
+        content = {
+            Column(
+                modifier = Modifier
+//            .background(color = Color(0xFF01374D))
+                    .wrapContentHeight()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .background(
-                            color = primaryColor,
-                            shape = RoundedCornerShape(20.dp)
-                        )
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp, horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    ActivityType.values().forEach { activityType ->
-                        Row(
+                    Column {
+                        Text(
+                            text = "Activities",
+                            style = MaterialTheme.typography.h6
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Column(
                             modifier = Modifier
-                                .clickable {
-                                    viewModel.updateSelectedActivity(activityType = activityType)
-                                }
-                                .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
-                                .height(40.dp),
-
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .background(
+                                    color = primaryColor,
+                                    shape = RoundedCornerShape(20.dp)
+                                )
                         ) {
-                            Text(activityType.name)
+                            ActivityType.values().forEach { activityType ->
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            viewModel.updateSelectedActivity(activityType = activityType)
+                                        }
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                        .height(40.dp),
 
-                            selectedActivityType?.let {
-                                if (it.name == activityType.name) {
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(activityType.name)
+
+                                    selectedActivityType?.let {
+                                        if (it.name == activityType.name) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = "Currently Selected"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "Units",
+                            style = MaterialTheme.typography.h6
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .background(
+                                    color = primaryColor,
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .clickable {
+                                        viewModel.updateSelectedUnit(UnitType.Imperial)
+                                    }
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .height(40.dp),
+
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Imperial")
+
+                                if (UnitType.Imperial.name == selectedUnitType?.name) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Currently Selected"
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .clickable {
+                                        viewModel.updateSelectedUnit(UnitType.Metric)
+                                    }
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .height(40.dp),
+
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Metric")
+
+                                if (UnitType.Metric.name == selectedUnitType?.name) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
                                         contentDescription = "Currently Selected"
@@ -154,139 +186,81 @@ fun StreakSettingsView(
                                 }
                             }
                         }
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "Units",
-                    style = MaterialTheme.typography.h6
-                )
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .background(
-                            color = primaryColor,
-                            shape = RoundedCornerShape(20.dp)
+                        Text(
+                            text = "2021 Goal",
+                            style = MaterialTheme.typography.h6
                         )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        val keyboardContext = LocalSoftwareKeyboardController.current
+                        var annualGoal by remember { mutableStateOf(TextFieldValue("")) }
+                        TextField(
+                            value = annualGoal,
+                            onValueChange = { annualGoal = it },
+                            placeholder = {
+                                Text(text = "750")
+                            },
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    keyboardContext?.hide()
+                                }
+                            ),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val today = LocalDateTime.now()
+                        val endOfYear = LocalDateTime.parse("2022-01-01T00:00:00.0000")
+                        val remainingDays = Duration.between(today, endOfYear).toDays()
+
+                        val currentYearSummaryMetrics = viewModel.currentYearSummaryMetrics
+
+                        if (currentYearSummaryMetrics?.totalDistance!! > 0f && annualGoal.text.isNotEmpty()) {
+                            val miles = currentYearSummaryMetrics.totalDistance.getDistanceMiles(
+                                selectedUnitType!!,
+                            )
+
+                            val distanceRemaining =
+                                annualGoal.text.removeSurrounding("\"").toInt() - miles
+
+                            val distanceLabel = when (selectedUnitType) {
+                                UnitType.Imperial -> {
+                                    " mi"
+                                }
+                                UnitType.Metric -> {
+                                    " m"
+                                }
+                            }
+
+                            Text(
+                                "Miles Per Day: ${
+                                    (distanceRemaining / remainingDays).round(2)
+                                }$distanceLabel" + "\n${remainingDays / 7} / ${
+                                    (distanceRemaining / (remainingDays / 7)).round(2)
+                                }$distanceLabel"
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .padding(24.dp),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .clickable {
-                                viewModel.updateSelectedUnit(UnitType.Imperial)
-                            }
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .height(40.dp),
-
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Imperial")
-
-                        if (UnitType.Imperial.name == selectedUnitType?.name) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Currently Selected"
-                            )
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .clickable {
-                                viewModel.updateSelectedUnit(UnitType.Metric)
-                            }
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .height(40.dp),
-
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Metric")
-
-                        if (UnitType.Metric.name == selectedUnitType?.name) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Currently Selected"
-                            )
-                        }
+                    Button(onClick = { viewModel.logout() }, modifier = Modifier.fillMaxWidth()) {
+                        Text(text = "Log out", color = MaterialTheme.colors.onSurface)
                     }
                 }
-
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "2021 Goal",
-                    style = MaterialTheme.typography.h6
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                val keyboardContext = LocalSoftwareKeyboardController.current
-                var annualGoal by remember { mutableStateOf(TextFieldValue("")) }
-                TextField(
-                    value = annualGoal,
-                    onValueChange = { annualGoal = it },
-                    placeholder = {
-                        Text(text = "750")
-                    },
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            keyboardContext?.hide()
-                        }
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val today = LocalDateTime.now()
-                val endOfYear = LocalDateTime.parse("2022-01-01T00:00:00.0000")
-                val remainingDays = Duration.between(today, endOfYear).toDays()
-
-                if (currentYearSummaryMetrics.totalDistance > 0f && annualGoal.text.isNotEmpty()) {
-                    val miles = currentYearSummaryMetrics.totalDistance.getDistanceMiles(
-                        selectedUnitType!!,
-                    )
-
-                    val distanceRemaining = annualGoal.text.removeSurrounding("\"").toInt() - miles
-
-                    val distanceLabel = when (selectedUnitType) {
-                        UnitType.Imperial -> {
-                            " mi"
-                        }
-                        UnitType.Metric -> {
-                            " m"
-                        }
-                    }
-
-                    Text(
-                        "Miles Per Day: ${
-                            (distanceRemaining / remainingDays).round(2)
-                        }$distanceLabel" + "\n${remainingDays / 7} / ${
-                            (distanceRemaining / (remainingDays / 7)).round(2)
-                        }$distanceLabel"
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
             }
         }
-
-        Box(
-            modifier = Modifier
-                .padding(24.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            Button(onClick = { viewModel.logout() }, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Log out", color = MaterialTheme.colors.onSurface)
-            }
-        }
-    }
+    )
 }
