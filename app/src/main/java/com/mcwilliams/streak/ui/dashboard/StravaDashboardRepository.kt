@@ -2,11 +2,18 @@ package com.mcwilliams.streak.ui.dashboard
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.strava.api.ActivitiesApi
-import com.mcwilliams.streak.strava.model.activites.ActivitesItem
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
+import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDao
+import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,44 +24,101 @@ class StravaDashboardRepository @Inject constructor(
 ) {
 
     //Cache in memory the strava workouts
-    private lateinit var listOfStravaWorkouts: List<ActivitesItem>
+    private lateinit var listOfStravaWorkouts: List<ActivitiesItem>
 
     private val preferences: SharedPreferences = context.getSharedPreferences(
         context.getString(R.string.preference_file_key),
         Context.MODE_PRIVATE
     )
 
-    fun getStravaActivitiesAfter(after: Int): Flow<List<ActivitesItem>> =
-        flow {
-            emit(activitiesApi.getAthleteActivitiesAfter(after))
+    private var activitiesDao: ActivitiesDao?
+
+    init {
+        val db = ActivitiesDatabase.getDatabase(context)
+        activitiesDao = db?.activitiesDao()
+    }
+
+    //    val store = StoreBuilder
+//        .from(
+//            fetcher = Fetcher.of {
+//                activitiesApi.fetchSubreddit(
+//                    it,
+//                    "10"
+//                ).data.children.map(::toPosts)
+//            },
+//            sourceOfTruth = SourceOfTruth.of(
+//                reader = db.postDao()::loadPosts,
+//                writer = db.postDao()::insertPosts,
+//                delete = db.postDao()::clearFeed,
+//                deleteAll = db.postDao()::clearAllFeeds
+//            )
+//        ).build()
+
+    fun loadActivities(
+        before: Int?,
+        after: Int
+    ): Flow<List<ActivitiesItem>> = flow {
+        var allActivities: List<ActivitiesItem>?
+
+        //query db
+        withContext(Dispatchers.IO) {
+            allActivities = activitiesDao?.getAll()
+
         }
 
-    fun getStravaActivitiesBeforeAndAfter(
-        before: Int,
-        after: Int
-    ): Flow<List<ActivitesItem>> = flow {
-        emit(activitiesApi.getAthleteActivitiesBeforeAndAfter(before = before, after = after))
+        //Check db
+        if (allActivities.isNullOrEmpty()) {
+            val remoteActivities : Flow<List<ActivitiesItem>> = flow {
+                val remote = getStravaActivitiesBeforeAndAfterPaginated(before, after)
+
+                remote.collect {
+                    allActivities = it
+                    emit(allActivities!!)
+                }
+            }
+
+            remoteActivities.collect {
+                emit(it)
+            }
+
+        } else {
+            emit(allActivities!!)
+        }
     }
+
 
     fun getStravaActivitiesBeforeAndAfterPaginated(
         before: Int?,
         after: Int
-    ): Flow<List<ActivitesItem>> = flow {
-        val yearActivities: MutableList<ActivitesItem> = mutableListOf()
+    ): Flow<List<ActivitiesItem>> = flow {
+        val yearActivities: MutableList<ActivitiesItem> = mutableListOf()
         var pageCount = 1
         do {
             yearActivities.addAll(
                 activitiesApi.getAthleteActivitiesBeforeAndAfter(
                     before = before,
-                    after = after,
                     page = pageCount
                 )
             )
             pageCount = pageCount.inc()
 
+            //Add activities to db
+            yearActivities.map {
+                runBlocking {
+                    saveActivty(it)
+                }
+            }
+
         } while (yearActivities.size % 200 == 0)
 
         emit(yearActivities)
+    }
+
+    //Write activity to db
+    suspend fun saveActivty(activitiesItem: ActivitiesItem) {
+        withContext(Dispatchers.IO) {
+            activitiesDao?.insertAll(activitiesItem)
+        }
     }
 
     fun savePreferredActivity(activityType: ActivityType) {

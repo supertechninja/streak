@@ -5,12 +5,9 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.BottomSheetValue.Collapsed
 import androidx.compose.material.BottomSheetValue.Expanded
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -38,15 +35,13 @@ import com.mcwilliams.streak.R
 import com.mcwilliams.streak.ui.dashboard.widgets.MonthWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekCompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekSummaryWidget
-import com.mcwilliams.streak.ui.settings.StreakSettingsView
 import com.mcwilliams.streak.ui.theme.StreakTheme
-import com.mcwilliams.streak.ui.theme.primaryBlueShade2
 import com.mcwilliams.streak.ui.theme.primaryColor
 import com.muddzdev.quickshot.QuickShot
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
-import com.mcwilliams.streak.strava.model.activites.ActivitesItem
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.widgets.CompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
 
@@ -69,7 +64,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
             emptyList()
         )
 
-        var last2MonthsActivities: List<ActivitesItem> by remember { mutableStateOf(emptyList()) }
+        var last2MonthsActivities: List<ActivitiesItem> by remember { mutableStateOf(emptyList()) }
 
         val currentYearActivities by viewModel.currentYearActivites.observeAsState()
         val prevYearActivities by viewModel.prevYearActivites.observeAsState()
@@ -396,7 +391,7 @@ class HandleSavedImage(val context: Context, val fileName: String) :
 }
 
 
-fun List<ActivitesItem>.getStats(selectedActivity: ActivityType): SummaryMetrics {
+fun List<ActivitiesItem>.getStats(selectedActivity: ActivityType): SummaryMetrics {
     val filteredActivities =
         if (selectedActivity == ActivityType.All) this
         else this.filter { it.type == selectedActivity.name }

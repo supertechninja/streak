@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.strava.model.activites.ActivitesItem
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.MonthTextStat
@@ -33,7 +33,7 @@ import com.mcwilliams.streak.ui.utils.*
 
 @Composable
 fun WeekCompareWidget(
-    activitesList: List<ActivitesItem>,
+    activitesList: List<ActivitiesItem>,
     selectedActivityType: ActivityType?,
     selectedUnitType: UnitType?,
     today: Int?,
@@ -101,7 +101,7 @@ fun WeekCompareWidget(
                         val weeklyDataMap: MutableList<SummaryMetrics> =
                             mutableListOf()
 
-                        val weeklyActivitiesMap: MutableList<Pair<Int, MutableList<ActivitesItem>>> =
+                        val weeklyActivitiesMap: MutableList<Pair<Int, MutableList<ActivitiesItem>>> =
                             mutableListOf()
 
                         var startingWeekInMap: MutableList<Int> = mutableListOf()
@@ -117,7 +117,7 @@ fun WeekCompareWidget(
 
                         for (i in startingWeekInMap[0] downTo (startingWeekInMap[0] - 2)) {
                             val weeklyActivitiesList =
-                                mutableListOf<ActivitesItem>()
+                                mutableListOf<ActivitiesItem>()
                             activitesList.forEach { activitiesItem ->
                                 val datesInWeek = monthWeekMap.get(i)
                                 datesInWeek!!.forEach {

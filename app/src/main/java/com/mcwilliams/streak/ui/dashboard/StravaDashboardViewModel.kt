@@ -1,23 +1,12 @@
 package com.mcwilliams.streak.ui.dashboard
 
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mcwilliams.streak.inf.SessionRepository
-import com.mcwilliams.streak.strava.model.activites.ActivitesItem
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.settings.SettingsRepo
 import com.mcwilliams.streak.ui.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,44 +35,44 @@ class StravaDashboardViewModel @Inject constructor(
 
     var currentMonthEpoch = 0
     var currentMonth = ""
-    var _currentMonthActivites: MutableLiveData<List<ActivitesItem>> =
+    var _currentMonthActivites: MutableLiveData<List<ActivitiesItem>> =
         MutableLiveData()
-    var currentMonthActivites: LiveData<List<ActivitesItem>> =
+    var currentMonthActivites: LiveData<List<ActivitiesItem>> =
         _currentMonthActivites
 
     var previousMonthEpoch = 0
     var previousMonth = ""
-    var _previousMonthActivities: MutableLiveData<List<ActivitesItem>> =
+    var _previousMonthActivities: MutableLiveData<List<ActivitiesItem>> =
         MutableLiveData()
-    var previousMonthActivities: LiveData<List<ActivitesItem>> =
+    var previousMonthActivities: LiveData<List<ActivitiesItem>> =
         _previousMonthActivities
 
     var previousPreviousMonthEpoch = 0
     var previousPreviousMonth = ""
-    var _previousPreviousMonthActivities: MutableLiveData<List<ActivitesItem>> =
+    var _previousPreviousMonthActivities: MutableLiveData<List<ActivitiesItem>> =
         MutableLiveData()
-    var previousPreviousMonthActivities: LiveData<List<ActivitesItem>> =
+    var previousPreviousMonthActivities: LiveData<List<ActivitiesItem>> =
         _previousPreviousMonthActivities
 
     var currentYearEpoch = 0
     var currentYear = ""
-    var _currentYearActivites: MutableLiveData<List<ActivitesItem>> =
+    var _currentYearActivites: MutableLiveData<List<ActivitiesItem>> =
         MutableLiveData()
-    var currentYearActivites: LiveData<List<ActivitesItem>> =
+    var currentYearActivites: LiveData<List<ActivitiesItem>> =
         _currentYearActivites
 
     var prevYearEpoch = 0
     var prevYear = ""
-    var _prevYearActivites: MutableLiveData<List<ActivitesItem>> =
+    var _prevYearActivites: MutableLiveData<List<ActivitiesItem>> =
         MutableLiveData()
-    var prevYearActivites: LiveData<List<ActivitesItem>> =
+    var prevYearActivites: LiveData<List<ActivitiesItem>> =
         _prevYearActivites
 
     var prevPrevYearEpoch = 0
     var prevPrevYear = ""
-    var _prevPrevYearActivites: MutableLiveData<List<ActivitesItem>> =
+    var _prevPrevYearActivites: MutableLiveData<List<ActivitiesItem>> =
         MutableLiveData()
-    var prevPrevYearActivites: LiveData<List<ActivitesItem>> =
+    var prevPrevYearActivites: LiveData<List<ActivitiesItem>> =
         _prevPrevYearActivites
 
     var _activityType: MutableLiveData<ActivityType> = MutableLiveData()
@@ -97,9 +86,9 @@ class StravaDashboardViewModel @Inject constructor(
     var error: LiveData<String> =
         _error
 
-    var _lastTwoMonthsActivities: MutableLiveData<List<ActivitesItem>> =
+    var _lastTwoMonthsActivities: MutableLiveData<List<ActivitiesItem>> =
         MutableLiveData()
-    var lastTwoMonthsActivities: LiveData<List<ActivitesItem>> =
+    var lastTwoMonthsActivities: LiveData<List<ActivitiesItem>> =
         _lastTwoMonthsActivities
 
 
@@ -155,10 +144,11 @@ class StravaDashboardViewModel @Inject constructor(
         _unitType.postValue(stravaDashboardRepository.getPreferredUnitType())
 
         viewModelScope.launch {
-            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
+            stravaDashboardRepository.loadActivities(
                 after = currentYearEpoch,
                 before = null
             ).catch { exception ->
+                Log.e("ERROR", "fetchData: ${exception.message}")
                 val errorCode = (exception as HttpException).code()
                 if (errorCode in 400..499) {
                     _error.postValue("Error! Force Refresh")
@@ -166,49 +156,35 @@ class StravaDashboardViewModel @Inject constructor(
                     _error.postValue("Have issues connecting to Strava")
                 }
             }.collect { currentYearActivities ->
+
                 _currentMonthActivites.postValue(currentYearActivities.filter {
                     it.start_date.getDate().monthValue == currentMonthInt
+                            && it.start_date.getDate().year == 2021
                 })
+
                 _previousMonthActivities.postValue(currentYearActivities.filter {
                     it.start_date.getDate().monthValue == currentMonthInt - 1
+                            && it.start_date.getDate().year == 2021
                 })
+
                 _previousPreviousMonthActivities.postValue(currentYearActivities.filter {
                     it.start_date.getDate().monthValue == currentMonthInt - 2
+                            && it.start_date.getDate().year == 2021
                 })
 
-                _currentYearActivites.postValue(currentYearActivities)
+                _currentYearActivites.postValue(currentYearActivities.filter {
+                    it.start_date.getDate().year == 2021
+                })
+                _prevYearActivites.postValue(currentYearActivities.filter {
+                    it.start_date.getDate().year == 2020
+                })
+                _prevPrevYearActivites.postValue(currentYearActivities.filter {
+                    it.start_date.getDate().year == 2019
+                })
             }
 
-            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
-                after = prevYearEpoch,
-                before = currentYearEpoch
-            ).catch { exception ->
-                val errorCode = (exception as HttpException).code()
-                if (errorCode in 400..499) {
-                    _error.postValue("Error! Force Refresh")
-                } else {
-                    _error.postValue("Have issues connecting to Strava")
-                }
-            }.collect {
-                _prevYearActivites.postValue(it)
-            }
-
-            stravaDashboardRepository.getStravaActivitiesBeforeAndAfterPaginated(
-                after = prevPrevYearEpoch,
-                before = prevYearEpoch
-            ).catch { exception ->
-                val errorCode = (exception as HttpException).code()
-                if (errorCode in 400..499) {
-                    _error.postValue("Error! Force Refresh")
-                } else {
-                    _error.postValue("Have issues connecting to Strava")
-                }
-            }.collect {
-                _prevPrevYearActivites.postValue(it)
-            }
-
-            val combinedList = currentMonthActivites.value!!.toMutableList()
-            combinedList.plus(previousMonthActivities.value?.toMutableList())
+            val combinedList = currentMonthActivites.value?.toMutableList()
+            combinedList?.plus(previousMonthActivities.value?.toMutableList())
             _lastTwoMonthsActivities.postValue(combinedList)
 
             _isRefreshing.postValue(false)

@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.strava.model.activites.ActivitesItem
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
@@ -33,7 +33,7 @@ import java.util.Locale
 
 @Composable
 fun MonthWidget(
-    monthlyWorkouts: List<ActivitesItem>,
+    monthlyWorkouts: List<ActivitiesItem>,
     updateMonthlyMetrics: (SummaryMetrics) -> Unit,
     selectedActivityType: ActivityType?,
     selectedUnitType: UnitType?,

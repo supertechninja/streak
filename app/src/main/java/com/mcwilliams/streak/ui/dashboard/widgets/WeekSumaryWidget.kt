@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.strava.model.activites.ActivitesItem
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
@@ -36,7 +36,7 @@ import java.util.Locale
 
 @Composable
 fun WeekSummaryWidget(
-    monthlyWorkouts: List<ActivitesItem>,
+    monthlyWorkouts: List<ActivitiesItem>,
     selectedActivityType: ActivityType?,
     currentWeek: MutableList<Pair<Int, Int>>,
     selectedUnitType: UnitType?,
