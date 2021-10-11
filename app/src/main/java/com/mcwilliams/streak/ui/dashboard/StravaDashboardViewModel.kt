@@ -124,7 +124,8 @@ class StravaDashboardViewModel @Inject constructor(
         previousPreviousMonthEpoch = getEpoch(2021, currentMonthInt - 3, 1).first
         previousPreviousMonth = getEpoch(2021, currentMonthInt - 3, 1).second
 
-        currentYearEpoch = getEpoch(2021, 0, 1).first
+        val today = LocalDate.now()
+        currentYearEpoch = getEpoch(today.year, today.monthValue -1, today.dayOfMonth).first
         currentYear = "2021"
         prevYearEpoch = getEpoch(2020, 0, 1).first
         currentYear = "2020"
@@ -145,8 +146,8 @@ class StravaDashboardViewModel @Inject constructor(
 
         viewModelScope.launch {
             stravaDashboardRepository.loadActivities(
-                after = currentYearEpoch,
-                before = null
+                after = null,
+                before = currentYearEpoch,
             ).catch { exception ->
                 Log.e("ERROR", "fetchData: ${exception.message}")
                 val errorCode = (exception as HttpException).code()

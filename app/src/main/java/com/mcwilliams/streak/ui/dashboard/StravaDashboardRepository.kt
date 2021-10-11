@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
+import java.time.YearMonth
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -56,7 +59,7 @@ class StravaDashboardRepository @Inject constructor(
 
     fun loadActivities(
         before: Int?,
-        after: Int
+        after: Int?,
     ): Flow<List<ActivitiesItem>> = flow {
         var allActivities: List<ActivitiesItem>?
 
@@ -66,10 +69,27 @@ class StravaDashboardRepository @Inject constructor(
 
         }
 
+        var beforeDate = before
+        var afterDate = after
+
+        val lastUpdated = fetchLastUpdatedTime()
+        var shouldCallApi  = false
+
+        if (lastUpdated != null){
+            val currentTime = LocalDateTime.now()
+            if(currentTime > lastUpdated){
+                //Date outdated refreshing
+                Log.d("TAG", "loadActivities: DATA OUTDATED")
+                shouldCallApi = true
+                beforeDate = getEpoch(currentTime.year, currentTime.monthValue -1, currentTime.dayOfMonth).first
+                afterDate = getEpoch(lastUpdated.year, lastUpdated.monthValue -1, lastUpdated.dayOfMonth).first
+            }
+        }
+
         //Check db
-        if (allActivities.isNullOrEmpty()) {
-            val remoteActivities : Flow<List<ActivitiesItem>> = flow {
-                val remote = getStravaActivitiesBeforeAndAfterPaginated(before, after)
+        if (allActivities.isNullOrEmpty() || shouldCallApi) {
+            val remoteActivities: Flow<List<ActivitiesItem>> = flow {
+                val remote = getStravaActivitiesBeforeAndAfterPaginated(beforeDate, afterDate)
 
                 remote.collect {
                     allActivities = it
@@ -78,7 +98,15 @@ class StravaDashboardRepository @Inject constructor(
             }
 
             remoteActivities.collect {
-                emit(it)
+                shouldCallApi = false
+                saveLastFetchTimestamp()
+                withContext(Dispatchers.IO) {
+                    allActivities = activitiesDao?.getAll()
+
+                }
+                emit(allActivities!!)
+                Log.d("TAG", "loadActivities: FETCHED REFRESHING FROM DB")
+                //reload from DB
             }
 
         } else {
@@ -89,7 +117,7 @@ class StravaDashboardRepository @Inject constructor(
 
     fun getStravaActivitiesBeforeAndAfterPaginated(
         before: Int?,
-        after: Int
+        after: Int?
     ): Flow<List<ActivitiesItem>> = flow {
         val yearActivities: MutableList<ActivitiesItem> = mutableListOf()
         var pageCount = 1
@@ -97,6 +125,7 @@ class StravaDashboardRepository @Inject constructor(
             yearActivities.addAll(
                 activitiesApi.getAthleteActivitiesBeforeAndAfter(
                     before = before,
+                    after = after,
                     page = pageCount
                 )
             )
@@ -109,7 +138,7 @@ class StravaDashboardRepository @Inject constructor(
                 }
             }
 
-        } while (yearActivities.size % 200 == 0)
+        } while (yearActivities.size % 200 == 0 && yearActivities.size != 0)
 
         emit(yearActivities)
     }
@@ -142,8 +171,23 @@ class StravaDashboardRepository @Inject constructor(
         )
     }
 
+    fun saveLastFetchTimestamp() {
+        val currentTime = LocalDateTime.now()
+        Log.d("TAG", "saveLastFetchTimestamp: $currentTime")
+        preferences.edit().putString(lastUpdatedKey, currentTime.toString()).apply()
+    }
+
+    fun fetchLastUpdatedTime(): LocalDateTime? {
+        val lastUpdatedString = preferences.getString(lastUpdatedKey, "")
+        return if(lastUpdatedString.isNullOrEmpty())
+            null
+        else
+            LocalDateTime.parse(lastUpdatedString)
+    }
+
     companion object {
         const val activityTypeKey: String = "activityType"
         const val unitTypeKey: String = "unitType"
+        const val lastUpdatedKey: String = "lastUpdated"
     }
 }
