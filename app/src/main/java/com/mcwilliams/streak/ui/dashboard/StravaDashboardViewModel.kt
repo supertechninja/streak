@@ -299,12 +299,10 @@ fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
 enum class ActivityType { Run, Swim, Bike, All }
 enum class UnitType { Imperial, Metric }
 
-fun getEpoch(year: Int, month: Int, day: Int): Pair<Int, String> {
+fun getEpoch(year: Int, month: Int, day: Int, hour: Int = 0, minute: Int = 0): Pair<Int, String> {
     val calendar: Calendar = Calendar.getInstance()
-    calendar.set(year, month, day, 0, 0)
-    return Pair(
-        calendar.toInstant().epochSecond.toInt(),
-        calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault())
-    )
+    calendar.set(year, month, day, hour, minute)
+    return calendar.toInstant().epochSecond.toInt() to
+        calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())
 }
 

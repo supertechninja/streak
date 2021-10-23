@@ -38,7 +38,7 @@ fun BottomTab(
     onClick: () -> Unit
 ) {
     val iconColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colors.primary
+        targetValue = if (selected) MaterialTheme.colors.surface
         else Color.White.copy(.8f),
         animationSpec = tween(300)
     )
@@ -87,7 +87,7 @@ fun BottomNavEffect(
         Modifier
             .height(80.dp)
             .background(
-                color = MaterialTheme.colors.primary
+                color = MaterialTheme.colors.onPrimary.copy(.8f)
             ),
     ) {
         val bottomNavTabWidth = maxWidth / 3
@@ -101,7 +101,7 @@ fun BottomNavEffect(
 
         Surface(
             shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colors.secondary,
+            color = MaterialTheme.colors.primary,
             modifier = Modifier
                 .size(width = 60.dp, height = 32.dp)
                 .offset(x = offset, y = 12.dp)

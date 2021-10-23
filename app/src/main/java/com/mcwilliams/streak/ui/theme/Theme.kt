@@ -30,13 +30,14 @@ private val StreakDarkPalette = darkColors(
     error = Red300,
 )
 
-private val StreakLightPalette = lightColors(
+val StreakLightPalette = lightColors(
     primary = Blue200,
     primaryVariant = Blue400,
-    onPrimary = Color.White,
+    onPrimary = Color.Black,
     secondary = Yellow700,
     secondaryVariant = Yellow800,
     onSecondary = Color.Black,
+    surface = SkyBlue,
     onSurface = Color.White,
     onBackground = Color.White,
     error = Red800,

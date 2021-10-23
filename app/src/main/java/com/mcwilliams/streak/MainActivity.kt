@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.getValue
@@ -20,7 +21,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -29,6 +32,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.android.material.composethemeadapter.createMdcTheme
 import com.mcwilliams.streak.ui.bottomnavigation.BottomNavEffect
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 //import com.airbnb.lottie.compose.LottieAnimation
@@ -40,6 +44,7 @@ import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.goals.GoalsContent
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
+import com.mcwilliams.streak.ui.theme.StreakLightPalette
 import com.mcwilliams.streak.ui.theme.StreakTheme
 import com.mcwilliams.streak.ui.theme.primaryColorShade1
 import dagger.hilt.android.AndroidEntryPoint
@@ -63,7 +68,20 @@ class MainActivity : ComponentActivity() {
                 NavigationDestination.StreakSettings,
             )
 
-            StreakTheme {
+            val context = LocalContext.current
+            val layoutDirection = LocalLayoutDirection.current
+            var (colors, type, shapes) = createMdcTheme(
+                context = context,
+                layoutDirection = layoutDirection
+            )
+
+            var themeColors: Colors = if(isSystemInDarkTheme()){
+                colors!!
+            } else {
+                StreakLightPalette
+            }
+
+            MaterialTheme(colors = themeColors, typography = type!!, shapes = shapes!!) {
                 val isLoggedIn by viewModel.isLoggedIn.observeAsState()
                 var showLoginDialog by remember { mutableStateOf(false) }
                 var selectedTab by remember { mutableStateOf(1) }

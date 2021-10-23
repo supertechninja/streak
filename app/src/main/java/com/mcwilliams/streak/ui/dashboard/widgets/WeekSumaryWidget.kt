@@ -122,7 +122,7 @@ fun WeekSummaryWidget(
                         Row() {
                             Text(
                                 text = selectedActivityType?.name ?: "",
-                                color = Color(0xFFFFA500),
+                                color = MaterialTheme.colors.onSurface,
                                 fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.body2
                             )
@@ -225,9 +225,7 @@ fun WeekSummaryWidget(
                                                     }
                                                 if (it.value > 0) {
                                                     Divider(
-                                                        color = Color(
-                                                            0xFFFFA500
-                                                        ),
+                                                        color = MaterialTheme.colors.onSurface,
                                                         modifier = Modifier
                                                             .height(
                                                                 progressHeight

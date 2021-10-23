@@ -58,7 +58,7 @@ fun StreakSettingsView(
                 modifier = Modifier
                     .height(56.dp)
                     .fillMaxWidth()
-                    .background(color = Color(0xFF01374D)),
+                    .background(color = MaterialTheme.colors.surface),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -95,7 +95,7 @@ fun StreakSettingsView(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .background(
-                                    color = primaryColor,
+                                    color = MaterialTheme.colors.onPrimary,
                                     shape = RoundedCornerShape(20.dp)
                                 )
                         ) {
@@ -112,13 +112,14 @@ fun StreakSettingsView(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(activityType.name)
+                                    Text(activityType.name, color = MaterialTheme.colors.onSurface)
 
                                     selectedActivityType?.let {
                                         if (it.name == activityType.name) {
                                             Icon(
                                                 imageVector = Icons.Default.Check,
-                                                contentDescription = "Currently Selected"
+                                                contentDescription = "Currently Selected",
+                                                tint = MaterialTheme.colors.onSurface
                                             )
                                         }
                                     }
@@ -138,7 +139,7 @@ fun StreakSettingsView(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .background(
-                                    color = primaryColor,
+                                    color = MaterialTheme.colors.onPrimary,
                                     shape = RoundedCornerShape(20.dp)
                                 )
                         ) {
@@ -154,12 +155,13 @@ fun StreakSettingsView(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Imperial")
+                                Text("Imperial", color = MaterialTheme.colors.onSurface)
 
                                 if (UnitType.Imperial.name == selectedUnitType?.name) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
-                                        contentDescription = "Currently Selected"
+                                        contentDescription = "Currently Selected",
+                                        tint = MaterialTheme.colors.onSurface
                                     )
                                 }
                             }
@@ -176,12 +178,13 @@ fun StreakSettingsView(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Metric")
+                                Text("Metric", color = MaterialTheme.colors.onPrimary)
 
                                 if (UnitType.Metric.name == selectedUnitType?.name) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
-                                        contentDescription = "Currently Selected"
+                                        contentDescription = "Currently Selected",
+                                        tint = MaterialTheme.colors.onSurface
                                     )
                                 }
                             }
@@ -257,7 +260,7 @@ fun StreakSettingsView(
                     contentAlignment = Alignment.BottomCenter
                 ) {
                     Button(onClick = { viewModel.logout() }, modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Log out", color = MaterialTheme.colors.onSurface)
+                        Text(text = "Log out", color = MaterialTheme.colors.onPrimary)
                     }
                 }
             }

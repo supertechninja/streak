@@ -8,6 +8,8 @@ import com.mcwilliams.streak.strava.api.ActivitiesApi
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDao
 import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDatabase
+import com.mcwilliams.streak.ui.utils.getDate
+import com.mcwilliams.streak.ui.utils.getDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -16,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.YearMonth
+import java.time.ZoneOffset
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -73,16 +76,54 @@ class StravaDashboardRepository @Inject constructor(
         var afterDate = after
 
         val lastUpdated = fetchLastUpdatedTime()
-        var shouldCallApi  = false
+        var shouldCallApi = false
 
-        if (lastUpdated != null){
+        if (lastUpdated != null) {
             val currentTime = LocalDateTime.now()
-            if(currentTime > lastUpdated){
+            if (currentTime > lastUpdated) {
                 //Date outdated refreshing
                 Log.d("TAG", "loadActivities: DATA OUTDATED")
                 shouldCallApi = true
-                beforeDate = getEpoch(currentTime.year, currentTime.monthValue -1, currentTime.dayOfMonth).first
-                afterDate = getEpoch(lastUpdated.year, lastUpdated.monthValue -1, lastUpdated.dayOfMonth).first
+                beforeDate = getEpoch(
+                    currentTime.year,
+                    currentTime.monthValue - 1,
+                    currentTime.dayOfMonth,
+                    currentTime.hour,
+                    currentTime.minute
+                ).first
+                Log.d("TAG", "Before Current: $currentTime")
+
+                if (allActivities != null) {
+                    //get most recently stored activity to determine the "after date" to call the api
+                    val date = allActivities!!.minByOrNull {
+                        kotlin.math.abs(
+                            it.start_date.getDate().atStartOfDay()
+                                .toEpochSecond(ZoneOffset.UTC) - currentTime.toEpochSecond(
+                                ZoneOffset.UTC
+                            )
+                        )
+                    }?.start_date?.getDateTime()
+
+                    date?.let {
+                        afterDate = getEpoch(
+                            it.year,
+                            it.monthValue - 1,
+                            it.dayOfMonth,
+                            it.hour,
+                            it.minute
+                        ).first
+
+                        Log.d("TAG", "After: $it")
+                    }
+                }
+
+//                afterDate = getEpoch(
+//                    lastUpdated.year,
+//                    lastUpdated.monthValue - 1,
+//                    lastUpdated.dayOfMonth
+//                ).first
+
+
             }
         }
 
@@ -179,7 +220,7 @@ class StravaDashboardRepository @Inject constructor(
 
     fun fetchLastUpdatedTime(): LocalDateTime? {
         val lastUpdatedString = preferences.getString(lastUpdatedKey, "")
-        return if(lastUpdatedString.isNullOrEmpty())
+        return if (lastUpdatedString.isNullOrEmpty())
             null
         else
             LocalDateTime.parse(lastUpdatedString)

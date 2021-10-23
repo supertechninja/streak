@@ -77,7 +77,7 @@ fun CompareWidget(
                     ) {
                         Text(
                             text = selectedActivityType?.name ?: "",
-                            color = Color(0xFFFFA500),
+                            color = MaterialTheme.colors.onSurface,
                             modifier = Modifier.width(firstColumnWidth),
                             style = MaterialTheme.typography.caption,
                             textAlign = TextAlign.Start,

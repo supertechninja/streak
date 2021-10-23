@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -40,7 +41,7 @@ fun StreakWidgetCard(content: @Composable () -> Unit) {
             .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = 4.dp,
-        backgroundColor = primaryColor
+        backgroundColor = MaterialTheme.colors.onPrimary
     ) {
         content()
     }
@@ -131,7 +132,7 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
             painter = painterResource(id = image),
             contentDescription = "",
             modifier = Modifier.size(18.dp),
-            tint = Color.LightGray.copy(alpha = .8f)
+            tint = MaterialTheme.colors.onSurface.copy(alpha = .8f)
         )
         stat?.let {
             Text(

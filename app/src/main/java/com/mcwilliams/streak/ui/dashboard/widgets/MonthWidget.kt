@@ -105,7 +105,7 @@ fun MonthWidget(
                         Row() {
                             Text(
                                 text = selectedActivityType?.name ?: "",
-                                color = Color(0xFFFFA500),
+                                color = MaterialTheme.colors.onSurface,
                                 fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.body2
                             )
@@ -178,12 +178,10 @@ fun MonthWidget(
                                         if (it.first == YearMonth.now().monthValue) {
                                             dayColor =
                                                 when {
-                                                    listOfDaysLoggedActivity.contains(it.second) -> Color(
-                                                        0xFFFFA500
-                                                    )
+                                                    listOfDaysLoggedActivity.contains(it.second) -> MaterialTheme.colors.primary
                                                     it.second < today!! -> MaterialTheme.colors.onSurface
-                                                    it.second == today -> MaterialTheme.colors.onSurface
-                                                    else -> Color.LightGray.copy(alpha = .8f)
+                                                    it.second == today -> MaterialTheme.colors.primary
+                                                    else -> MaterialTheme.colors.onSurface.copy(alpha = .5f)
                                                 }
                                         }
 

@@ -3,6 +3,7 @@ package com.mcwilliams.streak.ui.utils
 import android.util.Log
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -22,6 +23,13 @@ fun String.getTime(): LocalTime {
         ZonedDateTime.parse(this, dtf)
     val localDateTime = zdt.toLocalDateTime()
     return localDateTime.toLocalTime()
+}
+
+fun String.getDateTime(): LocalDateTime {
+    val dtf = DateTimeFormatter.ISO_DATE_TIME
+    val zdt: ZonedDateTime =
+        ZonedDateTime.parse(this, dtf)
+    return zdt.toLocalDateTime()
 }
 
 //Calculates pace from the moving time with the distance as an arguement
