@@ -10,9 +10,16 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -21,9 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -32,19 +38,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.google.android.material.composethemeadapter.createMdcTheme
 import com.mcwilliams.streak.ui.bottomnavigation.BottomNavEffect
 import com.mcwilliams.streak.ui.dashboard.ActivityType
-//import com.airbnb.lottie.compose.LottieAnimation
-//import com.airbnb.lottie.compose.LottieAnimationSpec
-//import com.airbnb.lottie.compose.rememberLottieAnimationState
 import com.mcwilliams.streak.ui.dashboard.StravaDashboard
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.goals.GoalsContent
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
-import com.mcwilliams.streak.ui.theme.StreakLightPalette
+import com.mcwilliams.streak.ui.theme.Material3Theme
 import com.mcwilliams.streak.ui.theme.StreakTheme
 import com.mcwilliams.streak.ui.theme.primaryColorShade1
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,6 +60,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: StravaDashboardViewModel by viewModels()
 
+    @ExperimentalMaterial3Api
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,23 +72,10 @@ class MainActivity : ComponentActivity() {
                 NavigationDestination.StreakSettings,
             )
 
-            val context = LocalContext.current
-            val layoutDirection = LocalLayoutDirection.current
-            var (colors, type, shapes) = createMdcTheme(
-                context = context,
-                layoutDirection = layoutDirection
-            )
-
-            var themeColors: Colors = if(isSystemInDarkTheme()){
-                colors!!
-            } else {
-                StreakLightPalette
-            }
-
-            MaterialTheme(colors = themeColors, typography = type!!, shapes = shapes!!) {
+            Material3Theme() {
                 val isLoggedIn by viewModel.isLoggedIn.observeAsState()
                 var showLoginDialog by remember { mutableStateOf(false) }
-                var selectedTab by remember { mutableStateOf(1) }
+                var selectedTab by remember { mutableStateOf(0) }
                 var updateSelectedTab = { tab: Int ->
                     selectedTab = tab
                 }
@@ -94,7 +85,7 @@ class MainActivity : ComponentActivity() {
 
                 isLoggedIn?.let {
                     if (it) {
-                        Scaffold(
+                        androidx.compose.material3.Scaffold(
                             content = { paddingValues ->
                                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                                 val currentDestination = navBackStackEntry?.destination
@@ -124,11 +115,93 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             bottomBar = {
-                                Surface(modifier = Modifier.fillMaxWidth(), elevation = 8.dp) {
-                                    BottomNavEffect(
-                                        selectedTab = selectedTab,
-                                        updateSelectedTab = updateSelectedTab,
-                                        navController = navController
+                                NavigationBar() {
+                                    NavigationBarItem(
+                                        selected = selectedTab == 0,
+                                        onClick = {
+                                            selectedTab = 0
+                                            navController.navigate(NavigationDestination.StravaDashboard.destination) {
+                                                // Pop up to the start destination of the graph to
+                                                // avoid building up a large stack of destinations
+                                                // on the back stack as users select items
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                // Avoid multiple copies of the same destination when
+                                                // reselecting the same item
+                                                launchSingleTop = true
+                                                // Restore state when reselecting a previously selected item
+                                                restoreState = true
+                                            }
+                                        },
+                                        icon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Home,
+                                                contentDescription = "",
+                                                tint = if(selectedTab == 0) Color.White else Color.White.copy(.7f)
+                                            )
+                                        },
+                                        label = {
+                                            Text("Dashboard", color = if(selectedTab == 0) Color.White else Color.White.copy(.7f))
+                                        }
+                                    )
+                                    NavigationBarItem(
+                                        selected = selectedTab == 1,
+                                        onClick = {
+                                            selectedTab = 1
+                                            navController.navigate(NavigationDestination.Goals.destination) {
+                                                // Pop up to the start destination of the graph to
+                                                // avoid building up a large stack of destinations
+                                                // on the back stack as users select items
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                // Avoid multiple copies of the same destination when
+                                                // reselecting the same item
+                                                launchSingleTop = true
+                                                // Restore state when reselecting a previously selected item
+                                                restoreState = true
+                                            }
+                                        },
+                                        icon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Warning,
+                                                contentDescription = "",
+                                                tint = if(selectedTab == 1) Color.White else Color.White.copy(.7f)
+                                            )
+                                        },
+                                        label = {
+                                            Text("Goals", color =if(selectedTab == 1) Color.White else Color.White.copy(.7f))
+                                        }
+                                    )
+                                    NavigationBarItem(
+                                        selected = selectedTab == 2,
+                                        onClick = {
+                                            selectedTab = 2
+                                            navController.navigate(NavigationDestination.StreakSettings.destination) {
+                                                // Pop up to the start destination of the graph to
+                                                // avoid building up a large stack of destinations
+                                                // on the back stack as users select items
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                // Avoid multiple copies of the same destination when
+                                                // reselecting the same item
+                                                launchSingleTop = true
+                                                // Restore state when reselecting a previously selected item
+                                                restoreState = true
+                                            }
+                                        },
+                                        icon = {
+                                            Icon(
+                                                imageVector = Icons.Default.Settings,
+                                                contentDescription = "",
+                                                tint = if(selectedTab == 2) Color.White else Color.White.copy(.7f)
+                                            )
+                                        },
+                                        label = {
+                                            Text("Settings", color = if(selectedTab == 2) Color.White else Color.White.copy(.7f))
+                                        }
                                     )
                                 }
                             }
@@ -136,7 +209,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         Scaffold(
                             backgroundColor = primaryColorShade1,
-                            contentColor = MaterialTheme.colors.onSurface,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
                             content = { paddingValues ->
                                 Column(
                                     modifier = Modifier
@@ -145,22 +218,22 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     Text(
                                         text = "Welcome to Streak!",
-                                        style = MaterialTheme.typography.h4,
+                                        style = MaterialTheme.typography.headlineMedium,
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
                                     Text(
                                         text = "I have always wanted a way to analyze my athletic activity overtime, as well as track my progress",
-                                        style = MaterialTheme.typography.subtitle1,
+                                        style = MaterialTheme.typography.bodyMedium,
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
                                     Text(
                                         text = "Streak provides snapshots of your Strava data organized by comparing your data week over week, month over month",
-                                        style = MaterialTheme.typography.subtitle1,
+                                        style = MaterialTheme.typography.bodyMedium,
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
                                     Text(
                                         text = "Tap the \"Connect With Strava\" to login and get started",
-                                        style = MaterialTheme.typography.subtitle1,
+                                        style = MaterialTheme.typography.bodyMedium,
                                         modifier = Modifier.padding(vertical = 16.dp)
                                     )
                                     Box(

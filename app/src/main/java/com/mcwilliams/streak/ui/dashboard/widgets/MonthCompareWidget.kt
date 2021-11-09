@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -77,9 +77,9 @@ fun CompareWidget(
                     ) {
                         Text(
                             text = selectedActivityType?.name ?: "",
-                            color = MaterialTheme.colors.onSurface,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.width(firstColumnWidth),
-                            style = MaterialTheme.typography.caption,
+                            style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Start,
                             fontWeight = FontWeight.ExtraBold
                         )
@@ -108,7 +108,7 @@ fun CompareWidget(
                             .fillMaxWidth()
                             .padding(vertical = 2.dp),
                         thickness = 1.dp,
-                        color = MaterialTheme.colors.onSurface
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     // Distance Row
                     Row(

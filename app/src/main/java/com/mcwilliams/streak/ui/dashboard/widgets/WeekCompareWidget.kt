@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -64,9 +64,9 @@ fun WeekCompareWidget(
                         ) {
                             Text(
                                 text = selectedActivityType?.name ?: "",
-                                color = MaterialTheme.colors.onSurface,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.width(firstColumnWidth),
-                                style = MaterialTheme.typography.caption,
+                                style = MaterialTheme.typography.bodySmall,
                                 textAlign = TextAlign.Start,
                                 fontWeight = FontWeight.ExtraBold,
                             )
@@ -95,7 +95,7 @@ fun WeekCompareWidget(
                                 .fillMaxWidth()
                                 .padding(vertical = 2.dp),
                             thickness = 1.dp,
-                            color = MaterialTheme.colors.onSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         val weeklyDataMap: MutableList<SummaryMetrics> =

@@ -1,7 +1,5 @@
 package com.mcwilliams.streak.ui.theme
 
-import androidx.compose.material.Typography
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -16,8 +14,6 @@ private val Montserrat = FontFamily(
     Font(R.font.montserrat_semibold, FontWeight.SemiBold)
 )
 
-val Typography = Typography(
-    defaultFontFamily = Montserrat
     /* Other default text styles to override
     button = TextStyle(
         fontFamily = FontFamily.Default,
@@ -30,4 +26,3 @@ val Typography = Typography(
         fontSize = 12.sp
     )
     */
-)

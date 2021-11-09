@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -58,14 +59,14 @@ fun StreakSettingsView(
                 modifier = Modifier
                     .height(56.dp)
                     .fillMaxWidth()
-                    .background(color = MaterialTheme.colors.surface),
+                    .background(color = MaterialTheme.colorScheme.surface),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     "Settings",
-                    style = MaterialTheme.typography.h6,
-                    color = MaterialTheme.colors.onSurface,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 )
             }
@@ -86,7 +87,7 @@ fun StreakSettingsView(
                     Column {
                         Text(
                             text = "Activities",
-                            style = MaterialTheme.typography.h6
+                            style = MaterialTheme.typography.headlineMedium
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -95,7 +96,7 @@ fun StreakSettingsView(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .background(
-                                    color = MaterialTheme.colors.onPrimary,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     shape = RoundedCornerShape(20.dp)
                                 )
                         ) {
@@ -112,14 +113,14 @@ fun StreakSettingsView(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(activityType.name, color = MaterialTheme.colors.onSurface)
+                                    Text(activityType.name, color = MaterialTheme.colorScheme.onSurface)
 
                                     selectedActivityType?.let {
                                         if (it.name == activityType.name) {
                                             Icon(
                                                 imageVector = Icons.Default.Check,
                                                 contentDescription = "Currently Selected",
-                                                tint = MaterialTheme.colors.onSurface
+                                                tint = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
@@ -131,7 +132,7 @@ fun StreakSettingsView(
 
                         Text(
                             text = "Units",
-                            style = MaterialTheme.typography.h6
+                            style = MaterialTheme.typography.headlineMedium
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -139,7 +140,7 @@ fun StreakSettingsView(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .background(
-                                    color = MaterialTheme.colors.onPrimary,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     shape = RoundedCornerShape(20.dp)
                                 )
                         ) {
@@ -155,13 +156,13 @@ fun StreakSettingsView(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Imperial", color = MaterialTheme.colors.onSurface)
+                                Text("Imperial", color = MaterialTheme.colorScheme.onSurface)
 
                                 if (UnitType.Imperial.name == selectedUnitType?.name) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
                                         contentDescription = "Currently Selected",
-                                        tint = MaterialTheme.colors.onSurface
+                                        tint = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                             }
@@ -178,13 +179,13 @@ fun StreakSettingsView(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Metric", color = MaterialTheme.colors.onPrimary)
+                                Text("Metric", color = MaterialTheme.colorScheme.onPrimary)
 
                                 if (UnitType.Metric.name == selectedUnitType?.name) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
                                         contentDescription = "Currently Selected",
-                                        tint = MaterialTheme.colors.onSurface
+                                        tint = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                             }
@@ -195,7 +196,7 @@ fun StreakSettingsView(
 
                         Text(
                             text = "2021 Goal",
-                            style = MaterialTheme.typography.h6
+                            style = MaterialTheme.typography.headlineMedium
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -260,7 +261,7 @@ fun StreakSettingsView(
                     contentAlignment = Alignment.BottomCenter
                 ) {
                     Button(onClick = { viewModel.logout() }, modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Log out", color = MaterialTheme.colors.onPrimary)
+                        Text(text = "Log out", color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }

@@ -103,6 +103,7 @@ class StravaDashboardRepository @Inject constructor(
                             )
                         )
                     }?.start_date?.getDateTime()
+                    Log.d("TAG", "loadActivities: $date")
 
                     date?.let {
                         afterDate = getEpoch(
@@ -116,14 +117,6 @@ class StravaDashboardRepository @Inject constructor(
                         Log.d("TAG", "After: $it")
                     }
                 }
-
-//                afterDate = getEpoch(
-//                    lastUpdated.year,
-//                    lastUpdated.monthValue - 1,
-//                    lastUpdated.dayOfMonth
-//                ).first
-
-
             }
         }
 
@@ -224,6 +217,10 @@ class StravaDashboardRepository @Inject constructor(
             null
         else
             LocalDateTime.parse(lastUpdatedString)
+    }
+
+    fun saveWeeklyDistance(weeklyDistance: String) {
+        preferences.edit().putString("weeklyDistance", weeklyDistance).apply()
     }
 
     companion object {

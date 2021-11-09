@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -105,17 +105,17 @@ fun MonthWidget(
                         Row() {
                             Text(
                                 text = selectedActivityType?.name ?: "",
-                                color = MaterialTheme.colors.onSurface,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.ExtraBold,
-                                style = MaterialTheme.typography.body2
+                                style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
                                 "  |  ${
                                     currentMonth.name.lowercase(Locale.getDefault())
                                         .capitalize(Locale.getDefault())
                                 }",
-                                color = MaterialTheme.colors.onSurface,
-                                style = MaterialTheme.typography.body2
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                         Divider(
@@ -123,7 +123,7 @@ fun MonthWidget(
                                 .width(80.dp)
                                 .padding(vertical = 4.dp)
                                 .height(1.dp),
-                            color = MaterialTheme.colors.onSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         DashboardStat(
                             image = R.drawable.ic_ruler,
@@ -178,10 +178,10 @@ fun MonthWidget(
                                         if (it.first == YearMonth.now().monthValue) {
                                             dayColor =
                                                 when {
-                                                    listOfDaysLoggedActivity.contains(it.second) -> MaterialTheme.colors.primary
-                                                    it.second < today!! -> MaterialTheme.colors.onSurface
-                                                    it.second == today -> MaterialTheme.colors.primary
-                                                    else -> MaterialTheme.colors.onSurface.copy(alpha = .5f)
+                                                    listOfDaysLoggedActivity.contains(it.second) -> MaterialTheme.colorScheme.primary
+                                                    it.second < today!! -> MaterialTheme.colorScheme.onSurface
+                                                    it.second == today -> MaterialTheme.colorScheme.primary
+                                                    else -> MaterialTheme.colorScheme.onSurface.copy(alpha = .5f)
                                                 }
                                         }
 
@@ -190,7 +190,7 @@ fun MonthWidget(
                                             shape = CircleShape,
                                             border = if (it.first == YearMonth.now().monthValue && it.second == today) BorderStroke(
                                                 1.dp,
-                                                color = MaterialTheme.colors.onSurface
+                                                color = MaterialTheme.colorScheme.onSurface
                                             ) else null
                                         ) {
                                             Text(
@@ -199,7 +199,7 @@ fun MonthWidget(
                                                 modifier = dateModifier.padding(2.dp),
                                                 fontWeight = FontWeight.Medium,
                                                 color = dayColor,
-                                                style = MaterialTheme.typography.body2
+                                                style = MaterialTheme.typography.bodyMedium
                                             )
                                         }
                                     }

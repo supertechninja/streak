@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -11,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.glance.LocalContext
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
@@ -41,7 +43,8 @@ fun WeekSummaryWidget(
     currentWeek: MutableList<Pair<Int, Int>>,
     selectedUnitType: UnitType?,
     today: Int,
-    isLoading : Boolean,
+    isLoading: Boolean,
+    saveWeeklyDistance: (String) -> Unit,
 ) {
     StreakWidgetCard(
         content = {
@@ -122,9 +125,9 @@ fun WeekSummaryWidget(
                         Row() {
                             Text(
                                 text = selectedActivityType?.name ?: "",
-                                color = MaterialTheme.colors.onSurface,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.ExtraBold,
-                                style = MaterialTheme.typography.body2
+                                style = MaterialTheme.typography.bodyMedium
                             )
                             if (currentWeek.isNotEmpty()) {
                                 val text =
@@ -142,8 +145,8 @@ fun WeekSummaryWidget(
                                             }  ${currentWeek.last().second}"
                                 Text(
                                     text = text,
-                                    color = MaterialTheme.colors.onSurface,
-                                    style = MaterialTheme.typography.body2,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.bodyMedium,
                                 )
                             }
                         }
@@ -152,11 +155,15 @@ fun WeekSummaryWidget(
                                 .width(80.dp)
                                 .padding(vertical = 4.dp)
                                 .height(1.dp),
-                            color = MaterialTheme.colors.onSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
+
+                        val weeklyDistance = totalDistance.getDistanceString(selectedUnitType!!)
+                        saveWeeklyDistance(weeklyDistance)
+
                         DashboardStat(
                             image = R.drawable.ic_ruler,
-                            stat = totalDistance.getDistanceString(selectedUnitType!!),
+                            stat = weeklyDistance,
                             isLoading = isLoading
                         )
 
@@ -225,7 +232,7 @@ fun WeekSummaryWidget(
                                                     }
                                                 if (it.value > 0) {
                                                     Divider(
-                                                        color = MaterialTheme.colors.onSurface,
+                                                        color = MaterialTheme.colorScheme.onSurface,
                                                         modifier = Modifier
                                                             .height(
                                                                 progressHeight
@@ -260,7 +267,7 @@ fun WeekSummaryWidget(
                                     ) {
                                         Text(
                                             it.name.substring(0, 1),
-                                            color = MaterialTheme.colors.onSurface,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                             fontWeight = if (it.name == LocalDate.now().dayOfWeek.name) FontWeight.ExtraBold else FontWeight.Normal
                                         )
                                     }

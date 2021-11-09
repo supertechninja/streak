@@ -291,6 +291,10 @@ class StravaDashboardViewModel @Inject constructor(
 
         _monthWeekMap.postValue(monthWeekMap)
     }
+
+    fun saveWeeklyDistance(weeklyDistance: String) {
+        stravaDashboardRepository.saveWeeklyDistance(weeklyDistance)
+    }
 }
 
 fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =

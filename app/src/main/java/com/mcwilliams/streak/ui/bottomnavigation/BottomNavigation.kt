@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -38,14 +38,14 @@ fun BottomTab(
     onClick: () -> Unit
 ) {
     val iconColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colors.surface
+        targetValue = if (selected) MaterialTheme.colorScheme.onSecondary
         else Color.White.copy(.8f),
         animationSpec = tween(300)
     )
 
     val interactionSource = remember { MutableInteractionSource() }
     val ripple =
-        rememberRipple(bounded = false, color = MaterialTheme.colors.primaryVariant.copy(.8f))
+        rememberRipple(bounded = false, color = MaterialTheme.colorScheme.tertiary.copy(.8f))
 
     Column(
         modifier = modifier.selectable(
@@ -70,8 +70,9 @@ fun BottomTab(
         Text(
             text = label,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            style = MaterialTheme.typography.body1,
-            modifier = Modifier.padding(top = 4.dp)
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(top = 4.dp),
+            color = if(selected) MaterialTheme.colorScheme.secondary.copy(.8f) else Color.LightGray
         )
     }
 }
@@ -87,7 +88,7 @@ fun BottomNavEffect(
         Modifier
             .height(80.dp)
             .background(
-                color = MaterialTheme.colors.onPrimary.copy(.8f)
+                color = MaterialTheme.colorScheme.onSecondary
             ),
     ) {
         val bottomNavTabWidth = maxWidth / 3
@@ -101,7 +102,7 @@ fun BottomNavEffect(
 
         Surface(
             shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colors.primary,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .size(width = 60.dp, height = 32.dp)
                 .offset(x = offset, y = 12.dp)

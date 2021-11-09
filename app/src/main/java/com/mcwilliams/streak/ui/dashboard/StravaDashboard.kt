@@ -1,11 +1,10 @@
 package com.mcwilliams.streak.ui.dashboard
 
-import android.content.Context
 import android.view.LayoutInflater
-import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.BottomSheetValue.Collapsed
 import androidx.compose.material.BottomSheetValue.Expanded
 import androidx.compose.runtime.Composable
@@ -35,12 +34,8 @@ import com.mcwilliams.streak.R
 import com.mcwilliams.streak.ui.dashboard.widgets.MonthWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekCompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekSummaryWidget
-import com.mcwilliams.streak.ui.theme.StreakTheme
 import com.mcwilliams.streak.ui.theme.primaryColor
-import com.muddzdev.quickshot.QuickShot
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.widgets.CompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
@@ -110,12 +105,16 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         }
     }
 
+    val saveWeeklyDistance = { weeklyDistance: String ->
+        viewModel.saveWeeklyDistance(weeklyDistance)
+    }
+
     Scaffold(topBar = {
         Row(
             modifier = Modifier
                 .height(56.dp)
                 .fillMaxWidth()
-                .background(color = MaterialTheme.colors.surface),
+                .background(color = MaterialTheme.colorScheme.surface),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ConstraintLayout(modifier = Modifier.fillMaxSize()) {
@@ -123,8 +122,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                 Text(
                     "Streak",
-                    style = MaterialTheme.typography.h6,
-                    color = MaterialTheme.colors.onSurface,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.constrainAs(title) {
                         start.linkTo(parent.start)
@@ -140,7 +139,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = MaterialTheme.colors.secondary)
+                    .background(color = MaterialTheme.colorScheme.secondary)
             ) {
                 SwipeRefresh(
                     state = rememberSwipeRefreshState(isRefreshing!!),
@@ -161,7 +160,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                             .fillMaxWidth()
                             .padding(paddingValues = paddingValues)
                             .verticalScroll(rememberScrollState())
-                            .background(color = MaterialTheme.colors.surface)
+                            .background(color = MaterialTheme.colorScheme.surface)
                     ) {
 
                         error?.let {
@@ -185,7 +184,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     currentWeek = currentWeek,
                                     selectedUnitType = selectedUnitType,
                                     today = today!!,
-                                    isLoading = last2MonthsActivities.isEmpty()
+                                    isLoading = last2MonthsActivities.isEmpty(),
+                                    saveWeeklyDistance = saveWeeklyDistance,
                                 )
                             },
                             widgetName = "Week Summary"
@@ -301,9 +301,9 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 fun ColumnScope.Title(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.h6,
+        style = MaterialTheme.typography.headlineMedium,
         fontSize = 18.sp,
-        color = MaterialTheme.colors.onSurface,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.padding(top = 4.dp, start = 16.dp)
     )
 }
@@ -333,25 +333,12 @@ fun StreakDashboardWidget(content: @Composable () -> Unit, widgetName: String) {
             ) {
                 Text(
                     text = widgetName,
-                    style = MaterialTheme.typography.h6,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontSize = 18.sp,
-                    color = MaterialTheme.colors.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .padding(top = 4.dp, start = 16.dp)
                 )
-
-                val fileName = widgetName.replace(" ", "-")
-                IconButton(
-                    onClick = {
-                        share(composeView, fileName, context = context)
-                    },
-                    modifier = Modifier.padding(end = 16.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_save),
-                        contentDescription = "Share"
-                    )
-                }
             }
         }
 
@@ -367,29 +354,6 @@ data class SummaryMetrics(
     val totalElevation: Float = 0f,
     val totalTime: Int = 0
 )
-
-private fun share(view: ComposeView, name: String, context: Context) {
-    val fileName = "$name-${LocalDate.now()}-${LocalTime.now().hour}-${LocalTime.now().minute}"
-    QuickShot.of(view).setResultListener(HandleSavedImage(context, fileName))
-        .setFilename(fileName)
-        .setPath("Streak")
-        .toPNG()
-//        .toJPG()
-        .save();
-}
-
-class HandleSavedImage(val context: Context, val fileName: String) :
-    QuickShot.QuickShotListener {
-    override fun onQuickShotSuccess(path: String?) {
-        Toast.makeText(context, "Dashboard Saved", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onQuickShotFailed(path: String?) {
-        Toast.makeText(context, "Error Saving", Toast.LENGTH_SHORT).show()
-    }
-
-}
-
 
 fun List<ActivitiesItem>.getStats(selectedActivity: ActivityType): SummaryMetrics {
     val filteredActivities =

@@ -14,7 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +41,7 @@ fun StreakWidgetCard(content: @Composable () -> Unit) {
             .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp),
         shape = RoundedCornerShape(20.dp),
         elevation = 4.dp,
-        backgroundColor = MaterialTheme.colors.onPrimary
+        backgroundColor = MaterialTheme.colorScheme.onPrimary
     ) {
         content()
     }
@@ -114,7 +114,7 @@ fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType
     ) {
         Text(
             text = percentString,
-            style = MaterialTheme.typography.overline,
+            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             color = textColor
@@ -132,7 +132,7 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
             painter = painterResource(id = image),
             contentDescription = "",
             modifier = Modifier.size(18.dp),
-            tint = MaterialTheme.colors.onSurface.copy(alpha = .8f)
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = .8f)
         )
         stat?.let {
             Text(
@@ -143,8 +143,8 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
                     color = Color.LightGray,
                     shape = RoundedCornerShape(20.dp)
                 ),
-                color = MaterialTheme.colors.onSurface,
-                style = MaterialTheme.typography.body2,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }
@@ -154,7 +154,7 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
 fun MonthTextStat(monthStat: String, monthColumnWidth: Dp, isLoading: Boolean = false) {
     Text(
         text = monthStat,
-        color = MaterialTheme.colors.onSurface,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.width(monthColumnWidth).placeholder(
             visible = isLoading,
             highlight = PlaceholderHighlight.shimmer(),
@@ -162,6 +162,6 @@ fun MonthTextStat(monthStat: String, monthColumnWidth: Dp, isLoading: Boolean = 
             shape = RoundedCornerShape(20.dp)
         ),
         textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.caption
+        style = MaterialTheme.typography.bodySmall
     )
 }
