@@ -219,8 +219,9 @@ class StravaDashboardRepository @Inject constructor(
             LocalDateTime.parse(lastUpdatedString)
     }
 
-    fun saveWeeklyDistance(weeklyDistance: String) {
+    fun saveWeeklyDistance(weeklyDistance: String, weeklyElevation: String) {
         preferences.edit().putString("weeklyDistance", weeklyDistance).apply()
+        preferences.edit().putString("weeklyElevation", weeklyElevation).apply()
     }
 
     companion object {

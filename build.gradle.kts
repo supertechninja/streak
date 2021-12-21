@@ -7,9 +7,9 @@ buildscript {
         maven(uri("https://plugins.gradle.org/m2/")) // For kotlinter-gradle
     }
 
-    val compose_version by extra { "1.1.0-beta01" }
-    val kotlin_version by extra { "1.5.31" }
-    val hilt_version by extra { "2.36" }
+    val compose_version by extra { "1.1.0-rc01" }
+    val kotlin_version by extra { "1.6.0" }
+    val hilt_version by extra { "2.38.1" }
 
     dependencies {
         // keeping this here to allow AS to automatically update
@@ -29,6 +29,5 @@ allprojects {
         mavenCentral()
         maven(url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers")
         maven(url = "https://jitpack.io")
-        maven(url = "https://androidx.dev/snapshots/builds/7888785/artifacts/repository")
     }
 }

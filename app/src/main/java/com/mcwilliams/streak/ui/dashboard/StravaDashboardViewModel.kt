@@ -292,8 +292,8 @@ class StravaDashboardViewModel @Inject constructor(
         _monthWeekMap.postValue(monthWeekMap)
     }
 
-    fun saveWeeklyDistance(weeklyDistance: String) {
-        stravaDashboardRepository.saveWeeklyDistance(weeklyDistance)
+    fun saveWeeklyStats(weeklyDistance: String, weeklyElevation: String) {
+        stravaDashboardRepository.saveWeeklyDistance(weeklyDistance, weeklyElevation)
     }
 }
 

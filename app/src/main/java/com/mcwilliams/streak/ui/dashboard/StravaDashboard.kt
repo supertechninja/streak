@@ -105,8 +105,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         }
     }
 
-    val saveWeeklyDistance = { weeklyDistance: String ->
-        viewModel.saveWeeklyDistance(weeklyDistance)
+    val saveWeeklyDistance = { weeklyDistance: String, weeklyElevation: String ->
+        viewModel.saveWeeklyStats(weeklyDistance, weeklyElevation)
     }
 
     Scaffold(topBar = {
@@ -185,7 +185,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     selectedUnitType = selectedUnitType,
                                     today = today!!,
                                     isLoading = last2MonthsActivities.isEmpty(),
-                                    saveWeeklyDistance = saveWeeklyDistance,
+                                    saveWeeklyStats = saveWeeklyDistance,
                                 )
                             },
                             widgetName = "Week Summary"

@@ -38,7 +38,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.mcwilliams.streak.ui.bottomnavigation.BottomNavEffect
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboard
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
@@ -47,7 +46,6 @@ import com.mcwilliams.streak.ui.goals.GoalsContent
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
 import com.mcwilliams.streak.ui.theme.Material3Theme
-import com.mcwilliams.streak.ui.theme.StreakTheme
 import com.mcwilliams.streak.ui.theme.primaryColorShade1
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -60,7 +58,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: StravaDashboardViewModel by viewModels()
 
-    @ExperimentalMaterial3Api
+    @OptIn(ExperimentalMaterial3Api::class)
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +70,7 @@ class MainActivity : ComponentActivity() {
                 NavigationDestination.StreakSettings,
             )
 
-            Material3Theme() {
+            Material3Theme(content = {
                 val isLoggedIn by viewModel.isLoggedIn.observeAsState()
                 var showLoginDialog by remember { mutableStateOf(false) }
                 var selectedTab by remember { mutableStateOf(0) }
@@ -103,6 +101,8 @@ class MainActivity : ComponentActivity() {
                                     composable(NavigationDestination.Goals.destination) {
                                         GoalsContent(
                                             viewModel = viewModel,
+                                            selectedActivityType = selectedActivityType,
+                                            selectedUnitType = selectedUnitType
                                         )
                                     }
                                     composable(NavigationDestination.StreakSettings.destination) {
@@ -271,7 +271,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
-            }
+            })
         }
     }
 }

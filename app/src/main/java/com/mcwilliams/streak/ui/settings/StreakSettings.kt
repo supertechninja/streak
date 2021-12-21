@@ -3,16 +3,7 @@ package com.mcwilliams.streak.ui.settings
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -74,8 +66,8 @@ fun StreakSettingsView(
         content = {
             Column(
                 modifier = Modifier
-//            .background(color = Color(0xFF01374D))
-                    .wrapContentHeight()
+                    .background(color = MaterialTheme.colorScheme.surface)
+                    .fillMaxHeight()
                     .verticalScroll(rememberScrollState())
             ) {
                 Row(
@@ -87,7 +79,8 @@ fun StreakSettingsView(
                     Column {
                         Text(
                             text = "Activities",
-                            style = MaterialTheme.typography.headlineMedium
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -113,7 +106,10 @@ fun StreakSettingsView(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(activityType.name, color = MaterialTheme.colorScheme.onSurface)
+                                    Text(
+                                        activityType.name,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
 
                                     selectedActivityType?.let {
                                         if (it.name == activityType.name) {
@@ -132,7 +128,8 @@ fun StreakSettingsView(
 
                         Text(
                             text = "Units",
-                            style = MaterialTheme.typography.headlineMedium
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -179,7 +176,7 @@ fun StreakSettingsView(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Metric", color = MaterialTheme.colorScheme.onPrimary)
+                                Text("Metric", color = MaterialTheme.colorScheme.onSurface)
 
                                 if (UnitType.Metric.name == selectedUnitType?.name) {
                                     Icon(
@@ -190,68 +187,7 @@ fun StreakSettingsView(
                                 }
                             }
                         }
-
-
                         Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "2021 Goal",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        val keyboardContext = LocalSoftwareKeyboardController.current
-                        var annualGoal by remember { mutableStateOf(TextFieldValue("")) }
-                        TextField(
-                            value = annualGoal,
-                            onValueChange = { annualGoal = it },
-                            placeholder = {
-                                Text(text = "750")
-                            },
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    keyboardContext?.hide()
-                                }
-                            ),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        val today = LocalDateTime.now()
-                        val endOfYear = LocalDateTime.parse("2022-01-01T00:00:00.0000")
-                        val remainingDays = Duration.between(today, endOfYear).toDays()
-
-                        val currentYearSummaryMetrics = viewModel.currentYearSummaryMetrics
-
-                        if (currentYearSummaryMetrics?.totalDistance!! > 0f && annualGoal.text.isNotEmpty()) {
-                            val miles = currentYearSummaryMetrics.totalDistance.getDistanceMiles(
-                                selectedUnitType!!,
-                            )
-
-                            val distanceRemaining =
-                                annualGoal.text.removeSurrounding("\"").toInt() - miles
-
-                            val distanceLabel = when (selectedUnitType) {
-                                UnitType.Imperial -> {
-                                    " mi"
-                                }
-                                UnitType.Metric -> {
-                                    " m"
-                                }
-                            }
-
-                            Text(
-                                "Miles Per Day: ${
-                                    (distanceRemaining / remainingDays).round(2)
-                                }$distanceLabel" + "\n${remainingDays / 7} / ${
-                                    (distanceRemaining / (remainingDays / 7)).round(2)
-                                }$distanceLabel"
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-
                     }
                 }
 
@@ -260,9 +196,19 @@ fun StreakSettingsView(
                         .padding(24.dp),
                     contentAlignment = Alignment.BottomCenter
                 ) {
-                    Button(onClick = { viewModel.logout() }, modifier = Modifier.fillMaxWidth()) {
-                        Text(text = "Log out", color = MaterialTheme.colorScheme.onPrimary)
+                    androidx.compose.material3.Button(
+                        onClick = { viewModel.logout() },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "Log out")
                     }
+//                    Button(
+//                        onClick = { viewModel.logout() },
+//                        modifier = Modifier.fillMaxWidth(),
+//                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.primaryContainer)
+//                    ) {
+//                        Text(text = "Log out", color = MaterialTheme.colorScheme.onPrimary)
+//                    }
                 }
             }
         }

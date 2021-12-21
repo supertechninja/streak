@@ -1,6 +1,5 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -18,11 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.glance.LocalContext
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
@@ -44,7 +41,7 @@ fun WeekSummaryWidget(
     selectedUnitType: UnitType?,
     today: Int,
     isLoading: Boolean,
-    saveWeeklyDistance: (String) -> Unit,
+    saveWeeklyStats: (String, String) -> Unit,
 ) {
     StreakWidgetCard(
         content = {
@@ -159,7 +156,7 @@ fun WeekSummaryWidget(
                         )
 
                         val weeklyDistance = totalDistance.getDistanceString(selectedUnitType!!)
-                        saveWeeklyDistance(weeklyDistance)
+                        val weeklyElevation = totalElevation.getElevationString(selectedUnitType!!)
 
                         DashboardStat(
                             image = R.drawable.ic_ruler,
@@ -175,9 +172,10 @@ fun WeekSummaryWidget(
 
                         DashboardStat(
                             image = R.drawable.ic_up_right,
-                            stat = totalElevation.getElevationString(selectedUnitType!!),
+                            stat = weeklyElevation,
                             isLoading = isLoading
                         )
+                        saveWeeklyStats(weeklyDistance, weeklyElevation)
 
                         DashboardStat(
                             image = R.drawable.ic_speed,

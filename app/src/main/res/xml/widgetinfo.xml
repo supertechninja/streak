@@ -8,4 +8,5 @@
     android:minResizeHeight="120dp"
     android:maxResizeWidth="240dp"
     android:maxResizeHeight="240dp"
+    android:updatePeriodMillis="3600000"
     android:resizeMode="horizontal|vertical" />

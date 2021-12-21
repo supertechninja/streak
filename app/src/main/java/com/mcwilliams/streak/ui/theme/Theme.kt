@@ -1,6 +1,7 @@
 package com.mcwilliams.streak.ui.theme
 
 import android.app.Activity
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -88,6 +89,27 @@ fun Material3Theme(
             (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
         }
+    }
+
+    androidx.compose.material3.MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography(),
+        content = content
+    )
+}
+
+@Composable
+fun Material3WidgetTheme(
+    // Dynamic color is available on Android 12+
+    dynamicColor: Boolean = true,
+    context: Context,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            dynamicLightColorScheme(context)
+        }
+        else -> LightColorScheme
     }
 
     androidx.compose.material3.MaterialTheme(
