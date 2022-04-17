@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard
 
+import android.util.Log
 import android.view.LayoutInflater
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -85,8 +86,11 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
     val error by viewModel.error.observeAsState()
 
     val context = LocalContext.current
-    val isRefreshing by viewModel.isRefreshing.observeAsState(true)
+    val isRefreshing by viewModel.isRefreshing.observeAsState(false)
 
+    var refreshState = rememberSwipeRefreshState(isRefreshing)
+    refreshState.isRefreshing = isRefreshing
+    Log.d("REFRESH", "StravaDashboard: $isRefreshing")
 
     val bottomSheetScaffoldState =
         rememberBottomSheetScaffoldState(bottomSheetState = BottomSheetState(initialValue = Collapsed))
@@ -142,7 +146,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                     .background(color = MaterialTheme.colorScheme.secondary)
             ) {
                 SwipeRefresh(
-                    state = rememberSwipeRefreshState(isRefreshing!!),
+                    state = refreshState,
                     onRefresh = {
                         viewModel.fetchData()
                     },
@@ -269,7 +273,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     CompareWidget(
                                         dashboardType = DashboardType.Year,
                                         selectedActivityType = selectedActivityType,
-                                        columnTitles = arrayOf("2021", "2020", "2019"),
+                                        columnTitles = arrayOf("2022", "2021", "2020"),
                                         currentMonthMetrics = currentYearSummaryMetrics,
                                         prevMetrics = lastYearSummaryMetrics,
                                         prevPrevMetrics = lastLastYearSummaryMetrics,

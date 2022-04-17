@@ -4,13 +4,16 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.work.*
 import com.mcwilliams.streak.R
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -40,7 +43,12 @@ class WeeklyStatsAppWidgetReceiver() : GlanceAppWidgetReceiver() {
                 }
 
             }
+
+            preferences.edit().putBoolean("widgetEnabled", true).apply()
+            Log.d("TAG", "onReceive: widgetEnabled")
         }
+
+//        scheduleRefreshWidget(context = context)
     }
 
     override fun onUpdate(
@@ -50,4 +58,26 @@ class WeeklyStatsAppWidgetReceiver() : GlanceAppWidgetReceiver() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
     }
+}
+
+private fun scheduleRefreshWidget(context: Context) {
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
+
+    val refreshWidgetWorker = PeriodicWorkRequestBuilder<RefreshWidgetWorker>(1, TimeUnit.HOURS)
+        .setConstraints(constraints).build()
+
+    val operation = WorkManager.getInstance(context)
+        .enqueueUniquePeriodicWork(
+            "refreshWidgetWorker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            refreshWidgetWorker
+        )
+        .result
+
+    operation.addListener(
+        { Log.d("TAG", "scheduleFetchEventData: WORK QUEUED") },
+        { it.run() }
+    )
 }

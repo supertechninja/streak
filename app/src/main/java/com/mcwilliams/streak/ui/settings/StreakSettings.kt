@@ -191,6 +191,11 @@ fun StreakSettingsView(
                     }
                 }
 
+                val widgetStatus by viewModel.widgetStatus
+                if(widgetStatus){
+                    Log.d("TAG", "StreakSettingsView: TRUE")
+                }
+
                 Box(
                     modifier = Modifier
                         .padding(24.dp),

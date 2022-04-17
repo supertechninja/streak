@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.settings
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,6 +9,8 @@ import com.mcwilliams.streak.inf.SessionRepository
 import com.mcwilliams.streak.strava.model.profile.AthleteStats
 import com.mcwilliams.streak.strava.model.profile.StravaAthlete
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,8 +35,16 @@ class SettingsViewModel @Inject constructor(
     private var _isLoggedIn = MutableLiveData(false)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
+    val widgetStatus = mutableStateOf(false)
+
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
+
+        viewModelScope.launch{
+            settingsRepo.widgetStatus.collect{
+                widgetStatus.value = it
+            }
+        }
     }
 
     fun loginAthlete(code: String) {

@@ -22,7 +22,7 @@
 
 -printconfiguration ~/tmp/full-r8-config.txt
 
--printusage /Users/jtmac/Documents/Android/streak/usage.txt
+-printusage /Users/joshuamcwilliams/Documents/Android/streak/usage.txt
 
 -assumenosideeffects class android.util.Log {
     public static boolean isLoggable(java.lang.String, int);

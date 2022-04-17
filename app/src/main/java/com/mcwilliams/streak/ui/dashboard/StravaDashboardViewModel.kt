@@ -1,6 +1,7 @@
 package com.mcwilliams.streak.ui.dashboard
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -26,6 +27,8 @@ class StravaDashboardViewModel @Inject constructor(
 ) : ViewModel() {
 
     var currentYearSummaryMetrics: SummaryMetrics? = null
+
+    val widgetStatus = mutableStateOf(false)
 
     private var _isLoggedIn: MutableLiveData<Boolean> = MutableLiveData(null)
     var isLoggedIn: LiveData<Boolean> = _isLoggedIn
@@ -106,6 +109,7 @@ class StravaDashboardViewModel @Inject constructor(
     var _currentWeek: MutableLiveData<MutableList<Pair<Int, Int>>> = MutableLiveData()
     var currentWeek: MutableLiveData<MutableList<Pair<Int, Int>>> = _currentWeek
 
+    val now = LocalDate.now()
 
     init {
         _isLoggedIn.postValue(sessionRepository.isLoggedIn())
@@ -115,8 +119,8 @@ class StravaDashboardViewModel @Inject constructor(
 
         currentMonthInt = LocalDate.now().monthValue
 
-        currentMonthEpoch = getEpoch(2021, currentMonthInt - 1, 1).first
-        currentMonth = getEpoch(2021, currentMonthInt - 1, 1).second
+        currentMonthEpoch = getEpoch(LocalDate.now().year, currentMonthInt - 1, 1).first
+        currentMonth = getEpoch(LocalDate.now().year, currentMonthInt - 1, 1).second
 
         previousMonthEpoch = getEpoch(2021, currentMonthInt - 2, 1).first
         previousMonth = getEpoch(2021, currentMonthInt - 2, 1).second
@@ -124,15 +128,12 @@ class StravaDashboardViewModel @Inject constructor(
         previousPreviousMonthEpoch = getEpoch(2021, currentMonthInt - 3, 1).first
         previousPreviousMonth = getEpoch(2021, currentMonthInt - 3, 1).second
 
-        val today = LocalDate.now()
-        currentYearEpoch = getEpoch(today.year, today.monthValue -1, today.dayOfMonth).first
+        currentYearEpoch = getEpoch(now.year, now.monthValue -1, now.dayOfMonth).first
+        currentYear = "2022"
+        prevYearEpoch = getEpoch(2021, 0, 1).first
         currentYear = "2021"
-        prevYearEpoch = getEpoch(2020, 0, 1).first
+        prevPrevYearEpoch = getEpoch(2020, 0, 1).first
         currentYear = "2020"
-        prevPrevYearEpoch = getEpoch(2019, 0, 1).first
-        currentYear = "2019"
-
-        _isRefreshing.postValue(true)
     }
 
     fun fetchData() {
@@ -160,35 +161,50 @@ class StravaDashboardViewModel @Inject constructor(
 
                 _currentMonthActivites.postValue(currentYearActivities.filter {
                     it.start_date.getDate().monthValue == currentMonthInt
-                            && it.start_date.getDate().year == 2021
+                            && it.start_date.getDate().year == 2022
                 })
 
                 _previousMonthActivities.postValue(currentYearActivities.filter {
-                    it.start_date.getDate().monthValue == currentMonthInt - 1
-                            && it.start_date.getDate().year == 2021
+                    if(currentMonthInt == 1){
+                        it.start_date.getDate().monthValue == 12
+                                && it.start_date.getDate().year == 2021
+                    } else {
+                        it.start_date.getDate().monthValue == currentMonthInt - 1
+                                && it.start_date.getDate().year == 2022
+                    }
                 })
 
                 _previousPreviousMonthActivities.postValue(currentYearActivities.filter {
-                    it.start_date.getDate().monthValue == currentMonthInt - 2
-                            && it.start_date.getDate().year == 2021
+                    if(currentMonthInt == 1){
+                        it.start_date.getDate().monthValue == 11
+                                && it.start_date.getDate().year == 2021
+                    } else {
+                        it.start_date.getDate().monthValue == currentMonthInt - 2
+                                && it.start_date.getDate().year == 2022
+                    }
                 })
 
                 _currentYearActivites.postValue(currentYearActivities.filter {
-                    it.start_date.getDate().year == 2021
+                    it.start_date.getDate().year == 2022
                 })
                 _prevYearActivites.postValue(currentYearActivities.filter {
-                    it.start_date.getDate().year == 2020
+                    it.start_date.getDate().year == 2021
                 })
                 _prevPrevYearActivites.postValue(currentYearActivities.filter {
-                    it.start_date.getDate().year == 2019
+                    it.start_date.getDate().year == 2020
                 })
+
+                _isRefreshing.postValue(false)
+
+                val combinedList = currentMonthActivites.value?.toMutableList()
+                combinedList?.plus(previousMonthActivities.value?.toMutableList())
+                _lastTwoMonthsActivities.postValue(combinedList)
+
+                stravaDashboardRepository.widgetStatus.collect{
+                    widgetStatus.value = it
+                }
+
             }
-
-            val combinedList = currentMonthActivites.value?.toMutableList()
-            combinedList?.plus(previousMonthActivities.value?.toMutableList())
-            _lastTwoMonthsActivities.postValue(combinedList)
-
-            _isRefreshing.postValue(false)
         }
     }
 

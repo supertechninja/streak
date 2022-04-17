@@ -11,9 +11,7 @@ import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDatabase
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDateTime
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
@@ -27,7 +25,7 @@ import javax.inject.Singleton
 class StravaDashboardRepository @Inject constructor(
     val context: Context,
     private val activitiesApi: ActivitiesApi
-) {
+): SharedPreferences.OnSharedPreferenceChangeListener {
 
     //Cache in memory the strava workouts
     private lateinit var listOfStravaWorkouts: List<ActivitiesItem>
@@ -39,9 +37,19 @@ class StravaDashboardRepository @Inject constructor(
 
     private var activitiesDao: ActivitiesDao?
 
+    private val _widgetStatus = MutableSharedFlow<Boolean>(replay = 0)
+    val widgetStatus: SharedFlow<Boolean> = _widgetStatus
+
+    fun refreshPrefs(): Boolean {
+        return preferences.getBoolean("widgetEnable", false)
+    }
+
     init {
         val db = ActivitiesDatabase.getDatabase(context)
         activitiesDao = db?.activitiesDao()
+
+        preferences.registerOnSharedPreferenceChangeListener(this)
+        _widgetStatus.tryEmit(refreshPrefs())
     }
 
     //    val store = StoreBuilder
@@ -61,8 +69,8 @@ class StravaDashboardRepository @Inject constructor(
 //        ).build()
 
     fun loadActivities(
-        before: Int?,
-        after: Int?,
+        before: Int? = null,
+        after: Int? = null,
     ): Flow<List<ActivitiesItem>> = flow {
         var allActivities: List<ActivitiesItem>?
 
@@ -222,6 +230,18 @@ class StravaDashboardRepository @Inject constructor(
     fun saveWeeklyDistance(weeklyDistance: String, weeklyElevation: String) {
         preferences.edit().putString("weeklyDistance", weeklyDistance).apply()
         preferences.edit().putString("weeklyElevation", weeklyElevation).apply()
+    }
+
+    override fun onSharedPreferenceChanged(preferences: SharedPreferences?, key: String?) {
+        if (key == "widgetEnabled") {
+            val widgetEnabled = preferences?.getBoolean("widgetEnable", false)
+            widgetEnabled?.let {
+                if (it) {
+                    Log.d("TAG", "onSharedPreferenceChanged: $it")
+                    _widgetStatus.tryEmit(refreshPrefs())
+                }
+            }
+        }
     }
 
     companion object {

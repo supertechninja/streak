@@ -9,7 +9,7 @@ buildscript {
 
     val compose_version by extra { "1.1.0-rc01" }
     val kotlin_version by extra { "1.6.0" }
-    val hilt_version by extra { "2.38.1" }
+    val hilt_version by extra { "2.41" }
 
     dependencies {
         // keeping this here to allow AS to automatically update

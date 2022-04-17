@@ -92,6 +92,11 @@ fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType
             surfaceColor = Color(0xFF008000)
             textColor = Color.White
         }
+    } else if (then.toDouble() == 0.0) {
+        percent = (1.0 - percent) * 100
+        percentString = "---"
+        surfaceColor = Color(0xFF990000)
+        textColor = Color.White
     } else if (then.toDouble() > now.toDouble()) {
         percent = (1.0 - percent) * 100
         percentString = "-${percent.toInt()}%"
@@ -123,7 +128,12 @@ fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType
 }
 
 @Composable
-fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modifier = Modifier, isLoading: Boolean = false) {
+fun DashboardStat(
+    @DrawableRes image: Int,
+    stat: String? = null,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(vertical = 4.dp)
@@ -137,12 +147,14 @@ fun DashboardStat(@DrawableRes image: Int, stat: String? = null, modifier: Modif
         stat?.let {
             Text(
                 text = it,
-                modifier = Modifier.padding(start = 8.dp).placeholder(
-                    visible = isLoading,
-                    highlight = PlaceholderHighlight.shimmer(),
-                    color = Color.LightGray,
-                    shape = RoundedCornerShape(20.dp)
-                ),
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .placeholder(
+                        visible = isLoading,
+                        highlight = PlaceholderHighlight.shimmer(),
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(20.dp)
+                    ),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -155,12 +167,14 @@ fun MonthTextStat(monthStat: String, monthColumnWidth: Dp, isLoading: Boolean = 
     Text(
         text = monthStat,
         color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.width(monthColumnWidth).placeholder(
-            visible = isLoading,
-            highlight = PlaceholderHighlight.shimmer(),
-            color = Color.LightGray,
-            shape = RoundedCornerShape(20.dp)
-        ),
+        modifier = Modifier
+            .width(monthColumnWidth)
+            .placeholder(
+                visible = isLoading,
+                highlight = PlaceholderHighlight.shimmer(),
+                color = Color.LightGray,
+                shape = RoundedCornerShape(20.dp)
+            ),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.bodySmall
     )
