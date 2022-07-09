@@ -8,7 +8,10 @@ import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.state.updateAppWidgetState
+import androidx.glance.appwidget.updateAll
 import androidx.work.*
 import com.mcwilliams.streak.R
 import kotlinx.coroutines.MainScope
@@ -51,14 +54,18 @@ class WeeklyStatsAppWidgetReceiver() : GlanceAppWidgetReceiver() {
 //        scheduleRefreshWidget(context = context)
     }
 
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray
-    ) {
-        super.onUpdate(context, appWidgetManager, appWidgetIds)
+    companion object {
+        suspend fun updateWidget(articleTitle: String, context: Context) {
+            val glanceId = GlanceAppWidgetManager(context).getGlanceIds(WeeklyStatsWidget::class.java).last()
+            updateAppWidgetState(context, glanceId) { prefs ->
+//                prefs[WeeklyStatsWidget.miles] = articleTitle
+            }
+            WeeklyStatsWidget().updateAll(context)
+        }
     }
 }
+
+
 
 private fun scheduleRefreshWidget(context: Context) {
     val constraints = Constraints.Builder()

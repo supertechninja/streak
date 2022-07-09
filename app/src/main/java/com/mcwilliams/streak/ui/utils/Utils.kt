@@ -1,13 +1,31 @@
 package com.mcwilliams.streak.ui.utils
 
-import android.util.Log
 import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.utils.Food.MacAndCheese
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.math.log
+
+sealed class Food(val foodName: String){
+    class MacAndCheese() : Food("Mac and Cheese")
+
+}
+
+
+fun doSomethign(foodName: Food){
+    var boolean : Boolean
+
+    when(foodName.foodName){
+
+    }
+}
+
+fun callIt(){
+    doSomethign(MacAndCheese())
+}
+
 
 fun String.getDate(): LocalDate {
     val dtf = DateTimeFormatter.ISO_DATE_TIME

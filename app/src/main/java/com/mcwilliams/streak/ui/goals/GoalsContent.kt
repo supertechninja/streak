@@ -57,6 +57,7 @@ fun GoalsContent(
         content = {
             Column(
                 modifier = Modifier
+                    .padding(it)
                     .background(color = MaterialTheme.colorScheme.surface)
                     .fillMaxHeight()
                     .fillMaxWidth()

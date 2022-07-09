@@ -142,6 +142,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         content = {
             Box(
                 modifier = Modifier
+                    .padding(it)
                     .fillMaxSize()
                     .background(color = MaterialTheme.colorScheme.secondary)
             ) {

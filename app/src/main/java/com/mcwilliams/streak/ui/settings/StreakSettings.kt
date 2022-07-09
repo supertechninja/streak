@@ -66,6 +66,7 @@ fun StreakSettingsView(
         content = {
             Column(
                 modifier = Modifier
+                    .padding(it)
                     .background(color = MaterialTheme.colorScheme.surface)
                     .fillMaxHeight()
                     .verticalScroll(rememberScrollState())
