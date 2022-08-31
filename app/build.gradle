@@ -16,12 +16,12 @@ android {
 //            keyPassword 'Streak2021'
 //        }
 //    }
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.mcwilliams.streak"
         minSdk 26
-        targetSdk 32
+        targetSdk 33
         versionCode 7
         versionName "1.1.0"
 
@@ -55,9 +55,9 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.core:core-ktx:1.8.0'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'com.google.android.material:material:1.6.1'
     implementation "com.google.android.material:compose-theme-adapter:1.1.5"
 
     implementation "androidx.compose.ui:ui:$compose_version"
@@ -67,7 +67,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.0"
     implementation "androidx.compose.runtime:runtime:$compose_version"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
 
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
     implementation 'androidx.activity:activity-compose:1.4.0'
@@ -77,13 +77,13 @@ dependencies {
     def store_version = "4.0.2-KT15"
     implementation "com.dropbox.mobile.store:store4:${store_version}"
 
-    implementation "androidx.glance:glance-appwidget:1.0.0-alpha03"
+    implementation "androidx.glance:glance-appwidget:1.0.0-alpha04"
 
     def room_version = "2.4.2"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
-    implementation "androidx.compose.material3:material3:1.0.0-alpha06"
+    implementation "androidx.compose.material3:material3:1.0.0-alpha16"
 
     implementation 'com.google.accompanist:accompanist-swiperefresh:0.21.0-beta'
     implementation "com.google.accompanist:accompanist-placeholder-material:0.21.0-beta"

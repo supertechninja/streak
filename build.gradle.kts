@@ -7,13 +7,13 @@ buildscript {
         maven(uri("https://plugins.gradle.org/m2/")) // For kotlinter-gradle
     }
 
-    val compose_version by extra { "1.2.0-rc03" }
+    val compose_version by extra { "1.2.0" }
     val kotlin_version by extra { "1.7.0" }
     val hilt_version by extra { "2.42" }
 
     dependencies {
         // keeping this here to allow AS to automatically update
-        classpath("com.android.tools.build:gradle:7.2.0")
+        classpath("com.android.tools.build:gradle:7.2.2")
         classpath ("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
         classpath ("com.google.dagger:hilt-android-gradle-plugin:$hilt_version")
         classpath ("com.google.gms:google-services:4.3.8")

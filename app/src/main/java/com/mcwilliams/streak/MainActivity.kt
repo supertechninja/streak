@@ -15,7 +15,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -28,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -42,7 +40,6 @@ import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboard
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.goals.GoalsContent
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
 import com.mcwilliams.streak.ui.theme.Material3Theme
@@ -65,19 +62,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val items = listOf(
-                NavigationDestination.StravaDashboard,
-                NavigationDestination.StreakSettings,
-            )
 
             Material3Theme(content = {
                 val isLoggedIn by viewModel.isLoggedIn.observeAsState()
                 var showLoginDialog by remember { mutableStateOf(false) }
                 var selectedTab by remember { mutableStateOf(0) }
-                var updateSelectedTab = { tab: Int ->
-                    selectedTab = tab
-                }
-
                 val selectedActivityType by viewModel.activityType.observeAsState(ActivityType.Run)
                 val selectedUnitType by viewModel.unitType.observeAsState(UnitType.Imperial)
 
@@ -86,7 +75,6 @@ class MainActivity : ComponentActivity() {
                         androidx.compose.material3.Scaffold(
                             content = { paddingValues ->
                                 val navBackStackEntry by navController.currentBackStackEntryAsState()
-                                val currentDestination = navBackStackEntry?.destination
 
                                 NavHost(
                                     navController,
@@ -96,13 +84,6 @@ class MainActivity : ComponentActivity() {
                                         StravaDashboard(
                                             viewModel = viewModel,
                                             paddingValues = paddingValues
-                                        )
-                                    }
-                                    composable(NavigationDestination.Goals.destination) {
-                                        GoalsContent(
-                                            viewModel = viewModel,
-                                            selectedActivityType = selectedActivityType,
-                                            selectedUnitType = selectedUnitType
                                         )
                                     }
                                     composable(NavigationDestination.StreakSettings.destination) {
@@ -115,7 +96,11 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             bottomBar = {
-                                NavigationBar() {
+                                NavigationBar(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                ) {
+                                    val tintColor = MaterialTheme.colorScheme.onSurface
+
                                     NavigationBarItem(
                                         selected = selectedTab == 0,
                                         onClick = {
@@ -138,40 +123,18 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 imageVector = Icons.Default.Home,
                                                 contentDescription = "",
-                                                tint = if(selectedTab == 0) Color.White else Color.White.copy(.7f)
+                                                tint = if (selectedTab == 0) tintColor else tintColor.copy(
+                                                    .7f
+                                                )
                                             )
                                         },
                                         label = {
-                                            Text("Dashboard", color = if(selectedTab == 0) Color.White else Color.White.copy(.7f))
-                                        }
-                                    )
-                                    NavigationBarItem(
-                                        selected = selectedTab == 1,
-                                        onClick = {
-                                            selectedTab = 1
-                                            navController.navigate(NavigationDestination.Goals.destination) {
-                                                // Pop up to the start destination of the graph to
-                                                // avoid building up a large stack of destinations
-                                                // on the back stack as users select items
-                                                popUpTo(navController.graph.findStartDestination().id) {
-                                                    saveState = true
-                                                }
-                                                // Avoid multiple copies of the same destination when
-                                                // reselecting the same item
-                                                launchSingleTop = true
-                                                // Restore state when reselecting a previously selected item
-                                                restoreState = true
-                                            }
-                                        },
-                                        icon = {
-                                            Icon(
-                                                imageVector = Icons.Default.Warning,
-                                                contentDescription = "",
-                                                tint = if(selectedTab == 1) Color.White else Color.White.copy(.7f)
+                                            Text(
+                                                "Dashboard",
+                                                color = if (selectedTab == 0) tintColor else tintColor.copy(
+                                                    .7f
+                                                )
                                             )
-                                        },
-                                        label = {
-                                            Text("Goals", color =if(selectedTab == 1) Color.White else Color.White.copy(.7f))
                                         }
                                     )
                                     NavigationBarItem(
@@ -196,11 +159,18 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 imageVector = Icons.Default.Settings,
                                                 contentDescription = "",
-                                                tint = if(selectedTab == 2) Color.White else Color.White.copy(.7f)
+                                                tint = if (selectedTab == 2) tintColor else tintColor.copy(
+                                                    .7f
+                                                )
                                             )
                                         },
                                         label = {
-                                            Text("Settings", color = if(selectedTab == 2) Color.White else Color.White.copy(.7f))
+                                            Text(
+                                                "Settings",
+                                                color = if (selectedTab == 2) tintColor else tintColor.copy(
+                                                    .7f
+                                                )
+                                            )
                                         }
                                     )
                                 }
@@ -284,8 +254,6 @@ sealed class NavigationDestination(
 ) {
     object StravaDashboard :
         NavigationDestination("stravaDashboard", "Dashboard", R.drawable.ic_dash)
-
-    object Goals : NavigationDestination("goals", "Goals", R.drawable.ic_clock_time)
 
     object StreakSettings :
         NavigationDestination("streakSettings", "Settings", R.drawable.ic_settings)
