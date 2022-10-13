@@ -29,12 +29,27 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        manifestPlaceholders = [redirectSchemeName: "streakapp.com", redirectHostName: "authorize"]
     }
 
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//
+//            optimizeReleaseResources {
+//                keepRules {
+//                    ignoreExternalDependencies("androidx.glance:glance-appwidget")
+//                }
+//            }
+//
+//            optimization {
+//                keepRules {
+////                    ignoreExternalDependencies("androidx.glance:glance-appwidget")
+//                }
+//            }
+
 //            signingConfig signingConfigs.release
         }
     }
@@ -59,6 +74,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.6.1'
     implementation "com.google.android.material:compose-theme-adapter:1.1.5"
+    implementation 'androidx.browser:browser:1.2.0'
 
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
@@ -74,6 +90,8 @@ dependencies {
 
     implementation "androidx.work:work-runtime-ktx:2.7.1"
 
+    implementation "com.google.accompanist:accompanist-webview:0.26.5-rc"
+
     def store_version = "4.0.2-KT15"
     implementation "com.dropbox.mobile.store:store4:${store_version}"
 
@@ -83,7 +101,9 @@ dependencies {
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
-    implementation "androidx.compose.material3:material3:1.0.0-alpha16"
+    implementation "com.spotify.android:auth:2.0.2"
+
+    implementation "androidx.compose.material3:material3:1.0.0-rc01"
 
     implementation 'com.google.accompanist:accompanist-swiperefresh:0.21.0-beta'
     implementation "com.google.accompanist:accompanist-placeholder-material:0.21.0-beta"

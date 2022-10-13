@@ -1,7 +1,10 @@
 package com.mcwilliams.streak
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -44,7 +47,11 @@ import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
 import com.mcwilliams.streak.ui.theme.Material3Theme
 import com.mcwilliams.streak.ui.theme.primaryColorShade1
+import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationRequest
+import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
@@ -62,6 +69,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
+            var showSpotifyLoginDialog by remember { mutableStateOf(false) }
 
             Material3Theme(content = {
                 val isLoggedIn by viewModel.isLoggedIn.observeAsState()
@@ -90,7 +98,7 @@ class MainActivity : ComponentActivity() {
                                         StreakSettingsView(
                                             viewModel = viewModel,
                                             selectedActivityType = selectedActivityType,
-                                            selectedUnitType = selectedUnitType
+                                            selectedUnitType = selectedUnitType,
                                         )
                                     }
                                 }
@@ -237,12 +245,91 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                 }
+
                             }
                         )
                     }
                 }
             })
         }
+    }
+
+    fun authSpotify() {
+        AuthorizationClient.openLoginActivity(
+            this,
+            AUTH_TOKEN_REQUEST_CODE,
+            getAuthenticationRequest(AuthorizationResponse.Type.TOKEN)
+        )
+//        AuthorizationClient.openLoginInBrowser(this, getAuthenticationRequest(AuthorizationResponse.Type.CODE))
+    }
+
+    private fun getAuthenticationRequest(type: AuthorizationResponse.Type): AuthorizationRequest? {
+        return AuthorizationRequest.Builder(CLIENT_ID, type, getRedirectUri().toString())
+            .setScopes(arrayOf("user-read-recently-played"))
+            .build()
+    }
+
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        val response = AuthorizationClient.getResponse(resultCode, data)
+//        if (AUTH_TOKEN_REQUEST_CODE === requestCode) {
+//            Log.d("TAG", "Token: onActivityResult: ${response.accessToken}")
+//
+//            viewModel.storeSpotifyAccessToken(response.accessToken)
+////            mAccessToken = response.accessToken
+////            updateTokenView()
+//        } else if (AUTH_CODE_REQUEST_CODE === requestCode) {
+//            Log.d("TAG", "Code: onActivityResult: ${response.code}")
+////            mAccessCode = response.code
+////            updateCodeView()
+//        }
+//    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent);
+
+        val uri = intent.data
+
+        Log.d("TAG", "onNewIntent: $uri")
+        if (uri != null) {
+            val response = AuthorizationResponse.fromUri(uri)
+
+            Log.d("TAG", "onNewIntent: $response")
+            when (response.type) {
+                // Response was successful and contains auth token
+                AuthorizationResponse.Type.TOKEN -> {
+
+                }
+                // Handle successful response
+
+                // Auth flow returned an error
+                AuthorizationResponse.Type.ERROR -> {
+
+                }
+                // Handle error response
+                AuthorizationResponse.Type.CODE -> {
+                    Log.d("TAG", "onNewIntent: ${response.code}")
+                }
+                AuthorizationResponse.Type.EMPTY -> {
+
+                }
+                AuthorizationResponse.Type.UNKNOWN -> {
+
+                }
+            }
+        }
+    }
+
+
+    private fun getRedirectUri(): Uri? {
+        return Uri.parse(REDIRECT_URI)
+    }
+
+    companion object {
+        const val CLIENT_ID = "0fb6298f96e24dc8a4b80a1109522ef9"
+        const val REDIRECT_URI = "streak://auth"
+        const val AUTH_TOKEN_REQUEST_CODE = 0x10
+        const val AUTH_CODE_REQUEST_CODE = 0x11
     }
 }
 

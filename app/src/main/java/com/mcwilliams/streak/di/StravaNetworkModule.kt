@@ -4,7 +4,7 @@ import android.content.Context
 import com.mcwilliams.streak.BuildConfig
 import com.mcwilliams.streak.inf.AuthorizationInterceptor
 import com.mcwilliams.streak.inf.Session
-import com.mcwilliams.streak.inf.SessionRepository
+import com.mcwilliams.streak.inf.StravaSessionRepository
 import com.mcwilliams.streak.inf.TokenAuthenticator
 import com.mcwilliams.streak.strava.api.ActivitiesApi
 import com.mcwilliams.streak.strava.api.AthleteApi
@@ -52,8 +52,8 @@ object StravaNetworkModule {
     fun providesSessionRepository(
         @ApplicationContext context: Context,
         session: Session
-    ): SessionRepository =
-        SessionRepository(context, session)
+    ): StravaSessionRepository =
+        StravaSessionRepository(context, session)
 
     /**
      * a strava api makes the calls to the api and attaches the token to the header with an okhttp interceptor from the session. Session should have a

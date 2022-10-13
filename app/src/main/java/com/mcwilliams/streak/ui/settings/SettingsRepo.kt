@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.SharedFlow
 interface SettingsRepo {
     val widgetStatus: SharedFlow<Boolean>
 
-    suspend fun authAthlete(code: String): Athlete?
+    suspend fun authAthlete(code: String)
 
     suspend fun fetchAthlete(): StravaAthlete?
 

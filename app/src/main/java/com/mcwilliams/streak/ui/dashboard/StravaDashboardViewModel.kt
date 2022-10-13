@@ -6,13 +6,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mcwilliams.streak.inf.SessionRepository
+import com.mcwilliams.streak.inf.StravaSessionRepository
+import com.mcwilliams.streak.inf.spotify.SpotifyApis
+import com.mcwilliams.streak.inf.spotify.SpotifySessionApi
+import com.mcwilliams.streak.inf.spotify.SpotifySessionRepository
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.settings.SettingsRepo
 import com.mcwilliams.streak.ui.utils.getDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.time.*
@@ -22,8 +24,10 @@ import javax.inject.Inject
 @HiltViewModel
 class StravaDashboardViewModel @Inject constructor(
     private val stravaDashboardRepository: StravaDashboardRepository,
-    private val sessionRepository: SessionRepository,
+    private val stravaSessionRepository: StravaSessionRepository,
     private val settingsRepo: SettingsRepo,
+    private val spotifySessionRepository: SpotifySessionRepository,
+    private val spotifyApis: SpotifyApis
 ) : ViewModel() {
 
     var currentYearSummaryMetrics: SummaryMetrics? = null
@@ -112,7 +116,7 @@ class StravaDashboardViewModel @Inject constructor(
     val now = LocalDate.now()
 
     init {
-        _isLoggedIn.postValue(sessionRepository.isLoggedIn())
+        _isLoggedIn.postValue(stravaSessionRepository.isLoggedIn())
         _today.postValue(LocalDate.now().dayOfMonth)
 
         monthBreakDown()
@@ -128,7 +132,7 @@ class StravaDashboardViewModel @Inject constructor(
         previousPreviousMonthEpoch = getEpoch(2021, currentMonthInt - 3, 1).first
         previousPreviousMonth = getEpoch(2021, currentMonthInt - 3, 1).second
 
-        currentYearEpoch = getEpoch(now.year, now.monthValue -1, now.dayOfMonth).first
+        currentYearEpoch = getEpoch(now.year, now.monthValue - 1, now.dayOfMonth).first
         currentYear = "2022"
         prevYearEpoch = getEpoch(2021, 0, 1).first
         currentYear = "2021"
@@ -165,7 +169,7 @@ class StravaDashboardViewModel @Inject constructor(
                 })
 
                 _previousMonthActivities.postValue(currentYearActivities.filter {
-                    if(currentMonthInt == 1){
+                    if (currentMonthInt == 1) {
                         it.start_date.getDate().monthValue == 12
                                 && it.start_date.getDate().year == 2021
                     } else {
@@ -175,7 +179,7 @@ class StravaDashboardViewModel @Inject constructor(
                 })
 
                 _previousPreviousMonthActivities.postValue(currentYearActivities.filter {
-                    if(currentMonthInt == 1){
+                    if (currentMonthInt == 1) {
                         it.start_date.getDate().monthValue == 11
                                 && it.start_date.getDate().year == 2021
                     } else {
@@ -200,7 +204,7 @@ class StravaDashboardViewModel @Inject constructor(
                 combinedList?.plus(previousMonthActivities.value?.toMutableList())
                 _lastTwoMonthsActivities.postValue(combinedList)
 
-                stravaDashboardRepository.widgetStatus.collect{
+                stravaDashboardRepository.widgetStatus.collect {
                     widgetStatus.value = it
                 }
 
@@ -211,12 +215,12 @@ class StravaDashboardViewModel @Inject constructor(
     fun loginAthlete(code: String) {
         viewModelScope.launch {
             settingsRepo.authAthlete(code)
-            _isLoggedIn.postValue(sessionRepository.isLoggedIn())
+            _isLoggedIn.postValue(stravaSessionRepository.isLoggedIn())
         }
     }
 
     fun logout() {
-        sessionRepository.logOff()
+        stravaSessionRepository.logOff()
         _isLoggedIn.postValue(false)
     }
 
@@ -311,6 +315,20 @@ class StravaDashboardViewModel @Inject constructor(
     fun saveWeeklyStats(weeklyDistance: String, weeklyElevation: String) {
         stravaDashboardRepository.saveWeeklyDistance(weeklyDistance, weeklyElevation)
     }
+
+    fun saveCode(spotifyCode: String?) {
+        spotifyCode?.let {
+            viewModelScope.launch {
+                val response = spotifySessionRepository.getFirstTokens(it)
+
+                //TODO Save response
+
+                val recentlyPlayedSongs = spotifyApis.getRecentlyPlayedSongs()
+                Log.d("TAG", "saveCode: $recentlyPlayedSongs")
+
+            }
+        }
+    }
 }
 
 fun LocalDateTime.toMillis(zone: ZoneId = ZoneId.systemDefault()) =
@@ -323,6 +341,6 @@ fun getEpoch(year: Int, month: Int, day: Int, hour: Int = 0, minute: Int = 0): P
     val calendar: Calendar = Calendar.getInstance()
     calendar.set(year, month, day, hour, minute)
     return calendar.toInstant().epochSecond.toInt() to
-        calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())
+            calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())
 }
 

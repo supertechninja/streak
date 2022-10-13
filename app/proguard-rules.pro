@@ -30,3 +30,7 @@
     public static int d(...);
     public static int i(...);
 }
+
+-keepclassmembers class * extends androidx.glance.appwidget.protobuf.GeneratedMessageLite {
+  <fields>;
+}

@@ -76,5 +76,4 @@ class StravaLogin(private val context: Context?) {
             return StravaLogin(context)
         }
     }
-
 }

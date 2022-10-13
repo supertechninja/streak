@@ -7,7 +7,7 @@ buildscript {
         maven(uri("https://plugins.gradle.org/m2/")) // For kotlinter-gradle
     }
 
-    val compose_version by extra { "1.2.0" }
+    val compose_version by extra { "1.3.0-rc01" }
     val kotlin_version by extra { "1.7.0" }
     val hilt_version by extra { "2.42" }
 
