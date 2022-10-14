@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mcwilliams.streak.inf.StravaSessionRepository
 import com.mcwilliams.streak.inf.spotify.SpotifyApis
-import com.mcwilliams.streak.inf.spotify.SpotifySessionApi
 import com.mcwilliams.streak.inf.spotify.SpotifySessionRepository
+import com.mcwilliams.streak.inf.spotify.model.RecentlyPlayedSongs
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.settings.SettingsRepo
 import com.mcwilliams.streak.ui.utils.getDate
@@ -34,8 +34,8 @@ class StravaDashboardViewModel @Inject constructor(
 
     val widgetStatus = mutableStateOf(false)
 
-    private var _isLoggedIn: MutableLiveData<Boolean> = MutableLiveData(null)
-    var isLoggedIn: LiveData<Boolean> = _isLoggedIn
+    private var _isLoggedInStrava: MutableLiveData<Boolean> = MutableLiveData(null)
+    var isLoggedInStrava: LiveData<Boolean> = _isLoggedInStrava
 
     private var _isRefreshing: MutableLiveData<Boolean> = MutableLiveData(true)
     var isRefreshing: LiveData<Boolean> = _isRefreshing
@@ -116,7 +116,8 @@ class StravaDashboardViewModel @Inject constructor(
     val now = LocalDate.now()
 
     init {
-        _isLoggedIn.postValue(stravaSessionRepository.isLoggedIn())
+        _isLoggedInStrava.postValue(stravaSessionRepository.isLoggedIn())
+
         _today.postValue(LocalDate.now().dayOfMonth)
 
         monthBreakDown()
@@ -215,13 +216,13 @@ class StravaDashboardViewModel @Inject constructor(
     fun loginAthlete(code: String) {
         viewModelScope.launch {
             settingsRepo.authAthlete(code)
-            _isLoggedIn.postValue(stravaSessionRepository.isLoggedIn())
+            _isLoggedInStrava.postValue(stravaSessionRepository.isLoggedIn())
         }
     }
 
     fun logout() {
         stravaSessionRepository.logOff()
-        _isLoggedIn.postValue(false)
+        _isLoggedInStrava.postValue(false)
     }
 
     fun updateSelectedActivity(activityType: ActivityType) {
@@ -314,20 +315,6 @@ class StravaDashboardViewModel @Inject constructor(
 
     fun saveWeeklyStats(weeklyDistance: String, weeklyElevation: String) {
         stravaDashboardRepository.saveWeeklyDistance(weeklyDistance, weeklyElevation)
-    }
-
-    fun saveCode(spotifyCode: String?) {
-        spotifyCode?.let {
-            viewModelScope.launch {
-                val response = spotifySessionRepository.getFirstTokens(it)
-
-                //TODO Save response
-
-                val recentlyPlayedSongs = spotifyApis.getRecentlyPlayedSongs()
-                Log.d("TAG", "saveCode: $recentlyPlayedSongs")
-
-            }
-        }
     }
 }
 

@@ -2,9 +2,12 @@ package com.mcwilliams.streak.inf.spotify
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.annotation.Keep
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.inf.ISessionRepository
+import com.mcwilliams.streak.inf.StravaSessionRepository
+import com.mcwilliams.streak.inf.model.GrantType
 import com.mcwilliams.streak.inf.model.TokenResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,7 +41,16 @@ class SpotifySessionRepository @Inject constructor(
     }
 
     override suspend fun refreshToken(): String {
-        return ""
+        return withContext(context = Dispatchers.IO) {
+            Log.d("TAG", "refreshToken: refreshing token")
+            val newTokens = spotifySessionApi.getTokenUsingRefresh(
+                refreshToken = getRefreshToken()
+            )
+
+            setAccessToken(newTokens.access_token)
+//            setRefreshToken(newTokens.refresh_token)
+            newTokens.access_token
+        }
     }
 
     override fun setAccessToken(accessToken: String) {
@@ -73,6 +85,14 @@ class SpotifySessionRepository @Inject constructor(
     override fun getExpiration(): Int {
         return preferences.getInt(EXPIRATION, 0)
     }
+
+    fun isLoggedIn (): Boolean {
+        val doesHaveToken = !preferences.getString(ACCESS_TOKEN, "").isNullOrEmpty()
+        val isTokenValid = getExpiration() < System.currentTimeMillis()
+
+        return doesHaveToken && isTokenValid
+    }
+
 
     @Keep
     companion object {

@@ -89,6 +89,8 @@ dependencies {
 
     implementation "androidx.work:work-runtime-ktx:2.7.1"
 
+    implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
+
     implementation "com.google.accompanist:accompanist-webview:0.26.5-rc"
 
     def store_version = "4.0.2-KT15"

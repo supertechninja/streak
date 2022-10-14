@@ -63,10 +63,6 @@ fun StreakSettingsView(
             }
         },
         content = {
-            var showSpotifyAuthentication by remember { mutableStateOf(false) }
-
-            val context = LocalContext.current
-
             Box() {
 
                 Column(
@@ -195,11 +191,6 @@ fun StreakSettingsView(
                             }
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button(onClick = {
-                                showSpotifyAuthentication = true
-                            }) {
-                                Text(text = "Link Spotify")
-                            }
                         }
                     }
 
@@ -230,43 +221,7 @@ fun StreakSettingsView(
                     }
                 }
 
-                if (showSpotifyAuthentication) {
-                    Dialog(onDismissRequest = {
-                        showSpotifyAuthentication = !showSpotifyAuthentication
-                    }) {
-                        val webViewState  = rememberWebViewState(loadLoginUrl(context))
-
-                        val client = object : AccompanistWebViewClient(){
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView?,
-                                request: WebResourceRequest?
-                            ): Boolean {
-                                return if (request?.url.toString().startsWith("https://www.streakapp.com/authorize/")) {
-                                    val code = request?.url?.getQueryParameter("code")
-                                    viewModel.saveCode(request?.url?.getQueryParameter("code"))
-                                    Log.d("TAG", "shouldOverrideUrlLoading: $code")
-                                    showSpotifyAuthentication = false
-                                    true
-                                } else {
-                                    false
-                                }
-                            }
-                        }
-
-                        WebView(
-                            state = webViewState,
-                            onCreated = { it.settings.javaScriptEnabled = true },
-                            client = client
-                        )
-                    }
-                }
             }
         }
     )
 }
-
-private fun loadLoginUrl(context: Context): String = SpotifyAuthorize()
-    .withClientID("0fb6298f96e24dc8a4b80a1109522ef9")
-    .withRedirectURI("https://www.streakapp.com/authorize/")
-    .withAccessScope("user-read-recently-played")
-    .makeLoginURL()

@@ -1,6 +1,7 @@
 package com.mcwilliams.streak.inf.spotify
 
 import androidx.annotation.Keep
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException
@@ -11,11 +12,11 @@ class SpotifyTokenInterceptor @Inject constructor(private val spotifySessionRepo
     Interceptor {
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
-//        if (stravaSessionRepository.getExpiration() > System.currentTimeMillis()) {
-//            runBlocking {
-//                stravaSessionRepository.refreshToken()
-//            }
-//        }
+        if (spotifySessionRepository.getExpiration() > System.currentTimeMillis()) {
+            runBlocking {
+                spotifySessionRepository.refreshToken()
+            }
+        }
 
         val token = spotifySessionRepository.getAccessToken()
         val original = chain.request()

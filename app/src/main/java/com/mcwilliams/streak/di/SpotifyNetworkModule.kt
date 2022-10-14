@@ -7,6 +7,7 @@ import com.mcwilliams.streak.inf.spotify.SpotifyApis
 import com.mcwilliams.streak.inf.spotify.SpotifyCodeAuthInterceptor
 import com.mcwilliams.streak.inf.spotify.SpotifySessionApi
 import com.mcwilliams.streak.inf.spotify.SpotifySessionRepository
+import com.mcwilliams.streak.inf.spotify.SpotifyTokenAuthenticator
 import com.mcwilliams.streak.inf.spotify.SpotifyTokenInterceptor
 import dagger.Module
 import dagger.Provides
@@ -52,9 +53,11 @@ object SpotifyNetworkModule {
     @JvmStatic
     internal fun provideSpotifyApiInterface(
         okHttpClient: OkHttpClient.Builder,
-        spotifyTokenInterceptor: SpotifyTokenInterceptor
+        spotifyTokenInterceptor: SpotifyTokenInterceptor,
+        spotifyTokenAuthenticator: SpotifyTokenAuthenticator
     ): Retrofit {
         okHttpClient.addInterceptor(spotifyTokenInterceptor)
+        okHttpClient.authenticator(spotifyTokenAuthenticator)
 
         return Retrofit.Builder()
             .baseUrl("https://api.spotify.com")
