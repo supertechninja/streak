@@ -30,7 +30,6 @@ android {
             useSupportLibrary true
         }
 
-        manifestPlaceholders = [redirectSchemeName: "streakapp.com", redirectHostName: "authorize"]
     }
 
     buildTypes {
@@ -100,8 +99,6 @@ dependencies {
     def room_version = "2.4.2"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
-
-    implementation "com.spotify.android:auth:2.0.2"
 
     implementation "androidx.compose.material3:material3:1.0.0-rc01"
 

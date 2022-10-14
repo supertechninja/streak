@@ -197,37 +197,6 @@ fun StreakSettingsView(
 
                             Button(onClick = {
                                 showSpotifyAuthentication = true
-//                                openTab(context, loadLoginUrl(context))
-
-
-//                                val connection: CustomTabsServiceConnection =
-//                                    object : CustomTabsServiceConnection() {
-//                                        override fun onCustomTabsServiceConnected(
-//                                            name: ComponentName,
-//                                            client: CustomTabsClient
-//                                        ) {
-//                                            val builder = CustomTabsIntent.Builder()
-//                                            val intent = builder.build()
-//                                            client.warmup(0L) // This prevents backgrounding after redirection
-//                                            intent.launchUrl(context, Uri.parse(loadLoginUrl(context)))
-//                                        }
-//
-//                                        override fun onServiceDisconnected(name: ComponentName?) {
-//
-//                                        }
-//                                    }
-//
-//                                CustomTabsClient.bindCustomTabsService(
-//                                    context,
-//                                    "com.android.chrome",
-//                                    connection
-//                                )
-
-//                                val customTabsIntent = CustomTabsIntent.Builder().build()
-//                                val packageName: String = context.packageName
-//                                customTabsIntent.intent.setPackage(packageName)
-//                                val theLocationUri = Uri.parse()
-//                                customTabsIntent.launchUrl(context, theLocationUri)
                             }) {
                                 Text(text = "Link Spotify")
                             }
@@ -262,7 +231,6 @@ fun StreakSettingsView(
                 }
 
                 if (showSpotifyAuthentication) {
-
                     Dialog(onDismissRequest = {
                         showSpotifyAuthentication = !showSpotifyAuthentication
                     }) {

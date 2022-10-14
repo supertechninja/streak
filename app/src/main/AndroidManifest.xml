@@ -36,12 +36,6 @@
                 android:resource="@xml/widgetinfo" />
         </receiver>
 
-<!--        <activity-->
-<!--            android:name="com.spotify.sdk.android.auth.LoginActivity"-->
-<!--            android:theme="@android:style/Theme.Translucent.NoTitleBar">-->
-
-<!--        </activity>-->
-
         <activity
             android:name=".MainActivity"
             android:exported="true"
