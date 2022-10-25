@@ -7,6 +7,4 @@ data class Items(
 
     @SerializedName("track") var track: Track? = Track(),
     @SerializedName("played_at") var playedAt: String? = null,
-    @SerializedName("context") var context: String? = null
-
 )

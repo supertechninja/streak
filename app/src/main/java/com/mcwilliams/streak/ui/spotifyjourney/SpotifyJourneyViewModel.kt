@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.mcwilliams.streak.inf.spotify.SpotifyApis
 import com.mcwilliams.streak.inf.spotify.SpotifySessionRepository
 import com.mcwilliams.streak.inf.spotify.model.RecentlyPlayedSongs
+import com.mcwilliams.streak.inf.spotify.model.Track
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,14 +16,14 @@ import javax.inject.Inject
 @HiltViewModel
 class SpotifyJourneyViewModel @Inject constructor(
     private val spotifySessionRepository: SpotifySessionRepository,
-    private val spotifyApis: SpotifyApis
+    private val spotifyJourneyRepository: SpotifyJourneyRepository
 ) : ViewModel() {
 
     private var _isLoggedInSpotify: MutableLiveData<Boolean> = MutableLiveData(null)
     var isLoggedInSpotify: LiveData<Boolean> = _isLoggedInSpotify
 
-    private var _recentlyPlayedSongs: MutableLiveData<RecentlyPlayedSongs> = MutableLiveData(null)
-    var recentlyPlayedSongs: LiveData<RecentlyPlayedSongs> = _recentlyPlayedSongs
+    private var _recentlyPlayedSongs: MutableLiveData<MutableList<Pair<ActivitiesItem, MutableList<Track>>>> = MutableLiveData(null)
+    var recentlyPlayedSongs: LiveData<MutableList<Pair<ActivitiesItem, MutableList<Track>>>> = _recentlyPlayedSongs
 
     init {
         _isLoggedInSpotify.postValue(spotifySessionRepository.isLoggedIn())
@@ -37,12 +39,9 @@ class SpotifyJourneyViewModel @Inject constructor(
         }
     }
 
-    fun getRecentlyPlayedSongs(){
+    fun getRecentlyPlayedSongs() {
         viewModelScope.launch {
-            val recentlyPlayedSongs = spotifyApis.getRecentlyPlayedSongs()
-            if(recentlyPlayedSongs.isSuccessful){
-                _recentlyPlayedSongs.postValue(recentlyPlayedSongs.body())
-            }
+            _recentlyPlayedSongs.postValue(spotifyJourneyRepository.getRecentlyPlayed())
         }
     }
 }

@@ -9,6 +9,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 @Keep
 interface SpotifySessionApi {
@@ -18,19 +19,21 @@ interface SpotifySessionApi {
         @Field("code") code: String?,
         @Field("grant_type") grantType: String,
         @Field("redirect_uri") redirectUri: String
-    ) : TokenResponse
+    ): TokenResponse
 
     @POST("/api/token")
     @FormUrlEncoded
     suspend fun getTokenUsingRefresh(
         @Field("refresh_token") refreshToken: String?,
         @Field("grant_type") grantType: String = "refresh_token",
-    ) : TokenResponse
+    ): TokenResponse
 }
 
 
 @Keep
 interface SpotifyApis {
     @GET("/v1/me/player/recently-played")
-    suspend fun getRecentlyPlayedSongs() : Response<RecentlyPlayedSongs>
+    suspend fun getRecentlyPlayedSongs(
+        @Query("before") before: Long,
+    ): Response<RecentlyPlayedSongs>
 }

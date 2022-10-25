@@ -75,8 +75,23 @@ fun SpotifyJourneyContent() {
 
                     recentlyPlayedSongs?.let {
                         LazyColumn() {
-                            items(it.items) {
-                                Text(it.track?.name.orEmpty())
+                            items(it) {
+                                val activity = it.first
+
+                                val trackList = it.second
+
+                                Text(
+                                    "Activity: ${activity.type}",
+                                    style = MaterialTheme.typography.displayMedium,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                )
+
+                                Text("Songs Listened to:")
+
+                                trackList.forEach {
+                                    Text("- ${it.name.orEmpty()}")
+                                }
+
                             }
                         }
                     }
@@ -103,7 +118,11 @@ fun SpotifyJourneyContent() {
                                         .startsWith("https://www.streakapp.com/authorize/")
                                 ) {
                                     val code = request?.url?.getQueryParameter("code")
-                                    spotifyJourneyViewModel.saveCode(request?.url?.getQueryParameter("code"))
+                                    spotifyJourneyViewModel.saveCode(
+                                        request?.url?.getQueryParameter(
+                                            "code"
+                                        )
+                                    )
                                     Log.d("TAG", "shouldOverrideUrlLoading: $code")
                                     showSpotifyAuthentication = false
                                     true

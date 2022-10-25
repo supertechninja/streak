@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.work.Configuration
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardRepository
 import com.mcwilliams.streak.inf.StravaSessionRepository
+import com.mcwilliams.streak.inf.spotify.SpotifyApis
 import com.mcwilliams.streak.strava.api.ActivitiesApi
 import com.mcwilliams.streak.strava.api.AthleteApi
 import com.mcwilliams.streak.ui.settings.SettingsRepo
 import com.mcwilliams.streak.ui.settings.SettingsRepoImpl
+import com.mcwilliams.streak.ui.spotifyjourney.SpotifyJourneyRepository
 import com.mcwilliams.streak.ui.widget.WidgetWorkerFactory
 import dagger.Module
 import dagger.Provides
@@ -30,6 +32,14 @@ class AppModule {
             context,
             activitiesApi
         )
+
+    @Provides
+    @Singleton
+    fun provideSpotifyJourneyRepository(
+        spotifyApis: SpotifyApis,
+        stravaDashboardRepository: StravaDashboardRepository
+    ): SpotifyJourneyRepository =
+        SpotifyJourneyRepository(spotifyApis, stravaDashboardRepository)
 
     @Provides
     @Singleton

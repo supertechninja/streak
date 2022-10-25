@@ -68,6 +68,15 @@ class StravaDashboardRepository @Inject constructor(
 //            )
 //        ).build()
 
+    suspend fun getRecentActivities(): List<ActivitiesItem> {
+        var allActivities: List<ActivitiesItem>
+
+        withContext(Dispatchers.IO) {
+            allActivities = activitiesDao?.getLast10Activities() ?: emptyList()
+        }
+
+        return allActivities
+    }
     fun loadActivities(
         before: Int? = null,
         after: Int? = null,
