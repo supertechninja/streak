@@ -1,10 +1,8 @@
 package com.mcwilliams.streak.ui.widget
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.glance.*
 import androidx.glance.action.actionStartActivity
@@ -26,7 +23,6 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.mcwilliams.streak.MainActivity
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.ui.theme.Material3Theme
 import com.mcwilliams.streak.ui.theme.Material3WidgetTheme
 
 @ExperimentalFoundationApi
@@ -37,7 +33,6 @@ class WeeklyStatsWidget : GlanceAppWidget() {
     var weeklyElevation by mutableStateOf<String?>(null)
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     override fun Content() {
         glanceId = LocalGlanceId.current

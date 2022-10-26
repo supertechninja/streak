@@ -60,7 +60,7 @@ fun StreakTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable
         else -> LightColorScheme
     }
 
-    androidx.compose.material3.MaterialTheme(
+    MaterialTheme(
         colorScheme = colorScheme,
 //        typography = Typography,
 //        shapes = Shapes,
@@ -91,7 +91,7 @@ fun Material3Theme(
         }
     }
 
-    androidx.compose.material3.MaterialTheme(
+    MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography(),
         content = content
@@ -112,7 +112,7 @@ fun Material3WidgetTheme(
         else -> LightColorScheme
     }
 
-    androidx.compose.material3.MaterialTheme(
+    MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography(),
         content = content

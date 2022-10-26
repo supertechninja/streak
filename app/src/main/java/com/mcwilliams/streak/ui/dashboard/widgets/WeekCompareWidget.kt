@@ -9,13 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Divider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,7 +28,12 @@ import com.mcwilliams.streak.ui.dashboard.StatType
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.utils.*
+import com.mcwilliams.streak.ui.utils.getAveragePaceFromDistance
+import com.mcwilliams.streak.ui.utils.getAveragePaceString
+import com.mcwilliams.streak.ui.utils.getDate
+import com.mcwilliams.streak.ui.utils.getDistanceString
+import com.mcwilliams.streak.ui.utils.getElevationString
+import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 
 @Composable
 fun WeekCompareWidget(

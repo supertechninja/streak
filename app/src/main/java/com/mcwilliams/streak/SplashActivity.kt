@@ -1,22 +1,21 @@
 package com.mcwilliams.streak
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.viewModels
 import androidx.annotation.Keep
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
-import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @Keep
 @AndroidEntryPoint
 class SplashActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

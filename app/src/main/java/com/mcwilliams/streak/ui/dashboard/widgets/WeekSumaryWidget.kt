@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +26,11 @@ import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.utils.*
+import com.mcwilliams.streak.ui.utils.getAveragePaceString
+import com.mcwilliams.streak.ui.utils.getDate
+import com.mcwilliams.streak.ui.utils.getDistanceString
+import com.mcwilliams.streak.ui.utils.getElevationString
+import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month

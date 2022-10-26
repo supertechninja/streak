@@ -5,15 +5,16 @@ import android.view.LayoutInflater
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material.BottomSheetValue.Collapsed
-import androidx.compose.material.BottomSheetValue.Expanded
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,18 +33,17 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.mcwilliams.streak.R
+import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
+import com.mcwilliams.streak.ui.dashboard.widgets.CompareWidget
+import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
 import com.mcwilliams.streak.ui.dashboard.widgets.MonthWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekCompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekSummaryWidget
 import com.mcwilliams.streak.ui.theme.primaryColor
-import kotlinx.coroutines.launch
-import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
-import com.mcwilliams.streak.ui.dashboard.widgets.CompareWidget
-import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @Composable
 fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingValues) {
@@ -91,23 +91,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
     var refreshState = rememberSwipeRefreshState(isRefreshing)
     refreshState.isRefreshing = isRefreshing
     Log.d("REFRESH", "StravaDashboard: $isRefreshing")
-
-    val bottomSheetScaffoldState =
-        rememberBottomSheetScaffoldState(bottomSheetState = BottomSheetState(initialValue = Collapsed))
-
-    val coroutineScope = rememberCoroutineScope()
-    val toggleBottomSheet = {
-        coroutineScope.launch {
-            when (bottomSheetScaffoldState.bottomSheetState.currentValue) {
-                Collapsed -> {
-                    bottomSheetScaffoldState.bottomSheetState.expand()
-                }
-                Expanded -> {
-                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                }
-            }
-        }
-    }
 
     val saveWeeklyDistance = { weeklyDistance: String, weeklyElevation: String ->
         viewModel.saveWeeklyStats(weeklyDistance, weeklyElevation)
