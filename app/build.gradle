@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId "com.mcwilliams.streak"
-        minSdk 26
+        minSdk 29
         targetSdk 33
         versionCode 7
         versionName "1.1.0"
@@ -78,6 +78,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation "com.google.android.material:compose-theme-adapter:1.1.21"
     implementation 'androidx.browser:browser:1.4.0'
+    implementation 'androidx.core:core-splashscreen:1.0.0'
 
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.ui:ui-tooling"

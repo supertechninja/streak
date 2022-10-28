@@ -90,7 +90,7 @@ fun WeekSummaryWidget(
                                 }
 
                                 count = count.inc()
-                            } else if (activitesItem.type == selectedActivityType!!.name) {
+                            } else if (activitesItem.type == selectedActivityType.name) {
                                 totalElevation += activitesItem.total_elevation_gain
 
                                 totalTime += activitesItem.moving_time

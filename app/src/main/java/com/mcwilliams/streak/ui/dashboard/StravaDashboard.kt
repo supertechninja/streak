@@ -69,11 +69,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
     val selectedUnitType by viewModel.unitType.observeAsState(UnitType.Imperial)
 
-    val today by viewModel.today.observeAsState()
-
-    val monthWeekMap by viewModel.monthWeekMap.observeAsState(mutableMapOf())
-    val currentWeek by viewModel.currentWeek.observeAsState(mutableListOf())
-
     var currentMonthMetrics by remember {
         mutableStateOf(SummaryMetrics(0, 0f, 0f, 0))
     }
@@ -169,9 +164,9 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 WeekSummaryWidget(
                                     monthlyWorkouts = last2MonthsActivities,
                                     selectedActivityType = selectedActivityType,
-                                    currentWeek = currentWeek,
+                                    currentWeek = viewModel.calendarData.currentWeek,
                                     selectedUnitType = selectedUnitType,
-                                    today = today!!,
+                                    today = viewModel.calendarData.currentDayInt,
                                     isLoading = last2MonthsActivities.isEmpty(),
                                     saveWeeklyStats = saveWeeklyDistance,
                                 )
@@ -186,8 +181,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     updateMonthlyMetrics = updateMonthlyMetrics,
                                     selectedActivityType = selectedActivityType,
                                     selectedUnitType = selectedUnitType,
-                                    monthWeekMap = monthWeekMap,
-                                    today = today,
+                                    monthWeekMap = viewModel.calendarData.monthWeekMap,
+                                    today = viewModel.calendarData.currentDayInt,
                                     isLoading = monthlyActivities.isEmpty()
                                 )
                             }, widgetName = "Month Summary"
@@ -199,8 +194,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     activitesList = last2MonthsActivities,
                                     selectedActivityType = selectedActivityType,
                                     selectedUnitType = selectedUnitType,
-                                    today = today!!,
-                                    monthWeekMap = monthWeekMap,
+                                    today = viewModel.calendarData.currentDayInt,
+                                    monthWeekMap = viewModel.calendarData.monthWeekMap,
                                     isLoading = last2MonthsActivities.isEmpty()
                                 )
                             }, widgetName = "Week vs Week"
@@ -213,9 +208,9 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     selectedActivityType = selectedActivityType,
                                     currentMonthMetrics = currentMonthMetrics,
                                     columnTitles = arrayOf(
-                                        viewModel.currentMonth,
-                                        viewModel.previousMonth,
-                                        viewModel.previousPreviousMonth
+                                        viewModel.calendarData.currentMonth.second,
+                                        viewModel.calendarData.previousMonth.second,
+                                        viewModel.calendarData.twoMonthPrevious.second
                                     ),
                                     prevMetrics = previousMonthActivities.getStats(
                                         selectedActivityType

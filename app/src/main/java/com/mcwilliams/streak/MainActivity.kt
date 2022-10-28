@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -55,13 +56,15 @@ import dagger.hilt.android.AndroidEntryPoint
 @ExperimentalFoundationApi
 @Keep
 @AndroidEntryPoint
-@RequiresApi(Build.VERSION_CODES.Q)
 class MainActivity : ComponentActivity() {
     private val viewModel: StravaDashboardViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Handle the splash screen transition.
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
 
         setContent {
@@ -76,7 +79,7 @@ class MainActivity : ComponentActivity() {
 
                 isLoggedIn?.let {
                     if (it) {
-                        androidx.compose.material3.Scaffold(
+                        Scaffold(
                             content = { paddingValues ->
                                 val navBackStackEntry by navController.currentBackStackEntryAsState()
 
