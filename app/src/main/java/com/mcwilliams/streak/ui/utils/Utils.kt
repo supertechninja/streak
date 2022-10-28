@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.utils
 
+import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.utils.Food.MacAndCheese
 import java.time.LocalDate
@@ -41,6 +42,29 @@ fun String.getTime(): LocalTime {
         ZonedDateTime.parse(this, dtf)
     val localDateTime = zdt.toLocalDateTime()
     return localDateTime.toLocalTime()
+}
+
+//Gets bar graph height based on miles
+fun Int.getBarHeight() = when (this.div(1609)) {
+    in 1..2 -> {
+        20.dp
+    }
+
+    in 2..5 -> {
+        50.dp
+    }
+
+    in 5..8 -> {
+        65.dp
+    }
+
+    in 8..100 -> {
+        90.dp
+    }
+
+    else -> {
+        0.dp
+    }
 }
 
 fun String.getDateTime(): LocalDateTime {

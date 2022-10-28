@@ -1,4 +1,4 @@
-package com.mcwilliams.streak.ui.dashboard
+package com.mcwilliams.streak.ui.dashboard.data
 
 import java.time.LocalDate
 import java.time.YearMonth

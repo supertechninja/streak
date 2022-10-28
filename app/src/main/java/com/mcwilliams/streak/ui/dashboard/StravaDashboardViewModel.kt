@@ -6,6 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mcwilliams.streak.inf.StravaSessionRepository
+import com.mcwilliams.streak.ui.dashboard.data.CalendarActivities
+import com.mcwilliams.streak.ui.dashboard.data.CalendarData
 import com.mcwilliams.streak.ui.settings.SettingsRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -8,6 +8,12 @@ import com.mcwilliams.streak.strava.api.ActivitiesApi
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDao
 import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDatabase
+import com.mcwilliams.streak.ui.dashboard.ActivityType.All
+import com.mcwilliams.streak.ui.dashboard.ActivityType.Run
+import com.mcwilliams.streak.ui.dashboard.ActivityType.valueOf
+import com.mcwilliams.streak.ui.dashboard.data.CalendarActivities
+import com.mcwilliams.streak.ui.dashboard.data.CalendarData
+import com.mcwilliams.streak.ui.dashboard.data.getEpoch
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDateTime
 import kotlinx.coroutines.Dispatchers
@@ -197,7 +203,9 @@ class StravaDashboardRepository @Inject constructor(
                     twoMonthAgoActivities = twoMonthAgoActivities,
                     currentYearActivities = currentYearActivities,
                     previousYearActivities = previousYearActivities,
-                    twoYearsAgoActivities = twoYearsAgoActivities
+                    twoYearsAgoActivities = twoYearsAgoActivities,
+                    preferredActivityType = getPreferredActivity(),
+                    selectedUnitType = getPreferredUnitType()
                 )
             )
         }
@@ -244,11 +252,11 @@ class StravaDashboardRepository @Inject constructor(
     }
 
     fun getPreferredActivity() =
-        preferences.getString(activityTypeKey, ActivityType.Run.name)?.let {
-            ActivityType.valueOf(
+        preferences.getString(activityTypeKey, Run.name)?.let {
+            valueOf(
                 it
             )
-        }
+        } ?: All
 
     fun savePreferredUnits(unitType: UnitType) {
         preferences.edit().putString(unitTypeKey, unitType.name).apply()
@@ -258,7 +266,7 @@ class StravaDashboardRepository @Inject constructor(
         UnitType.valueOf(
             it
         )
-    }
+    } ?: UnitType.Imperial
 
     fun saveLastFetchTimestamp() {
         val currentTime = LocalDateTime.now()
@@ -295,16 +303,4 @@ class StravaDashboardRepository @Inject constructor(
         const val unitTypeKey: String = "unitType"
         const val lastUpdatedKey: String = "lastUpdated"
     }
-}
-
-data class CalendarActivities(
-    val currentMonthActivities: List<ActivitiesItem> = emptyList(),
-    val previousMonthActivities: List<ActivitiesItem> = emptyList(),
-    val twoMonthAgoActivities: List<ActivitiesItem> = emptyList(),
-    val currentYearActivities: List<ActivitiesItem> = emptyList(),
-    val previousYearActivities: List<ActivitiesItem> = emptyList(),
-    val twoYearsAgoActivities: List<ActivitiesItem> = emptyList(),
-) {
-    val lastTwoMonthsActivities: List<ActivitiesItem> =
-        currentMonthActivities.plus(previousMonthActivities)
 }

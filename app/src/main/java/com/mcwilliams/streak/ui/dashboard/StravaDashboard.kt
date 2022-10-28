@@ -143,11 +143,8 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                 StreakDashboardWidget(
                                     content = {
                                         WeekSummaryWidget(
-                                            monthlyWorkouts = state.calendarActivities.lastTwoMonthsActivities,
-                                            selectedActivityType = selectedActivityType,
-                                            currentWeek = viewModel.calendarData.currentWeek,
-                                            selectedUnitType = selectedUnitType,
-                                            today = viewModel.calendarData.currentDayInt,
+                                            weeklyDistanceMap = state.calendarActivities.weeklyDistanceMap,
+                                            currentWeeklyInfo = viewModel.calendarData.currentWeek,
                                             isLoading = state.calendarActivities.lastTwoMonthsActivities.isEmpty(),
                                             saveWeeklyStats = saveWeeklyDistance,
                                         )

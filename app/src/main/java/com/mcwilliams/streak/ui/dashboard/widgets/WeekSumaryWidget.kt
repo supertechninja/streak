@@ -1,6 +1,5 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -21,35 +20,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
-import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
-import com.mcwilliams.streak.ui.dashboard.UnitType
-import com.mcwilliams.streak.ui.utils.getAveragePaceString
-import com.mcwilliams.streak.ui.utils.getDate
-import com.mcwilliams.streak.ui.utils.getDistanceString
-import com.mcwilliams.streak.ui.utils.getElevationString
-import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
+import com.mcwilliams.streak.ui.dashboard.data.SummaryInfo
+import com.mcwilliams.streak.ui.utils.getBarHeight
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.Month
-import java.time.format.TextStyle
-import java.util.Locale
 
 @Composable
 fun WeekSummaryWidget(
-    monthlyWorkouts: List<ActivitiesItem>,
-    selectedActivityType: ActivityType?,
-    currentWeek: MutableList<Pair<Int, Int>>,
-    selectedUnitType: UnitType?,
-    today: Int,
-    isLoading: Boolean,
+    weeklyDistanceMap: Pair<SummaryInfo, MutableMap<Int, Int>>,
+    currentWeeklyInfo: MutableList<Pair<Int, Int>>,
     saveWeeklyStats: (String, String) -> Unit,
+    isLoading: Boolean,
 ) {
     StreakWidgetCard(
         content = {
-            val dayOfWeekWithDistance: MutableMap<Int, Int> = mutableMapOf()
             BoxWithConstraints(
                 modifier = Modifier.padding(
                     vertical = 12.dp,
@@ -57,66 +43,7 @@ fun WeekSummaryWidget(
                 )
             ) {
                 val width = this.maxWidth / 2
-
-                var totalDistance = 0f
-                var totalElevation = 0f
-                var totalTime = 0
-                var count = 0
-
-                monthlyWorkouts.forEach { activitesItem ->
-                    val date = activitesItem.start_date_local.getDate()
-
-                    currentWeek.forEach {
-                        if (it.second == date.dayOfMonth && it.first == date.monthValue) {
-                            if (selectedActivityType!!.name == ActivityType.All.name) {
-                                totalElevation += activitesItem.total_elevation_gain
-
-                                totalTime += activitesItem.moving_time
-
-                                totalDistance += activitesItem.distance
-
-                                if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                                    val newDistance =
-                                        dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                                    dayOfWeekWithDistance.replace(
-                                        date.dayOfMonth,
-                                        newDistance
-                                    )
-                                } else {
-                                    dayOfWeekWithDistance.put(
-                                        date.dayOfMonth,
-                                        activitesItem.distance.toInt()
-                                    )
-                                }
-
-                                count = count.inc()
-                            } else if (activitesItem.type == selectedActivityType.name) {
-                                totalElevation += activitesItem.total_elevation_gain
-
-                                totalTime += activitesItem.moving_time
-
-                                totalDistance += activitesItem.distance
-
-                                if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                                    val newDistance =
-                                        dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                                    dayOfWeekWithDistance.replace(
-                                        date.dayOfMonth,
-                                        newDistance
-                                    )
-                                } else {
-                                    dayOfWeekWithDistance.put(
-                                        date.dayOfMonth,
-                                        activitesItem.distance.toInt()
-                                    )
-                                }
-
-                                count = count.inc()
-                            }
-                        }
-                    }
-
-                }
+                val summaryInfo = weeklyDistanceMap.first
 
                 Row() {
                     Column(
@@ -124,33 +51,20 @@ fun WeekSummaryWidget(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Row() {
+                            //TODO String Builder
                             Text(
-                                text = selectedActivityType?.name ?: "",
+                                text = "Run",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.bodyMedium
                             )
-                            if (currentWeek.isNotEmpty()) {
-                                val text =
-                                    " | ${
-                                        Month.of(currentWeek[0].first).getDisplayName(
-                                            TextStyle.SHORT_STANDALONE,
-                                            Locale.getDefault()
-                                        )
-                                    } ${currentWeek[0].second}-" +
-                                            "${
-                                                Month.of(currentWeek.last().first).getDisplayName(
-                                                    TextStyle.SHORT_STANDALONE,
-                                                    Locale.getDefault()
-                                                )
-                                            }  ${currentWeek.last().second}"
-                                Text(
-                                    text = text,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            }
+                            Text(
+                                text = summaryInfo.widgetTitle,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
                         }
+
                         Divider(
                             modifier = Modifier
                                 .width(80.dp)
@@ -159,34 +73,34 @@ fun WeekSummaryWidget(
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
-                        val weeklyDistance = totalDistance.getDistanceString(selectedUnitType!!)
-                        val weeklyElevation = totalElevation.getElevationString(selectedUnitType!!)
-
                         DashboardStat(
                             image = R.drawable.ic_ruler,
-                            stat = weeklyDistance,
+                            stat = summaryInfo.distance,
                             isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_clock_time,
-                            stat = totalTime.getTimeStringHoursAndMinutes(),
+                            stat = summaryInfo.totalTime,
                             isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_up_right,
-                            stat = weeklyElevation,
+                            stat = summaryInfo.elevation,
                             isLoading = isLoading
                         )
-                        saveWeeklyStats(weeklyDistance, weeklyElevation)
+
+                        saveWeeklyStats(summaryInfo.distance, summaryInfo.elevation)
 
                         DashboardStat(
                             image = R.drawable.ic_speed,
-                            stat = getAveragePaceString(totalDistance, totalTime, selectedUnitType!!),
+                            stat = summaryInfo.avgPace,
                             isLoading = isLoading
                         )
                     }
+
+                    //Vertical Bars Representing Miles Per Day
                     Column(
                         modifier = Modifier
                             .width(width = width)
@@ -195,6 +109,8 @@ fun WeekSummaryWidget(
                         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
                             val (progress, days) = createRefs()
 
+                            val currentWeekDistanceByDay = weeklyDistanceMap.second
+
                             Row(
                                 verticalAlignment = Alignment.Bottom,
                                 modifier = Modifier.constrainAs(progress) {
@@ -202,52 +118,22 @@ fun WeekSummaryWidget(
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
                                 }) {
-                                currentWeek.forEach { dateInWeek ->
+                                currentWeeklyInfo.forEach { dateInWeek ->
                                     Column(
                                         modifier = Modifier.width(width / 7),
                                         verticalArrangement = Arrangement.Center,
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        dayOfWeekWithDistance.forEach {
-                                            if (it.key == dateInWeek.second) {
-                                                Log.d(
-                                                    "TAG",
-                                                    "StravaDashboard: ${it.value}"
-                                                )
-                                                val progressHeight =
-                                                    when (it.value.div(1609)) {
-                                                        in 1..2 -> {
-                                                            20.dp
-                                                        }
-                                                        in 2..5 -> {
-                                                            50.dp
-                                                        }
-                                                        in 5..8 -> {
-                                                            65.dp
-                                                        }
-                                                        in 8..100 -> {
-                                                            90.dp
-                                                        }
-                                                        else -> {
-                                                            0.dp
-                                                        }
-                                                    }
-                                                if (it.value > 0) {
+                                        currentWeekDistanceByDay.forEach { weekDistanceMap ->
+                                            if (weekDistanceMap.key == dateInWeek.second) {
+                                                if (weekDistanceMap.value > 0) {
                                                     Divider(
                                                         color = MaterialTheme.colorScheme.onSurface,
                                                         modifier = Modifier
-                                                            .height(
-                                                                progressHeight
-                                                            )
+                                                            .height(weekDistanceMap.value.getBarHeight())
                                                             .width(15.dp)
-                                                            .clip(
-                                                                RoundedCornerShape(
-                                                                    50
-                                                                )
-                                                            )
-                                                            .padding(
-                                                                horizontal = 4.dp
-                                                            )
+                                                            .clip(RoundedCornerShape(50))
+                                                            .padding(horizontal = 4.dp)
                                                     )
                                                 }
                                             }
