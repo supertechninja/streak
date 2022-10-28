@@ -5,7 +5,6 @@ import com.mcwilliams.streak.inf.spotify.SpotifyApis
 import com.mcwilliams.streak.inf.spotify.model.Track
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardRepository
-import com.mcwilliams.streak.ui.dashboard.toMillis
 import com.mcwilliams.streak.ui.utils.getDateTime
 import java.time.ZoneOffset
 import javax.inject.Inject

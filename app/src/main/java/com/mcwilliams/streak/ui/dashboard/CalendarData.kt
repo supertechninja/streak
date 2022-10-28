@@ -9,6 +9,7 @@ data class CalendarData(
     val currentDateTime: LocalDate = LocalDate.now(),
     val currentMonthInt: Int = currentDateTime.monthValue,
     val currentDayInt: Int = currentDateTime.dayOfMonth,
+    val currentYearInt: Int = currentDateTime.year,
 
     val currentMonth: Pair<Int, String> = getEpoch(LocalDate.now().year, currentMonthInt - 1, 1),
     val previousMonth: Pair<Int, String> = getEpoch(LocalDate.now().year, currentMonthInt - 2, 1),
