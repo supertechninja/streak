@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 
-@Database(entities = [ActivitiesItem::class], version = 2, exportSchema = false)
+@Database(entities = [ActivitiesItem::class], version = 3, exportSchema = false)
 abstract class ActivitiesDatabase : RoomDatabase() {
     abstract fun activitiesDao(): ActivitiesDao
 

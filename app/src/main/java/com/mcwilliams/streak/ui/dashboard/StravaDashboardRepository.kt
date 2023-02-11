@@ -8,6 +8,7 @@ import com.mcwilliams.streak.strava.api.ActivitiesApi
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDao
 import com.mcwilliams.streak.strava.model.activites.db.ActivitiesDatabase
+import com.mcwilliams.streak.strava.model.activitydetail.StravaActivityDetail
 import com.mcwilliams.streak.ui.dashboard.ActivityType.All
 import com.mcwilliams.streak.ui.dashboard.ActivityType.Run
 import com.mcwilliams.streak.ui.dashboard.ActivityType.valueOf
@@ -87,6 +88,20 @@ class StravaDashboardRepository @Inject constructor(
         return allActivities
     }
 
+    suspend fun loadActivityDetails(activities: List<String>): Flow<List<Pair<String, StravaActivityDetail>>> =
+        flow {
+            val activityMap: MutableList<Pair<String, StravaActivityDetail>> = mutableListOf()
+
+            activities.forEach { activityId ->
+                withContext(Dispatchers.IO) {
+                    val detail = activitiesApi.getActivityDetail(activityId)
+                    activityMap.add(activityId to detail)
+                }
+            }
+
+            emit(activityMap)
+        }
+
     fun loadActivities(
         before: Int? = null,
         after: Int? = null,
@@ -109,13 +124,16 @@ class StravaDashboardRepository @Inject constructor(
             if (currentTime > lastUpdated) {
                 //Date outdated refreshing
                 shouldCallApi = true
-                beforeDate = getEpoch(
+                val beforePair = getEpoch(
                     currentTime.year,
                     currentTime.monthValue - 1,
                     currentTime.dayOfMonth,
                     currentTime.hour,
                     currentTime.minute
-                ).first
+                )
+                beforeDate = beforePair.first
+
+                Log.d("TAG", "loadActivities: ${beforePair.second}")
 
                 if (allActivities != null) {
                     //get most recently stored activity to determine the "after date" to call the api
@@ -129,13 +147,17 @@ class StravaDashboardRepository @Inject constructor(
                     }?.start_date?.getDateTime()
 
                     date?.let {
-                        afterDate = getEpoch(
+                        val afterDatePair = getEpoch(
                             it.year,
                             it.monthValue - 1,
                             it.dayOfMonth,
                             it.hour,
                             it.minute
-                        ).first
+                        )
+
+                        Log.d("TAG", "loadActivities: 2nd ${beforePair.second}")
+
+                        afterDate = afterDatePair.first
                     }
                 }
             }
@@ -173,28 +195,51 @@ class StravaDashboardRepository @Inject constructor(
                 activities.filter { it.start_date.getDate().year == calendarData.currentYearInt - 2 }
 
 
-            var currentMonthActivities: List<ActivitiesItem> =
+            var relativeYearActivities: List<ActivitiesItem> =
+                currentYearActivities.filter { it.start_date.getDate().dayOfYear < calendarData.currentDayOfYeah }
+            var relativePreviousYearActivities: List<ActivitiesItem> =
+                previousYearActivities.filter { it.start_date.getDate().dayOfYear < calendarData.currentDayOfYeah }
+            var relativeTwoYearsAgoActivities: List<ActivitiesItem> =
+                twoYearsAgoActivities.filter { it.start_date.getDate().dayOfYear < calendarData.currentDayOfYeah }
+
+
+            val currentMonthActivities: List<ActivitiesItem> =
                 currentYearActivities.filter { it.start_date.getDate().monthValue == calendarData.currentMonthInt }
 
-            var previousMonthActivities: List<ActivitiesItem> = currentYearActivities.filter {
-                if (calendarData.currentMonthInt == 1) {
-                    it.start_date.getDate().monthValue == 12
-                            && it.start_date.getDate().year == 2021
-                } else {
-                    it.start_date.getDate().monthValue == calendarData.currentMonthInt - 1
-                            && it.start_date.getDate().year == 2022
-                }
-            }
+            Log.d("TAG", "loadActivities: $currentMonthActivities")
 
-            var twoMonthAgoActivities: List<ActivitiesItem> = currentYearActivities.filter {
-                if (calendarData.currentMonthInt == 1) {
-                    it.start_date.getDate().monthValue == 11
-                            && it.start_date.getDate().year == 2021
-                } else {
-                    it.start_date.getDate().monthValue == calendarData.currentMonthInt - 2
-                            && it.start_date.getDate().year == 2022
+            val previousMonthActivities: List<ActivitiesItem> =
+                currentMonthActivities.plus(previousYearActivities).plus(currentYearActivities).filter {
+                    if (calendarData.currentMonthInt == 1) {
+                        it.start_date.getDate().monthValue == 12
+                                && it.start_date.getDate().year == 2022
+                    } else {
+                        it.start_date.getDate().monthValue == calendarData.currentMonthInt - 1
+                                && it.start_date.getDate().year == 2023
+                    }
                 }
-            }
+
+            Log.d("TAG", "loadActivities: $previousMonthActivities")
+
+            val twoMonthAgoActivities: List<ActivitiesItem> =
+                currentMonthActivities.plus(previousYearActivities).plus(currentYearActivities).filter {
+                    if (calendarData.currentMonthInt == 1) {
+                        it.start_date.getDate().monthValue == 11
+                                && it.start_date.getDate().year == 2022
+                    } else {
+                        it.start_date.getDate().monthValue == calendarData.currentMonthInt - 2
+                                && it.start_date.getDate().year == 2023
+                    }
+                }
+
+            Log.d("TAG", "loadActivities: $twoMonthAgoActivities")
+
+            var relativeMonthActivities: List<ActivitiesItem> =
+                currentMonthActivities.filter { it.start_date.getDate().dayOfMonth < calendarData.currentDateTime.dayOfMonth }
+            var relativePreviousMonthActivities: List<ActivitiesItem> =
+                previousMonthActivities.filter { it.start_date.getDate().dayOfMonth < calendarData.currentDateTime.dayOfMonth }
+            var relativePrevPrevMonthActivities: List<ActivitiesItem> =
+                twoMonthAgoActivities.filter { it.start_date.getDate().dayOfMonth < calendarData.currentDateTime.dayOfMonth }
 
             emit(
                 CalendarActivities(
@@ -205,7 +250,14 @@ class StravaDashboardRepository @Inject constructor(
                     previousYearActivities = previousYearActivities,
                     twoYearsAgoActivities = twoYearsAgoActivities,
                     preferredActivityType = getPreferredActivity(),
-                    selectedUnitType = getPreferredUnitType()
+                    selectedUnitType = getPreferredUnitType(),
+                    preferredMeasureType = getPreferredMeasureType(),
+                    relativeYearActivities = relativeYearActivities,
+                    relativePreviousYearActivities = relativePreviousYearActivities,
+                    relativeTwoYearsAgoActivities = relativeTwoYearsAgoActivities,
+                    relativeMonthActivities = relativeMonthActivities,
+                    relativePreviousMonthActivities = relativePreviousMonthActivities,
+                    relativePrevPrevMonthActivities = relativePrevPrevMonthActivities
                 )
             )
         }
@@ -262,11 +314,23 @@ class StravaDashboardRepository @Inject constructor(
         preferences.edit().putString(unitTypeKey, unitType.name).apply()
     }
 
-    fun getPreferredUnitType() = preferences.getString(unitTypeKey, UnitType.Imperial.name)?.let {
-        UnitType.valueOf(
-            it
-        )
-    } ?: UnitType.Imperial
+    fun saveMeasureType(measureType: MeasureType) {
+        preferences.edit().putString(Companion.measureType, measureType.name).apply()
+    }
+
+    fun getPreferredMeasureType() =
+        preferences.getString(measureType, MeasureType.Absolute.name)?.let {
+            MeasureType.valueOf(
+                it
+            )
+        } ?: MeasureType.Absolute
+
+    fun getPreferredUnitType() =
+        preferences.getString(unitTypeKey, UnitType.Imperial.name)?.let {
+            UnitType.valueOf(
+                it
+            )
+        } ?: UnitType.Imperial
 
     fun saveLastFetchTimestamp() {
         val currentTime = LocalDateTime.now()
@@ -301,6 +365,7 @@ class StravaDashboardRepository @Inject constructor(
     companion object {
         const val activityTypeKey: String = "activityType"
         const val unitTypeKey: String = "unitType"
+        const val measureType: String = "measureType"
         const val lastUpdatedKey: String = "lastUpdated"
     }
 }

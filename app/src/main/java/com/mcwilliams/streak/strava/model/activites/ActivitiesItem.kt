@@ -18,4 +18,5 @@ data class ActivitiesItem(
     @ColumnInfo(name = "start_date_local") val start_date_local: String,
     @ColumnInfo(name = "total_elevation_gain") val total_elevation_gain: Float,
     @ColumnInfo(name = "type") val type: String,
+    @ColumnInfo(name = "id") val id: Long
 )

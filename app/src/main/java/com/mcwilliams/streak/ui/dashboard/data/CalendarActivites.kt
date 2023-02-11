@@ -2,7 +2,9 @@ package com.mcwilliams.streak.ui.dashboard.data
 
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
+import com.mcwilliams.streak.ui.dashboard.MeasureType
 import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.dashboard.getStats
 import com.mcwilliams.streak.ui.utils.getAveragePaceString
 import com.mcwilliams.streak.ui.utils.getDate
 import com.mcwilliams.streak.ui.utils.getDistanceString
@@ -20,7 +22,14 @@ data class CalendarActivities(
     val previousYearActivities: List<ActivitiesItem> = emptyList(),
     val twoYearsAgoActivities: List<ActivitiesItem> = emptyList(),
     val preferredActivityType: ActivityType,
-    val selectedUnitType: UnitType
+    val selectedUnitType: UnitType,
+    val preferredMeasureType: MeasureType,
+    val relativePrevPrevMonthActivities: List<ActivitiesItem> = emptyList(),
+    val relativePreviousMonthActivities: List<ActivitiesItem> = emptyList(),
+    val relativeYearActivities: List<ActivitiesItem> = emptyList(),
+    val relativePreviousYearActivities: List<ActivitiesItem> = emptyList(),
+    val relativeTwoYearsAgoActivities: List<ActivitiesItem> = emptyList(),
+    val relativeMonthActivities: List<ActivitiesItem> = emptyList()
 ) {
     val lastTwoMonthsActivities: List<ActivitiesItem> =
         currentMonthActivities.plus(previousMonthActivities)
@@ -29,88 +38,96 @@ data class CalendarActivities(
 
     val weeklyDistanceMap: Pair<SummaryInfo, MutableMap<Int, Int>> = loadWeeklyDistanceMap()
 
+    val yearlySummaryMetrics = buildList {
+        if (preferredMeasureType == MeasureType.Absolute) {
+            add(currentYearActivities.getStats(preferredActivityType))
+            add(previousYearActivities.getStats(preferredActivityType))
+            add(twoYearsAgoActivities.getStats(preferredActivityType))
+        } else {
+            add(relativeYearActivities.getStats(preferredActivityType))
+            add(relativePreviousYearActivities.getStats(preferredActivityType))
+            add(relativeTwoYearsAgoActivities.getStats(preferredActivityType))
+        }
+    }
+
+    val yearMetrics =  if (preferredMeasureType == MeasureType.Absolute) {
+        currentYearActivities.getStats(preferredActivityType)
+    } else {
+        relativeYearActivities.getStats(preferredActivityType)
+    }
+
+    val monthlySummaryMetrics = buildList {
+        if (preferredMeasureType == MeasureType.Absolute) {
+            add(currentMonthActivities.getStats(preferredActivityType))
+            add(previousMonthActivities.getStats(preferredActivityType))
+            add(twoMonthAgoActivities.getStats(preferredActivityType))
+        } else {
+            add(relativeMonthActivities.getStats(preferredActivityType))
+            add(relativePreviousMonthActivities.getStats(preferredActivityType))
+            add(relativePrevPrevMonthActivities.getStats(preferredActivityType))
+        }
+    }
+
+    lateinit var weeklyActivityIds: MutableList<Long>
+
     private fun loadWeeklyDistanceMap(): Pair<SummaryInfo, MutableMap<Int, Int>> {
-        val dayOfWeekWithDistance: MutableMap<Int, Int> = mutableMapOf()
-
-        var totalDistance = 0f
-        var totalElevation = 0f
-        var totalTime = 0
-        var count = 0
-
-        lastTwoMonthsActivities.forEach { activitesItem ->
-            val date = activitesItem.start_date_local.getDate()
-
-            calendarData.currentWeek.forEach {
-                if (it.second == date.dayOfMonth && it.first == date.monthValue) {
+        val activitiesForTheWeek = mutableListOf<ActivitiesItem>()
+        calendarData.currentWeek.forEach { (monthInt, dayOfMonth) ->
+            activitiesForTheWeek.addAll(
+                lastTwoMonthsActivities.filter { activity ->
+                    val date = activity.start_date.getDate()
+                    //Filter out activities by the current month and day of month with type
                     if (preferredActivityType.name == ActivityType.All.name) {
-                        totalElevation += activitesItem.total_elevation_gain
-
-                        totalTime += activitesItem.moving_time
-
-                        totalDistance += activitesItem.distance
-
-                        if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                            val newDistance =
-                                dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                            dayOfWeekWithDistance.replace(
-                                date.dayOfMonth,
-                                newDistance
-                            )
-                        } else {
-                            dayOfWeekWithDistance.put(
-                                date.dayOfMonth,
-                                activitesItem.distance.toInt()
-                            )
-                        }
-
-                        count = count.inc()
-                    } else if (activitesItem.type == preferredActivityType.name) {
-                        totalElevation += activitesItem.total_elevation_gain
-
-                        totalTime += activitesItem.moving_time
-
-                        totalDistance += activitesItem.distance
-
-                        if (dayOfWeekWithDistance.containsKey(date.dayOfMonth)) {
-                            val newDistance =
-                                dayOfWeekWithDistance.get(date.dayOfMonth)!! + activitesItem.distance.toInt()
-                            dayOfWeekWithDistance.replace(
-                                date.dayOfMonth,
-                                newDistance
-                            )
-                        } else {
-                            dayOfWeekWithDistance.put(
-                                date.dayOfMonth,
-                                activitesItem.distance.toInt()
-                            )
-                        }
-
-                        count = count.inc()
+                        date.monthValue == monthInt && date.dayOfMonth == dayOfMonth
+                    } else {
+                        date.monthValue == monthInt && date.dayOfMonth == dayOfMonth
+                                && preferredActivityType.name == activity.type
                     }
-                }
-            }
+                })
         }
 
-        val weeklySummaryInfo = SummaryInfo(
+        val totalWeeklyDistance = activitiesForTheWeek.sumOf { it.distance.toDouble() }.toFloat()
+        val totalWeeklyTime = activitiesForTheWeek.sumOf { it.moving_time }
+
+        val weeklySummaryInfoData = SummaryInfo(
             widgetTitle = " | ${
                 Month.of(calendarData.currentWeek[0].first).getDisplayName(
                     TextStyle.SHORT_STANDALONE,
                     Locale.getDefault()
-                )} ${calendarData.currentWeek[0].second}-" +
+                )
+            } ${calendarData.currentWeek[0].second}-" +
                     "${
                         Month.of(calendarData.currentWeek.last().first).getDisplayName(
                             TextStyle.SHORT_STANDALONE,
                             Locale.getDefault()
                         )
                     }  ${calendarData.currentWeek.last().second}",
-            distance = totalDistance.getDistanceString(selectedUnitType),
-            totalTime = totalTime.getTimeStringHoursAndMinutes(),
-            elevation = totalElevation.getElevationString(selectedUnitType),
-            avgPace = getAveragePaceString(totalDistance, totalTime, selectedUnitType),
-            totalCount = ""
+            distance = totalWeeklyDistance.getDistanceString(selectedUnitType),
+            totalTime = totalWeeklyTime.getTimeStringHoursAndMinutes(),
+            elevation = activitiesForTheWeek
+                .filter { it.type == preferredActivityType.name }
+                .sumOf { it.total_elevation_gain.toDouble() }.toFloat()
+                .getElevationString(selectedUnitType),
+            avgPace = getAveragePaceString(totalWeeklyDistance, totalWeeklyTime, selectedUnitType),
+            totalCount = activitiesForTheWeek
+                .count().toString()
         )
 
-        return weeklySummaryInfo to dayOfWeekWithDistance
+        //Build map of dayOfMonth to distance
+        val distanceByDay = activitiesForTheWeek.associateBy({
+            it.start_date.getDate().dayOfMonth
+        }, { activity ->
+            activity.distance.toInt()
+        })
+
+        //List of weeklyActivityIds
+        weeklyActivityIds =
+            activitiesForTheWeek
+                .filter { it.type == preferredActivityType.name }
+                .map { it.id }
+                .toMutableList()
+
+        return weeklySummaryInfoData to distanceByDay.toMutableMap()
     }
 }
 
@@ -120,5 +137,5 @@ data class SummaryInfo(
     val elevation: String,
     val totalTime: String,
     val avgPace: String,
-    val totalCount: String
+    val totalCount: String,
 )

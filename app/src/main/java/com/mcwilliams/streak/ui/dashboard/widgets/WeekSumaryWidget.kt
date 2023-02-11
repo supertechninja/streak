@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard.widgets
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -33,8 +34,10 @@ fun WeekSummaryWidget(
     currentWeeklyInfo: MutableList<Pair<Int, Int>>,
     saveWeeklyStats: (String, String) -> Unit,
     isLoading: Boolean,
+    onClick : () -> Unit
 ) {
     StreakWidgetCard(
+        onClick = onClick,
         content = {
             BoxWithConstraints(
                 modifier = Modifier.padding(
@@ -110,6 +113,8 @@ fun WeekSummaryWidget(
                             val (progress, days) = createRefs()
 
                             val currentWeekDistanceByDay = weeklyDistanceMap.second
+
+                            Log.d("TAG", "WeekSummaryWidget: $currentWeekDistanceByDay")
 
                             Row(
                                 verticalAlignment = Alignment.Bottom,

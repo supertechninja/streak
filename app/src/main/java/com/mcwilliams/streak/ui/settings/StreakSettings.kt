@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.ui.dashboard.ActivityType
+import com.mcwilliams.streak.ui.dashboard.MeasureType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.dashboard.UnitType
 
@@ -32,6 +33,7 @@ fun StreakSettingsView(
     viewModel: StravaDashboardViewModel,
     selectedActivityType: ActivityType?,
     selectedUnitType: UnitType?,
+    selectedMeasureType: MeasureType?
 ) {
     Scaffold(
         topBar = {
@@ -170,6 +172,69 @@ fun StreakSettingsView(
                                     Text("Metric", color = MaterialTheme.colorScheme.onSurface)
 
                                     if (UnitType.Metric.name == selectedUnitType?.name) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Currently Selected",
+                                            tint = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "Measure Type",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Column(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            viewModel.updateMeasureType(MeasureType.Absolute)
+                                        }
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                        .height(40.dp),
+
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Absolute", color = MaterialTheme.colorScheme.onSurface)
+
+                                    if (MeasureType.Absolute.name == selectedMeasureType?.name) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Currently Selected",
+                                            tint = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {
+                                            viewModel.updateMeasureType(MeasureType.Relative)
+                                        }
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                        .height(40.dp),
+
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Relative", color = MaterialTheme.colorScheme.onSurface)
+
+                                    if (MeasureType.Relative.name == selectedMeasureType?.name) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = "Currently Selected",

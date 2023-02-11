@@ -41,6 +41,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.mcwilliams.streak.ui.dashboard.ActivityType
+import com.mcwilliams.streak.ui.dashboard.MeasureType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboard
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.dashboard.UnitType
@@ -76,6 +77,7 @@ class MainActivity : ComponentActivity() {
                 var selectedTab by remember { mutableStateOf(0) }
                 val selectedActivityType by viewModel.activityType.observeAsState(ActivityType.Run)
                 val selectedUnitType by viewModel.unitType.observeAsState(UnitType.Imperial)
+                val selectedMeasureType by viewModel.measureType.observeAsState(MeasureType.Absolute)
 
                 isLoggedIn?.let {
                     if (it) {
@@ -101,6 +103,7 @@ class MainActivity : ComponentActivity() {
                                             viewModel = viewModel,
                                             selectedActivityType = selectedActivityType,
                                             selectedUnitType = selectedUnitType,
+                                            selectedMeasureType = selectedMeasureType
                                         )
                                     }
                                 }

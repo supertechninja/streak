@@ -185,6 +185,10 @@ fun Float.getDistanceString(selectedUnitType: UnitType, isYearSummary: Boolean =
     }
 }
 
+fun Int.format(): String{
+    return if(this in 0..9) "0$this" else this.toString()
+}
+
 fun getAveragePaceString(distance: Float, time: Int, selectedUnitType: UnitType): String {
 
     when(selectedUnitType){
@@ -197,7 +201,7 @@ fun getAveragePaceString(distance: Float, time: Int, selectedUnitType: UnitType)
             val remainder = (pace - pace.toInt())
             val secondsPace = remainder.times(60).toInt()
 
-            return "${pace.toInt()}:${secondsPace} / mi"
+            return "${pace.toInt()}:${secondsPace.format()} / mi"
         }
         UnitType.Metric -> {
             val distanceInMeters = distance.div(1000).toDouble().round(2)
@@ -208,7 +212,7 @@ fun getAveragePaceString(distance: Float, time: Int, selectedUnitType: UnitType)
             val remainder = (pace - pace.toInt())
             val secondsPace = remainder.times(60).toInt()
 
-            return "${pace.toInt()}:${secondsPace} / km"
+            return "${pace.toInt()}:${secondsPace.format()} / km"
         }
     }
 }

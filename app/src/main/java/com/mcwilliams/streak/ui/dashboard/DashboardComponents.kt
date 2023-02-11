@@ -2,6 +2,7 @@ package com.mcwilliams.streak.ui.dashboard
 
 import android.util.Log
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,11 +28,16 @@ import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 
 @Composable
-fun StreakWidgetCard(content: @Composable () -> Unit) {
+fun StreakWidgetCard(onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp),
+            .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp)
+            .clickable(
+                enabled = onClick != null,
+                onClickLabel = null,
+                role = null,
+                onClick = { onClick?.let { it.invoke() } }),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
@@ -55,15 +61,19 @@ fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType
             )
             percent = (now.toDouble().div(1609)) / (then.toDouble().div(1609))
         }
+
         StatType.Time -> {
             percent = now.toDouble() / then.toDouble()
         }
+
         StatType.Elevation -> {
             percent = now.toDouble() / then.toDouble()
         }
+
         StatType.Count -> {
             percent = now.toDouble() / then.toDouble()
         }
+
         StatType.Pace -> {
             percent = now.toDouble() / then.toDouble()
         }

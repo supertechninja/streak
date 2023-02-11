@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard.data
 
+import android.util.Log
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.Calendar
@@ -10,6 +11,7 @@ data class CalendarData(
     val currentMonthInt: Int = currentDateTime.monthValue,
     val currentDayInt: Int = currentDateTime.dayOfMonth,
     val currentYearInt: Int = currentDateTime.year,
+    val currentDayOfYeah: Int = currentDateTime.dayOfYear,
 
     val currentMonth: Pair<Int, String> = getEpoch(LocalDate.now().year, currentMonthInt - 1, 1),
     val previousMonth: Pair<Int, String> = getEpoch(LocalDate.now().year, currentMonthInt - 2, 1),
@@ -35,7 +37,7 @@ data class CalendarData(
         1
     ).first to "2020",
 
-    var currentWeek : MutableList<Pair<Int, Int>> = mutableListOf()
+    var currentWeek : MutableList<Pair<Int, Int>> = mutableListOf(),
 ){
     val monthWeekMap : MutableMap<Int, MutableList<Pair<Int, Int>>> = monthBreakDown()
 
@@ -56,7 +58,9 @@ data class CalendarData(
             if (week == 0) {
                 for (i in 0 until firstDayOffset) {
                     val priorDay = (priorMonthLength - (firstDayOffset - i - 1))
-                    listOfDatesInWeek.add(currentMonth.value - 1 to priorDay)
+
+                    val month = if(currentMonth.value == 1) 12 else currentMonth.value - 1
+                    listOfDatesInWeek.add(month to priorDay)
                 }
             }
 
@@ -82,6 +86,8 @@ data class CalendarData(
             monthWeekMap.put(week, listOfDatesInWeek)
         }
 
+        val previousMonthInt = if(currentMonth.value == 1) 12 else currentMonth.value - 1
+
         //Add previous 2 weeks to week map
         val firstDayWeekZeroMonth =
             (priorMonthLength - (firstDayOffset - 1))
@@ -92,7 +98,7 @@ data class CalendarData(
         for (i in 0..6) {
             if (currentDayInt < 7) {
                 val priorDay = (firstDayWeekZeroMonth - (i + 1))
-                listOfDatesInPreviousWeek.add(currentMonth.value - 1 to priorDay)
+                listOfDatesInPreviousWeek.add(previousMonthInt to priorDay)
             } else {
                 val priorDay = (firstDayWeekZeroMonth - (i + 1))
                 listOfDatesInPreviousWeek.add(currentMonth.value to priorDay)
@@ -106,13 +112,16 @@ data class CalendarData(
         for (i in 0..6) {
             if (currentDayInt < 7) {
                 val priorDay = (twoWeekAgo - (i + 1))
-                listOfDatesInTwoWeeksAgo.add(currentMonth.value - 1 to priorDay)
+                listOfDatesInTwoWeeksAgo.add(previousMonthInt to priorDay)
             } else {
                 val priorDay = (firstDayWeekZeroMonth - (i + 1))
                 listOfDatesInTwoWeeksAgo.add(currentMonth.value to priorDay)
             }
         }
         monthWeekMap.put(-2, listOfDatesInTwoWeeksAgo)
+
+        Log.d("TAG", "monthBreakDown: $currentWeek")
+        Log.d("TAG", "monthBreakDown: $monthWeekMap")
 
         return monthWeekMap
     }
