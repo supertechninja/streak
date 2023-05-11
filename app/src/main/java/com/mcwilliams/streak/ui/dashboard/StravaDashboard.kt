@@ -1,10 +1,22 @@
 package com.mcwilliams.streak.ui.dashboard
 
 import android.view.LayoutInflater
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -12,7 +24,6 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -59,7 +70,6 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
     }
 
     val activityUiState by viewModel.activityUiState.collectAsState()
-    val isRefreshing by remember { derivedStateOf { activityUiState == ActivityUiState.Loading } }
 
     val selectedActivityType by viewModel.activityType.observeAsState(ActivityType.Run)
 
@@ -74,8 +84,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
         currentMonthMetrics = summaryMetrics
     }
 
-    var refreshState = rememberSwipeRefreshState(isRefreshing)
-//    refreshState.isRefreshing = isRefreshing
+    var refreshState = rememberSwipeRefreshState(false)
 
     val saveWeeklyDistance = { weeklyDistance: String, weeklyElevation: String ->
         viewModel.saveWeeklyStats(weeklyDistance, weeklyElevation)
@@ -139,6 +148,10 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     Text(text = state.errorMessage)
                                 }
                             }
+                        }
+
+                        is ActivityUiState.Loading -> {
+                            refreshState.isRefreshing = true
                         }
 
                         is ActivityUiState.DataLoaded -> {
@@ -215,7 +228,7 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     StreakDashboardWidget(
                                         content = {
                                             YearWidget(
-                                                yearMetrics = state.calendarActivities.yearMetrics,
+                                                yearMetrics = state.calendarActivities.currentYearActivities.getStats(selectedActivityType),
                                                 selectedActivityType = selectedActivityType,
                                                 selectedUnitType = selectedUnitType,
                                                 isLoading = state.calendarActivities.currentMonthActivities.isEmpty()
@@ -225,15 +238,18 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                                     StreakDashboardWidget(
                                         content = {
-                                            CompareWidget(
-                                                dashboardType = DashboardType.Year,
-                                                selectedActivityType = selectedActivityType,
-                                                columnTitles = arrayOf("2022", "2021", "2020"),
-                                                currentMonthMetrics = state.calendarActivities.yearlySummaryMetrics[0],
-                                                prevMetrics = state.calendarActivities.yearlySummaryMetrics[1],
-                                                prevPrevMetrics = state.calendarActivities.yearlySummaryMetrics[2],
-                                                selectedUnitType = selectedUnitType
-                                            )
+                                            val yearlySummaryMetrics by viewModel.yearlySummaryMetrics.observeAsState(initial = emptyList())
+                                            if(yearlySummaryMetrics.isNotEmpty()) {
+                                                CompareWidget(
+                                                    dashboardType = DashboardType.Year,
+                                                    selectedActivityType = selectedActivityType,
+                                                    columnTitles = arrayOf("2022", "2021", "2020"),
+                                                    currentMonthMetrics = yearlySummaryMetrics[0],
+                                                    prevMetrics = yearlySummaryMetrics[1],
+                                                    prevPrevMetrics = yearlySummaryMetrics[2],
+                                                    selectedUnitType = selectedUnitType
+                                                )
+                                            }
                                         }, widgetName = "Year vs Year"
                                     )
 

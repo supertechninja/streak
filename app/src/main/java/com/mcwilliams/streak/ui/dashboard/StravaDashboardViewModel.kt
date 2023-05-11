@@ -51,6 +51,9 @@ class StravaDashboardViewModel @Inject constructor(
     var _weeklyActivityDetails: MutableLiveData<List<StravaActivityDetail>> = MutableLiveData()
     var weeklyActivityDetails: LiveData<List<StravaActivityDetail>> = _weeklyActivityDetails
 
+    val _yearlySummaryMetrics: MutableLiveData<List<SummaryMetrics>> = MutableLiveData()
+    val yearlySummaryMetrics: MutableLiveData<List<SummaryMetrics>> = _yearlySummaryMetrics
+
     init {
         _isLoggedInStrava.postValue(stravaSessionRepository.isLoggedIn())
     }
@@ -80,6 +83,8 @@ class StravaDashboardViewModel @Inject constructor(
             }.collect { currentYearActivities ->
                 _activityUiState.tryEmit(ActivityUiState.DataLoaded(currentYearActivities))
 
+                yearlySummaryMetrics(currentYearActivities)
+
                 stravaDashboardRepository.widgetStatus.collect {
                     widgetStatus.value = it
                 }
@@ -87,6 +92,22 @@ class StravaDashboardViewModel @Inject constructor(
             }
         }
     }
+
+    private fun yearlySummaryMetrics(currentYearActivities: CalendarActivities) {
+        val preferredActivity = currentYearActivities.preferredActivityType
+        _yearlySummaryMetrics.postValue( buildList {
+            if (currentYearActivities.preferredMeasureType == MeasureType.Absolute) {
+                add(currentYearActivities.currentYearActivities.getStats(preferredActivity))
+                add(currentYearActivities.previousYearActivities.getStats(preferredActivity))
+                add(currentYearActivities.twoYearsAgoActivities.getStats(preferredActivity))
+            } else {
+                add(currentYearActivities.relativeYearActivities.getStats(preferredActivity))
+                add(currentYearActivities.relativePreviousYearActivities.getStats(preferredActivity))
+                add(currentYearActivities.relativeTwoYearsAgoActivities.getStats(preferredActivity))
+            }
+        })
+    }
+
 
     fun loginAthlete(code: String) {
         viewModelScope.launch {
@@ -113,6 +134,7 @@ class StravaDashboardViewModel @Inject constructor(
     fun updateMeasureType(measureType: MeasureType) {
         stravaDashboardRepository.saveMeasureType(measureType = measureType)
         _measureType.postValue(stravaDashboardRepository.getPreferredMeasureType())
+
     }
 
     fun saveWeeklyStats(weeklyDistance: String, weeklyElevation: String) {

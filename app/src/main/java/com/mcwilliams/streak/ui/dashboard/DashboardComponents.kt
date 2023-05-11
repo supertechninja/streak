@@ -23,9 +23,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
 
 @Composable
 fun StreakWidgetCard(onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
@@ -151,13 +148,7 @@ fun DashboardStat(
             Text(
                 text = it,
                 modifier = Modifier
-                    .padding(start = 8.dp)
-                    .placeholder(
-                        visible = isLoading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                        color = Color.LightGray,
-                        shape = RoundedCornerShape(20.dp)
-                    ),
+                    .padding(start = 8.dp),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -171,13 +162,7 @@ fun MonthTextStat(monthStat: String, monthColumnWidth: Dp, isLoading: Boolean = 
         text = monthStat,
         color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
-            .width(monthColumnWidth)
-            .placeholder(
-                visible = isLoading,
-                highlight = PlaceholderHighlight.shimmer(),
-                color = Color.LightGray,
-                shape = RoundedCornerShape(20.dp)
-            ),
+            .width(monthColumnWidth),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.bodySmall
     )

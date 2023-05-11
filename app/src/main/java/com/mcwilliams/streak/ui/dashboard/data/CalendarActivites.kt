@@ -38,24 +38,6 @@ data class CalendarActivities(
 
     val weeklyDistanceMap: Pair<SummaryInfo, MutableMap<Int, Int>> = loadWeeklyDistanceMap()
 
-    val yearlySummaryMetrics = buildList {
-        if (preferredMeasureType == MeasureType.Absolute) {
-            add(currentYearActivities.getStats(preferredActivityType))
-            add(previousYearActivities.getStats(preferredActivityType))
-            add(twoYearsAgoActivities.getStats(preferredActivityType))
-        } else {
-            add(relativeYearActivities.getStats(preferredActivityType))
-            add(relativePreviousYearActivities.getStats(preferredActivityType))
-            add(relativeTwoYearsAgoActivities.getStats(preferredActivityType))
-        }
-    }
-
-    val yearMetrics =  if (preferredMeasureType == MeasureType.Absolute) {
-        currentYearActivities.getStats(preferredActivityType)
-    } else {
-        relativeYearActivities.getStats(preferredActivityType)
-    }
-
     val monthlySummaryMetrics = buildList {
         if (preferredMeasureType == MeasureType.Absolute) {
             add(currentMonthActivities.getStats(preferredActivityType))
