@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.util.Log
 import com.mcwilliams.streak.R
-import com.mcwilliams.streak.inf.SessionRepository
+import com.mcwilliams.streak.inf.StravaSessionRepository
 import com.mcwilliams.streak.inf.model.Athlete
 import com.mcwilliams.streak.strava.api.AthleteApi
 import com.mcwilliams.streak.strava.model.profile.AthleteStats
@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class SettingsRepoImpl @Inject constructor(
-    private val sessionRepo: SessionRepository,
+    private val sessionRepo: StravaSessionRepository,
     private val athleteApi: AthleteApi,
     val context: Context,
 ) : SettingsRepo, OnSharedPreferenceChangeListener {
@@ -38,9 +38,10 @@ class SettingsRepoImpl @Inject constructor(
         _widgetStatus.tryEmit(refreshPrefs())
     }
 
-    override suspend fun authAthlete(code: String): Athlete? = withContext(Dispatchers.IO) {
-        val request = sessionRepo.getFirstTokens(code).athlete
-        request
+    override suspend fun authAthlete(code: String) {
+        withContext(Dispatchers.IO) {
+            sessionRepo.getFirstTokens(code)
+        }
     }
 
     override suspend fun fetchAthlete(): StravaAthlete? = withContext(Dispatchers.IO) {

@@ -1,47 +1,43 @@
 package com.mcwilliams.streak.ui.dashboard
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
-import com.mcwilliams.streak.ui.theme.primaryColor
-import com.mcwilliams.streak.ui.utils.getDate
-import com.mcwilliams.streak.ui.utils.round
 
 @Composable
-fun StreakWidgetCard(content: @Composable () -> Unit) {
+fun StreakWidgetCard(onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp),
+            .padding(start = 8.dp, end = 8.dp, bottom = 4.dp, top = 4.dp)
+            .clickable(
+                enabled = onClick != null,
+                onClickLabel = null,
+                role = null,
+                onClick = { onClick?.let { it.invoke() } }),
         shape = RoundedCornerShape(20.dp),
-        elevation = 4.dp,
-        backgroundColor = MaterialTheme.colorScheme.onPrimary
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
     ) {
         content()
     }
@@ -62,15 +58,19 @@ fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType
             )
             percent = (now.toDouble().div(1609)) / (then.toDouble().div(1609))
         }
+
         StatType.Time -> {
             percent = now.toDouble() / then.toDouble()
         }
+
         StatType.Elevation -> {
             percent = now.toDouble() / then.toDouble()
         }
+
         StatType.Count -> {
             percent = now.toDouble() / then.toDouble()
         }
+
         StatType.Pace -> {
             percent = now.toDouble() / then.toDouble()
         }
@@ -114,7 +114,7 @@ fun PercentDelta(now: Number, then: Number, monthColumnWidth: Dp, type: StatType
         modifier = Modifier
             .width(monthColumnWidth)
             .padding(horizontal = 4.dp),
-        elevation = 4.dp,
+        shadowElevation = 4.dp,
         shape = RoundedCornerShape(50)
     ) {
         Text(
@@ -148,13 +148,7 @@ fun DashboardStat(
             Text(
                 text = it,
                 modifier = Modifier
-                    .padding(start = 8.dp)
-                    .placeholder(
-                        visible = isLoading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                        color = Color.LightGray,
-                        shape = RoundedCornerShape(20.dp)
-                    ),
+                    .padding(start = 8.dp),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -168,13 +162,7 @@ fun MonthTextStat(monthStat: String, monthColumnWidth: Dp, isLoading: Boolean = 
         text = monthStat,
         color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
-            .width(monthColumnWidth)
-            .placeholder(
-                visible = isLoading,
-                highlight = PlaceholderHighlight.shimmer(),
-                color = Color.LightGray,
-                shape = RoundedCornerShape(20.dp)
-            ),
+            .width(monthColumnWidth),
         textAlign = TextAlign.Center,
         style = MaterialTheme.typography.bodySmall
     )

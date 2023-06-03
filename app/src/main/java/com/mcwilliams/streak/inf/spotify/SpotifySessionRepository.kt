@@ -1,9 +1,12 @@
-package com.mcwilliams.streak.inf
+package com.mcwilliams.streak.inf.spotify
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.annotation.Keep
 import com.mcwilliams.streak.R
+import com.mcwilliams.streak.inf.ISessionRepository
+import com.mcwilliams.streak.inf.StravaSessionRepository
 import com.mcwilliams.streak.inf.model.GrantType
 import com.mcwilliams.streak.inf.model.TokenResponse
 import kotlinx.coroutines.Dispatchers
@@ -11,9 +14,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @Keep
-class SessionRepository @Inject constructor(
+class SpotifySessionRepository @Inject constructor(
     val context: Context,
-    private val session: Session
+    private val spotifySessionApi: SpotifySessionApi
 ) : ISessionRepository {
 
     private val preferences: SharedPreferences = context.getSharedPreferences(
@@ -24,11 +27,10 @@ class SessionRepository @Inject constructor(
     override suspend fun getFirstTokens(code: String): TokenResponse {
         val firstToken: TokenResponse
         withContext(context = Dispatchers.IO) {
-            firstToken = session.getFirstToken(
-                CLIENT_ID,
-                CLIENT_SECRET,
+            firstToken = spotifySessionApi.getToken(
                 code,
-                GrantType.AUTHORIZATION_CODE.toString()
+                grantType = "authorization_code",
+                redirectUri = "https://www.streakapp.com/authorize/"
             )
             setAccessToken(firstToken.access_token)
             setRefreshToken(firstToken.refresh_token)
@@ -38,17 +40,15 @@ class SessionRepository @Inject constructor(
         return firstToken
     }
 
-    override suspend fun refreshToken() : String {
+    override suspend fun refreshToken(): String {
         return withContext(context = Dispatchers.IO) {
-            val newTokens = session.refreshToken(
-                CLIENT_ID,
-                CLIENT_SECRET,
-                getRefreshToken(),
-                GrantType.REFRESH_TOKEN.toString()
+            Log.d("TAG", "refreshToken: refreshing token")
+            val newTokens = spotifySessionApi.getTokenUsingRefresh(
+                refreshToken = getRefreshToken()
             )
 
             setAccessToken(newTokens.access_token)
-            setRefreshToken(newTokens.refresh_token)
+//            setRefreshToken(newTokens.refresh_token)
             newTokens.access_token
         }
     }
@@ -93,18 +93,11 @@ class SessionRepository @Inject constructor(
         return doesHaveToken && isTokenValid
     }
 
-    fun logOff (){
-        preferences.edit().remove(ACCESS_TOKEN).apply()
-        preferences.edit().remove(REFRESH_TOKEN).apply()
-    }
 
     @Keep
     companion object {
-        const val CLIENT_ID = 66172
-        const val CLIENT_SECRET = "9d8bc5846db6c2df5750f0a130fd88c445b0b363"
-        private const val ACCESS_TOKEN = "ACCESS_TOKEN"
-        private const val REFRESH_TOKEN = "REFRESH_TOKEN"
-        private const val EXPIRATION = "EXPIRATION"
+        private const val ACCESS_TOKEN = "SPOTIFY_ACCESS_TOKEN"
+        private const val REFRESH_TOKEN = "SPOTIFY_REFRESH_TOKEN"
+        private const val EXPIRATION = "SPOTIFY_EXPIRATION"
     }
-
 }

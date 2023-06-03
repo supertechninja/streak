@@ -16,9 +16,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -31,48 +34,54 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.mcwilliams.streak.ui.dashboard.ActivityType
+import com.mcwilliams.streak.ui.dashboard.MeasureType
 import com.mcwilliams.streak.ui.dashboard.StravaDashboard
 import com.mcwilliams.streak.ui.dashboard.StravaDashboardViewModel
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.settings.StravaAuthWebView
 import com.mcwilliams.streak.ui.settings.StreakSettingsView
+import com.mcwilliams.streak.ui.spotifyjourney.SpotifyJourneyContent
 import com.mcwilliams.streak.ui.theme.Material3Theme
 import com.mcwilliams.streak.ui.theme.primaryColorShade1
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @ExperimentalComposeUiApi
-@ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @Keep
 @AndroidEntryPoint
-@RequiresApi(Build.VERSION_CODES.Q)
 class MainActivity : ComponentActivity() {
     private val viewModel: StravaDashboardViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Handle the splash screen transition.
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
 
         setContent {
             val navController = rememberNavController()
 
             Material3Theme(content = {
-                val isLoggedIn by viewModel.isLoggedIn.observeAsState()
+                val isLoggedIn by viewModel.isLoggedInStrava.observeAsState()
                 var showLoginDialog by remember { mutableStateOf(false) }
                 var selectedTab by remember { mutableStateOf(0) }
                 val selectedActivityType by viewModel.activityType.observeAsState(ActivityType.Run)
                 val selectedUnitType by viewModel.unitType.observeAsState(UnitType.Imperial)
+                val selectedMeasureType by viewModel.measureType.observeAsState(MeasureType.Absolute)
 
                 isLoggedIn?.let {
                     if (it) {
-                        androidx.compose.material3.Scaffold(
+                        Scaffold(
                             content = { paddingValues ->
                                 val navBackStackEntry by navController.currentBackStackEntryAsState()
 
@@ -86,11 +95,15 @@ class MainActivity : ComponentActivity() {
                                             paddingValues = paddingValues
                                         )
                                     }
+                                    composable(NavigationDestination.SpotifyJourney.destination){
+                                        SpotifyJourneyContent()
+                                    }
                                     composable(NavigationDestination.StreakSettings.destination) {
                                         StreakSettingsView(
                                             viewModel = viewModel,
                                             selectedActivityType = selectedActivityType,
-                                            selectedUnitType = selectedUnitType
+                                            selectedUnitType = selectedUnitType,
+                                            selectedMeasureType = selectedMeasureType
                                         )
                                     }
                                 }
@@ -138,6 +151,42 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                     NavigationBarItem(
+                                        selected = selectedTab == 1,
+                                        onClick = {
+                                            selectedTab = 1
+                                            navController.navigate(NavigationDestination.SpotifyJourney.destination) {
+                                                // Pop up to the start destination of the graph to
+                                                // avoid building up a large stack of destinations
+                                                // on the back stack as users select items
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                // Avoid multiple copies of the same destination when
+                                                // reselecting the same item
+                                                launchSingleTop = true
+                                                // Restore state when reselecting a previously selected item
+                                                restoreState = true
+                                            }
+                                        },
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(id = NavigationDestination.SpotifyJourney.resId!!),
+                                                contentDescription = "",
+                                                tint = if (selectedTab == 1) tintColor else tintColor.copy(
+                                                    .7f
+                                                )
+                                            )
+                                        },
+                                        label = {
+                                            Text(
+                                                "Journey",
+                                                color = if (selectedTab == 1) tintColor else tintColor.copy(
+                                                    .7f
+                                                )
+                                            )
+                                        }
+                                    )
+                                    NavigationBarItem(
                                         selected = selectedTab == 2,
                                         onClick = {
                                             selectedTab = 2
@@ -178,7 +227,7 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         Scaffold(
-                            backgroundColor = primaryColorShade1,
+                            containerColor = primaryColorShade1,
                             contentColor = MaterialTheme.colorScheme.onSurface,
                             content = { paddingValues ->
                                 Column(
@@ -237,6 +286,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                 }
+
                             }
                         )
                     }
@@ -254,6 +304,8 @@ sealed class NavigationDestination(
 ) {
     object StravaDashboard :
         NavigationDestination("stravaDashboard", "Dashboard", R.drawable.ic_dash)
+
+    object SpotifyJourney : NavigationDestination("spotifyJourney", "Spotify Journey", R.drawable.ic_speed)
 
     object StreakSettings :
         NavigationDestination("streakSettings", "Settings", R.drawable.ic_settings)

@@ -8,17 +8,17 @@ import java.io.IOException
 import javax.inject.Inject
 
 @Keep
-class AuthorizationInterceptor @Inject constructor(val sessionRepository: SessionRepository) :
+class AuthorizationInterceptor @Inject constructor(val stravaSessionRepository: StravaSessionRepository) :
     Interceptor {
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
-        if (sessionRepository.getExpiration() > System.currentTimeMillis()) {
+        if (stravaSessionRepository.getExpiration() > System.currentTimeMillis()) {
             runBlocking {
-                sessionRepository.refreshToken()
+                stravaSessionRepository.refreshToken()
             }
         }
 
-        val token = sessionRepository.getAccessToken()
+        val token = stravaSessionRepository.getAccessToken()
         val original = chain.request()
         val requestBuilder = original.newBuilder()
             .header("Accept", "application/json")
@@ -27,5 +27,4 @@ class AuthorizationInterceptor @Inject constructor(val sessionRepository: Sessio
         val request = requestBuilder.build()
         return chain.proceed(request)
     }
-
 }
