@@ -1,6 +1,5 @@
 package com.mcwilliams.streak.ui.dashboard
 
-import android.view.LayoutInflater
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,14 +35,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -94,32 +91,17 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
     val weeklySnapshotDetails by viewModel.weeklyActivityDetails.observeAsState(emptyList())
 
-    Scaffold(topBar = {
-        Row(
-            modifier = Modifier
-                .height(56.dp)
-                .fillMaxWidth()
-                .background(color = MaterialTheme.colorScheme.surface),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-                val (title, action) = createRefs()
-
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(title = {
                 Text(
                     "Streak",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.constrainAs(title) {
-                        start.linkTo(parent.start)
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        end.linkTo(parent.end)
-                    }
                 )
-            }
-        }
-    },
+            })
+        },
         content = {
             Box(
                 modifier = Modifier
@@ -152,9 +134,13 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                         is ActivityUiState.Loading -> {
                             refreshState.isRefreshing = true
+                            Column(modifier = Modifier.fillMaxSize()) {
+
+                            }
                         }
 
                         is ActivityUiState.DataLoaded -> {
+                            refreshState.isRefreshing = false
                             Box() {
                                 Column(
                                     modifier = Modifier
@@ -228,7 +214,9 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                     StreakDashboardWidget(
                                         content = {
                                             YearWidget(
-                                                yearMetrics = state.calendarActivities.currentYearActivities.getStats(selectedActivityType),
+                                                yearMetrics = state.calendarActivities.currentYearActivities.getStats(
+                                                    selectedActivityType
+                                                ),
                                                 selectedActivityType = selectedActivityType,
                                                 selectedUnitType = selectedUnitType,
                                                 isLoading = state.calendarActivities.currentMonthActivities.isEmpty()
@@ -238,12 +226,14 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                                     StreakDashboardWidget(
                                         content = {
-                                            val yearlySummaryMetrics by viewModel.yearlySummaryMetrics.observeAsState(initial = emptyList())
-                                            if(yearlySummaryMetrics.isNotEmpty()) {
+                                            val yearlySummaryMetrics by viewModel.yearlySummaryMetrics.observeAsState(
+                                                initial = emptyList()
+                                            )
+                                            if (yearlySummaryMetrics.isNotEmpty()) {
                                                 CompareWidget(
                                                     dashboardType = DashboardType.Year,
                                                     selectedActivityType = selectedActivityType,
-                                                    columnTitles = arrayOf("2022", "2021", "2020"),
+                                                    columnTitles = arrayOf("2023", "2022", "2021"),
                                                     currentMonthMetrics = yearlySummaryMetrics[0],
                                                     prevMetrics = yearlySummaryMetrics[1],
                                                     prevPrevMetrics = yearlySummaryMetrics[2],
@@ -306,7 +296,12 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
 
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("Avg Cadence")
-                                                    Text("${avgTempo.div(weeklySnapshotDetails.size).toInt()}")
+                                                    Text(
+                                                        "${
+                                                            avgTempo.div(weeklySnapshotDetails.size)
+                                                                .toInt()
+                                                        }"
+                                                    )
                                                 }
 
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -342,39 +337,30 @@ fun ColumnScope.Title(text: String) {
 
 @Composable
 fun StreakDashboardWidget(content: @Composable () -> Unit, widgetName: String) {
-    AndroidView(factory = { context ->
-        val androidView =
-            LayoutInflater.from(context)
-                .inflate(R.layout.compose_view, null)
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = widgetName,
+                style = MaterialTheme.typography.headlineMedium,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .padding(top = 4.dp, start = 16.dp)
+            )
+        }
 
-
-        val composeView =
-            androidView.findViewById<ComposeView>(R.id.compose_view)
-        composeView.setContent {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
             content()
         }
-
-        val titleComposeView =
-            androidView.findViewById<ComposeView>(R.id.title_compose_view)
-        titleComposeView.setContent {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = widgetName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .padding(top = 4.dp, start = 16.dp)
-                )
-            }
-        }
-
-        return@AndroidView androidView
-    })
+    }
 }
 
 enum class StatType { Distance, Time, Elevation, Count, Pace }
