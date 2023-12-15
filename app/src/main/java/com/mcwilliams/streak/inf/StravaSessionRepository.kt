@@ -31,7 +31,7 @@ class StravaSessionRepository @Inject constructor(
                 GrantType.AUTHORIZATION_CODE.toString()
             )
             setAccessToken(firstToken.access_token)
-            setRefreshToken(firstToken.refresh_token)
+            setRefreshToken(firstToken.refresh_token!!)
             firstToken
         }
 
@@ -48,7 +48,7 @@ class StravaSessionRepository @Inject constructor(
             )
 
             setAccessToken(newTokens.access_token)
-            setRefreshToken(newTokens.refresh_token)
+            setRefreshToken(newTokens.refresh_token!!)
             newTokens.access_token
         }
     }

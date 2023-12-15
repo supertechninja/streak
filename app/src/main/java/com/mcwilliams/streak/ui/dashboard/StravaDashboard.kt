@@ -50,6 +50,7 @@ import com.mcwilliams.streak.ui.dashboard.widgets.DashboardType
 import com.mcwilliams.streak.ui.dashboard.widgets.MonthWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekCompareWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.WeekSummaryWidget
+import com.mcwilliams.streak.ui.dashboard.widgets.YearSummaryWidget
 import com.mcwilliams.streak.ui.dashboard.widgets.YearWidget
 import com.mcwilliams.streak.ui.theme.primaryColor
 
@@ -178,6 +179,21 @@ fun StravaDashboard(viewModel: StravaDashboardViewModel, paddingValues: PaddingV
                                                 isLoading = state.calendarActivities.currentMonthActivities.isEmpty()
                                             )
                                         }, widgetName = "Month Summary"
+                                    )
+
+                                    StreakDashboardWidget(
+                                        content = {
+                                            YearSummaryWidget(
+                                                yearDistanceByMonth = state.calendarActivities.yearDistanceByMonth,
+                                                yearMetrics = state.calendarActivities.currentYearActivities.getStats(
+                                                    selectedActivityType
+                                                ),
+                                                selectedActivityType = selectedActivityType,
+                                                selectedUnitType = selectedUnitType,
+                                                isLoading = state.calendarActivities.lastTwoMonthsActivities.isEmpty(),
+                                            )
+                                        },
+                                        widgetName = "Year Summary"
                                     )
 
                                     StreakDashboardWidget(

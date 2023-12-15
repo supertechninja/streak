@@ -316,7 +316,7 @@ fun WeekCompareWidget(
                             )
                         }
 
-                        // Elevation Row
+                        // Avg Speed Row
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -381,6 +381,7 @@ fun WeekCompareWidget(
                                 isLoading = isLoading
                             )
                         }
+
                         //Count Row
                         Row(
                             modifier = Modifier

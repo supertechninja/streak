@@ -6,8 +6,6 @@ import android.util.Log
 import androidx.annotation.Keep
 import com.mcwilliams.streak.R
 import com.mcwilliams.streak.inf.ISessionRepository
-import com.mcwilliams.streak.inf.StravaSessionRepository
-import com.mcwilliams.streak.inf.model.GrantType
 import com.mcwilliams.streak.inf.model.TokenResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,7 +31,7 @@ class SpotifySessionRepository @Inject constructor(
                 redirectUri = "https://www.streakapp.com/authorize/"
             )
             setAccessToken(firstToken.access_token)
-            setRefreshToken(firstToken.refresh_token)
+            setRefreshToken(firstToken.refresh_token!!)
             firstToken
         }
 

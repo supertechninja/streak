@@ -21,23 +21,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.mcwilliams.streak.R
+import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.DashboardStat
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
-import com.mcwilliams.streak.ui.dashboard.data.SummaryInfo
+import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
+import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.utils.getAveragePaceString
 import com.mcwilliams.streak.ui.utils.getBarHeight
-import java.time.DayOfWeek
+import com.mcwilliams.streak.ui.utils.getDistanceString
+import com.mcwilliams.streak.ui.utils.getElevationString
+import com.mcwilliams.streak.ui.utils.getTimeString
 import java.time.LocalDate
+import java.time.Month
 
 @Composable
-fun WeekSummaryWidget(
-    weeklyDistanceMap: Pair<SummaryInfo, MutableMap<Int, Int>>,
-    currentWeeklyInfo: MutableList<Pair<Int, Int>>,
-    saveWeeklyStats: (String, String) -> Unit,
+fun YearSummaryWidget(
+    yearDistanceByMonth: List<Pair<Int, Double>>,
     isLoading: Boolean,
-    onClick : () -> Unit
+    yearMetrics: SummaryMetrics,
+    selectedActivityType: ActivityType,
+    selectedUnitType: UnitType,
 ) {
+    Log.d("TAG", "YearSummaryWidget: $yearDistanceByMonth")
+
     StreakWidgetCard(
-        onClick = onClick,
         content = {
             BoxWithConstraints(
                 modifier = Modifier.padding(
@@ -45,24 +52,24 @@ fun WeekSummaryWidget(
                     horizontal = 10.dp
                 )
             ) {
-                val width = this.maxWidth / 2
-                val summaryInfo = weeklyDistanceMap.first
+                val graphWidth = this.maxWidth.times(.6f)
+                val dataWidth = this.maxWidth.times(.4f)
 
                 Row() {
                     Column(
-                        modifier = Modifier.width(width = width),
+                        modifier = Modifier.width(width = dataWidth),
                         verticalArrangement = Arrangement.Center
                     ) {
                         Row() {
                             //TODO String Builder
                             Text(
-                                text = "Run",
+                                text = "Run | ",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = summaryInfo.widgetTitle,
+                                text = "${LocalDate.now().year}",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.bodyMedium,
                             )
@@ -78,27 +85,32 @@ fun WeekSummaryWidget(
 
                         DashboardStat(
                             image = R.drawable.ic_ruler,
-                            stat = summaryInfo.distance,
+                            stat = yearMetrics.totalDistance.getDistanceString(
+                                selectedUnitType,
+                                true
+                            ),
                             isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_clock_time,
-                            stat = summaryInfo.totalTime,
+                            stat = yearMetrics.totalTime.getTimeString(),
                             isLoading = isLoading
                         )
 
                         DashboardStat(
                             image = R.drawable.ic_up_right,
-                            stat = summaryInfo.elevation,
+                            stat = yearMetrics.totalElevation.getElevationString(selectedUnitType),
                             isLoading = isLoading
                         )
 
-                        saveWeeklyStats(summaryInfo.distance, summaryInfo.elevation)
-
                         DashboardStat(
                             image = R.drawable.ic_speed,
-                            stat = summaryInfo.avgPace,
+                            stat = getAveragePaceString(
+                                yearMetrics.totalDistance,
+                                yearMetrics.totalTime,
+                                selectedUnitType
+                            ),
                             isLoading = isLoading
                         )
                     }
@@ -106,62 +118,53 @@ fun WeekSummaryWidget(
                     //Vertical Bars Representing Miles Per Day
                     Column(
                         modifier = Modifier
-                            .width(width = width)
+                            .width(width = graphWidth)
                             .height(140.dp)
                     ) {
                         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-                            val (progress, days) = createRefs()
-
-                            val currentWeekDistanceByDay = weeklyDistanceMap.second
-
-                            Log.d("TAG", "WeekSummaryWidget: $currentWeekDistanceByDay")
+                            val (progress, months) = createRefs()
 
                             Row(
                                 verticalAlignment = Alignment.Bottom,
                                 modifier = Modifier.constrainAs(progress) {
-                                    bottom.linkTo(days.top)
+                                    bottom.linkTo(months.top)
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
                                 }) {
-                                currentWeeklyInfo.forEach { dateInWeek ->
+                                yearDistanceByMonth.forEach { (monthInt, distance) ->
                                     Column(
-                                        modifier = Modifier.width(width / 7),
+                                        modifier = Modifier.width(graphWidth / 12),
                                         verticalArrangement = Arrangement.Center,
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        currentWeekDistanceByDay.forEach { weekDistanceMap ->
-                                            if (weekDistanceMap.key == dateInWeek.second) {
-                                                if (weekDistanceMap.value > 0) {
-                                                    Divider(
-                                                        color = MaterialTheme.colorScheme.onSurface,
-                                                        modifier = Modifier
-                                                            .height(weekDistanceMap.value.getBarHeight())
-                                                            .width(15.dp)
-                                                            .clip(RoundedCornerShape(50))
-                                                            .padding(horizontal = 4.dp)
-                                                    )
-                                                }
-                                            }
+                                        if (distance > 0.0) {
+                                            Divider(
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier
+                                                    .height(distance.getBarHeight())
+                                                    .width(6.dp)
+                                                    .clip(RoundedCornerShape(50))
+                                            )
                                         }
                                     }
                                 }
                             }
                             Row(
                                 verticalAlignment = Alignment.Bottom,
-                                modifier = Modifier.constrainAs(days) {
+                                modifier = Modifier.constrainAs(months) {
                                     bottom.linkTo(parent.bottom)
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
                                 }) {
-                                DayOfWeek.values().forEach {
+                                Month.values().forEach {
                                     Column(
-                                        modifier = Modifier.width(width / 7),
+                                        modifier = Modifier.width(graphWidth / 12),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
                                         Text(
                                             it.name.substring(0, 1),
                                             color = MaterialTheme.colorScheme.onSurface,
-                                            fontWeight = if (it.name == LocalDate.now().dayOfWeek.name) FontWeight.ExtraBold else FontWeight.Normal
+                                            fontWeight = if (it.name == LocalDate.now().month.name) FontWeight.ExtraBold else FontWeight.Normal
                                         )
                                     }
                                 }

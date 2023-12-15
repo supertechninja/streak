@@ -90,6 +90,8 @@ dependencies {
 
     testImplementation(libs.junit)
 
+//    implementation("net.openid:appauth:0.11.1")
+
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.compose.ui.test.junit)

@@ -26,6 +26,8 @@ import com.mcwilliams.streak.ui.dashboard.StatType
 import com.mcwilliams.streak.ui.dashboard.StreakWidgetCard
 import com.mcwilliams.streak.ui.dashboard.SummaryMetrics
 import com.mcwilliams.streak.ui.dashboard.UnitType
+import com.mcwilliams.streak.ui.utils.getAveragePaceFromDistance
+import com.mcwilliams.streak.ui.utils.getAveragePaceString
 import com.mcwilliams.streak.ui.utils.getDistanceString
 import com.mcwilliams.streak.ui.utils.getElevationString
 import com.mcwilliams.streak.ui.utils.getTimeStringHoursAndMinutes
@@ -230,6 +232,70 @@ fun CompareWidget(
                             monthColumnWidth = monthColumnWidth
                         )
                     }
+
+                    // Avg Speed Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        DashboardStat(
+                            image = R.drawable.ic_speed,
+                            modifier = Modifier.width(firstColumnWidth)
+                        )
+
+                        MonthTextStat(
+                            getAveragePaceString(
+                                currentMonthMetrics.totalDistance,
+                                currentMonthMetrics.totalTime,
+                                selectedUnitType!!
+                            ),
+                            monthColumnWidth = monthColumnWidth,
+                        )
+
+                        PercentDelta(
+                            now = currentMonthMetrics.totalDistance.getAveragePaceFromDistance(
+                                currentMonthMetrics.totalTime
+                            ),
+                            then = prevMetrics.totalDistance.getAveragePaceFromDistance(
+                                prevMetrics.totalTime
+                            ),
+                            monthColumnWidth = monthColumnWidth,
+                            type = StatType.Pace
+                        )
+
+                        MonthTextStat(
+                            getAveragePaceString(
+                                prevMetrics.totalDistance,
+                                prevMetrics.totalTime,
+                                selectedUnitType!!
+                            ),
+                            monthColumnWidth = monthColumnWidth,
+                        )
+
+                        PercentDelta(
+                            now = prevMetrics.totalDistance.getAveragePaceFromDistance(
+                                prevMetrics.totalTime
+                            ),
+                            then = prevPrevMetrics.totalDistance.getAveragePaceFromDistance(
+                                prevPrevMetrics.totalTime
+                            ),
+                            monthColumnWidth = monthColumnWidth,
+                            type = StatType.Pace
+                        )
+
+                        MonthTextStat(
+                            getAveragePaceString(
+                                prevPrevMetrics.totalDistance,
+                                prevPrevMetrics.totalTime,
+                                selectedUnitType!!
+                            ),
+                            monthColumnWidth = monthColumnWidth,
+                        )
+                    }
+
                     //Count Row
                     Row(
                         modifier = Modifier

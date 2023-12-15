@@ -1,5 +1,7 @@
 package com.mcwilliams.streak.ui.utils
 
+import android.util.Log
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mcwilliams.streak.ui.dashboard.UnitType
 import com.mcwilliams.streak.ui.utils.Food.MacAndCheese
@@ -65,6 +67,13 @@ fun Int.getBarHeight() = when (this.div(1609)) {
     else -> {
         0.dp
     }
+}
+
+
+fun Double.getBarHeight() : Dp {
+    val miles = this.div(1609)
+    Log.d("TAG", "getBarHeight: ${miles.div(100)}")
+    return 100.times(miles.div(100)).dp
 }
 
 fun String.getDateTime(): LocalDateTime {

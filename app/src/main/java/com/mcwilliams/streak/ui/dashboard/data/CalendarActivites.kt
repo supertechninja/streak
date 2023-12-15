@@ -1,5 +1,6 @@
 package com.mcwilliams.streak.ui.dashboard.data
 
+import android.util.Log
 import com.mcwilliams.streak.strava.model.activites.ActivitiesItem
 import com.mcwilliams.streak.ui.dashboard.ActivityType
 import com.mcwilliams.streak.ui.dashboard.MeasureType
@@ -48,6 +49,19 @@ data class CalendarActivities(
             add(relativePreviousMonthActivities.getStats(preferredActivityType))
             add(relativePrevPrevMonthActivities.getStats(preferredActivityType))
         }
+    }
+
+    val yearlyGrouping = currentYearActivities.sortedBy { it.start_date.getDate().monthValue }.groupBy {
+        it.start_date.getDate().monthValue
+    }
+
+    val yearDistanceByMonth = yearlyGrouping.map {
+        var distanceForMonth = 0.0
+        it.value.forEach {
+            distanceForMonth += it.distance
+        }
+        Log.d("TAG", "yearDistanceByMonth: $distanceForMonth")
+        return@map it.key to distanceForMonth
     }
 
     lateinit var weeklyActivityIds: MutableList<Long>
